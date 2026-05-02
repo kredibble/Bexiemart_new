@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BexieMart Login Screen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;600;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --surface: #FFFFFF;
+      --fg: #111322;
+      --muted: #5F6C7B;
+      --border: #E4E7EC;
+      --accent: #004CFF;
+      --font-display: 'Raleway', Georgia, serif;
+      --font-body: 'Nunito', -apple-system, system-ui, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #F2F2F7;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .iphone-frame {
+      width: 390px;
+      height: 844px;
+      border-radius: 55px;
+      border: 14px solid #1C1C1E;
+      overflow: hidden;
+      position: relative;
+      background: var(--bg);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 59px;
+      padding: 0 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg);
+      z-index: 10;
+    }
+
+    .time {
+      font-family: var(--font-body);
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-icons svg {
+      display: block;
+    }
+
+    .main-content {
+      position: absolute;
+      top: 59px;
+      bottom: 34px;
+      left: 0;
+      right: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0 24px;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-top: 16px;
+      min-height: 44px;
+    }
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--fg);
+      padding: 8px 0;
+      min-height: 44px;
+      text-decoration: none;
+    }
+
+    .back-btn svg {
+      display: block;
+    }
+
+    .title-section {
+      margin-top: 32px;
+    }
+
+    .title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .subtitle {
+      font-family: var(--font-body);
+      font-size: 19px;
+      font-weight: 300;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .form-section {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .input-label {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .input-wrapper {
+      position: relative;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 52px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0 16px;
+      font-family: var(--font-body);
+      font-size: 17px;
+      font-weight: 400;
+      color: var(--fg);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input::placeholder {
+      color: var(--muted);
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .password-input {
+      padding-right: 52px;
+    }
+
+    .eye-btn {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .eye-btn svg {
+      display: block;
+    }
+
+    .forgot-password {
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    .forgot-password a {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--accent);
+      text-decoration: none;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .login-btn {
+      width: 100%;
+      height: 54px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+      min-height: 44px;
+    }
+
+    .register-section {
+      text-align: center;
+      margin-top: 32px;
+      padding-bottom: 24px;
+    }
+
+    .register-text {
+      font-family: var(--font-body);
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--muted);
+    }
+
+    .register-link {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .home-indicator {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 34px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+
+    .home-indicator-bar {
+      width: 134px;
+      height: 5px;
+      background: #1C1C1E;
+      border-radius: 2.5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="iphone-frame" data-od-id="iphone-frame">
+    <div class="status-bar" data-od-id="status-bar">
+      <span class="time">9:41</span>
+      <div class="status-icons">
+        <svg class="cellular" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <rect x="0" y="10" width="3" height="6" rx="0.5" fill="#111322"/>
+          <rect x="4.5" y="7" width="3" height="9" rx="0.5" fill="#111322"/>
+          <rect x="9" y="4" width="3" height="12" rx="0.5" fill="#111322"/>
+          <rect x="13.5" y="0" width="3" height="16" rx="0.5" fill="#111322"/>
+        </svg>
+        <svg class="wifi" width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M8 2C5.2 2 2.6 3.1 0.8 4.8L2.2 6.2C3.6 4.9 5.7 4 8 4C10.3 4 12.4 4.9 13.8 6.2L15.2 4.8C13.4 3.1 10.8 2 8 2Z" fill="#111322"/>
+          <path d="M8 6C6.3 6 4.8 6.6 3.7 7.7L5.1 9.1C5.7 8.5 6.8 8 8 8C9.2 8 10.3 8.5 10.9 9.1L12.3 7.7C11.2 6.6 9.7 6 8 6Z" fill="#111322"/>
+          <circle cx="8" cy="12" r="2" fill="#111322"/>
+        </svg>
+        <svg class="battery" width="24" height="12" viewBox="0 0 24 12" fill="none">
+          <rect x="0" y="0" width="21" height="12" rx="2" stroke="#111322" stroke-width="1.5"/>
+          <rect x="2" y="2" width="17" height="8" rx="1" fill="#111322"/>
+          <rect x="21" y="4" width="3" height="4" rx="1" fill="#111322"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="main-content" data-od-id="main-content">
+      <div class="header-row" data-od-id="header-row">
+        <a href="#" class="back-btn" data-od-id="back-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path d="M15 19L8 12L15 5" stroke="#111322" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span>Back</span>
+        </a>
+      </div>
+
+      <div class="title-section" data-od-id="title-section">
+        <h1 class="title" data-od-id="title">Login</h1>
+        <p class="subtitle" data-od-id="subtitle">Good To See You Back!</p>
+      </div>
+
+      <div class="form-section" data-od-id="form-section">
+        <div class="input-group" data-od-id="email-group">
+          <label class="input-label" for="email" data-od-id="email-label">Email</label>
+          <div class="input-wrapper">
+            <input type="email" id="email" class="form-input" placeholder="Enter your email" data-od-id="email-input">
+          </div>
+        </div>
+
+        <div class="input-group" data-od-id="password-group">
+          <label class="input-label" for="password" data-od-id="password-label">Password</label>
+          <div class="input-wrapper">
+            <input type="password" id="password" class="form-input password-input" placeholder="Enter your password" data-od-id="password-input">
+            <button class="eye-btn" data-od-id="eye-btn" type="button">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="forgot-password" data-od-id="forgot-password">
+          <a href="#" data-od-id="forgot-password-link">Forgot Password?</a>
+        </div>
+
+        <button class="login-btn" data-od-id="login-btn">Login</button>
+      </div>
+
+      <div class="register-section" data-od-id="register-section">
+        <span class="register-text" data-od-id="register-text">Don't have an account? </span>
+        <a href="#" class="register-link" data-od-id="register-link">Register</a>
+      </div>
+    </div>
+
+    <div class="home-indicator" data-od-id="home-indicator">
+      <div class="home-indicator-bar"></div>
+    </div>
+  </div>
+</body>
+</html>

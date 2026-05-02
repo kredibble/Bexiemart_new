@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BexieMart — Product Details</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --surface: #FFFFFF;
+      --fg: #111322;
+      --muted: #5F6C7B;
+      --border: #E4E7EC;
+      --accent: #004CFF;
+      --font-display: 'Raleway', Georgia, serif;
+      --font-body: 'Nunito', -apple-system, system-ui, sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: #F2F2F7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* iPhone 15 Pro Frame */
+    .device-frame {
+      width: 430px;
+      height: 932px;
+      background: #1C1C1E;
+      border-radius: 55px;
+      padding: 12px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3), inset 0 0 0 2px #2C2C2E;
+    }
+
+    .device-screen {
+      width: 100%;
+      height: 100%;
+      background: var(--bg);
+      border-radius: 44px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Dynamic Island */
+    .dynamic-island {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 126px;
+      height: 37px;
+      background: #000;
+      border-radius: 20px;
+      z-index: 100;
+    }
+
+    /* Status Bar */
+    .status-bar {
+      height: 54px;
+      padding: 14px 28px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      z-index: 90;
+    }
+
+    .status-time {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      letter-spacing: 0.5px;
+    }
+
+    .status-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-icons svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Scrollable Content */
+    .content-area {
+      height: calc(100% - 54px - 44px);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .content-area::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Hero Image */
+    .hero-section {
+      position: relative;
+      width: 100%;
+      height: 320px;
+      background: var(--border);
+      data-od-id: "hero-image";
+    }
+
+    .ph-img {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #E4E7EC 0%, #D1D5DB 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .hero-actions {
+      position: absolute;
+      top: 60px;
+      left: 0;
+      right: 0;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.9);
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+
+    .icon-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--fg);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Product Info */
+    .product-info {
+      padding: 20px 20px 0;
+      data-od-id: "product-info";
+    }
+
+    .eyebrow-pill {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #E8F5E9;
+      color: #2E7D32;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 12px;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .product-name {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--fg);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .price-current {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .price-current .num {
+      font-family: var(--font-display);
+    }
+
+    .price-original {
+      font-size: 16px;
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .price-original .num {
+      font-family: var(--font-body);
+    }
+
+    .discount-badge {
+      padding: 3px 8px;
+      background: #FFF3E0;
+      color: #E65100;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: 6px;
+    }
+
+    /* Seller Section */
+    .seller-section {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      data-od-id: "seller-info";
+    }
+
+    .seller-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .seller-avatar .ph-img {
+      border-radius: 50%;
+      font-size: 10px;
+    }
+
+    .seller-details {
+      flex: 1;
+    }
+
+    .seller-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 2px;
+    }
+
+    .seller-label {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .btn-outline {
+      padding: 8px 20px;
+      border: 1.5px solid var(--fg);
+      background: transparent;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+      cursor: pointer;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Delivery Options */
+    .delivery-section {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      data-od-id: "delivery-options";
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      margin-bottom: 14px;
+    }
+
+    .delivery-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .delivery-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      background: #F8F9FA;
+      border-radius: 10px;
+    }
+
+    .delivery-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .delivery-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delivery-icon svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--fg);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .delivery-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--fg);
+    }
+
+    .delivery-time {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .delivery-fee {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--fg);
+    }
+
+    .delivery-fee .num {
+      font-family: var(--font-body);
+    }
+
+    /* Reviews */
+    .reviews-section {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      data-od-id: "reviews-summary";
+    }
+
+    .reviews-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .reviews-summary {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .star-icon {
+      width: 18px;
+      height: 18px;
+      fill: #FFC107;
+      stroke: #FFC107;
+      stroke-width: 1;
+    }
+
+    .reviews-score {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--fg);
+    }
+
+    .reviews-score .num {
+      font-family: var(--font-body);
+    }
+
+    .reviews-count {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .reviews-count .num {
+      font-family: var(--font-body);
+    }
+
+    .review-stars {
+      display: flex;
+      gap: 2px;
+    }
+
+    .review-stars svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* Description */
+    .description-section {
+      padding: 20px;
+      border-top: 1px solid var(--border);
+      data-od-id: "product-description";
+    }
+
+    .description-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .read-more-btn {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+      font-family: var(--font-body);
+    }
+
+    /* Bottom Sticky Bar */
+    .bottom-bar {
+      position: absolute;
+      bottom: 34px;
+      left: 0;
+      right: 0;
+      padding: 12px 20px;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      z-index: 80;
+      data-od-id: "bottom-action-bar";
+    }
+
+    .quantity-control {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #F8F9FA;
+      border-radius: 10px;
+      padding: 8px 12px;
+    }
+
+    .qty-btn {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+
+    .qty-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: var(--fg);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .qty-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--fg);
+      min-width: 20px;
+      text-align: center;
+    }
+
+    .qty-value .num {
+      font-family: var(--font-body);
+    }
+
+    .btn-add-cart {
+      flex: 1;
+      height: 48px;
+      background: var(--accent);
+      border: none;
+      border-radius: 12px;
+      color: #FFF;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+    }
+
+    .btn-heart {
+      width: 48px;
+      height: 48px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      min-height: 44px;
+      min-width: 44px;
+    }
+
+    .btn-heart svg {
+      width: 22px;
+      height: 22px;
+      stroke: var(--fg);
+      fill: none;
+      stroke-width: 2;
+    }
+
+    /* Home Indicator */
+    .home-indicator {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 134px;
+      height: 5px;
+      background: var(--fg);
+      border-radius: 3px;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div class="device-frame">
+    <div class="device-screen">
+      <div class="dynamic-island"></div>
+
+      <div class="status-bar">
+        <span class="status-time">9:41</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M1 12.5C3 12.5 4 11 5.5 11C7 11 8 12.5 9.5 12.5C11 12.5 12 11 13.5 11C15 11 16 12.5 17 12.5" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M1 9C3 9 4 7.5 5.5 7.5C7 7.5 8 9 9.5 9C11 9 12 7.5 13.5 7.5C15 7.5 16 9 17 9" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <svg viewBox="0 0 18 18" fill="none">
+            <path d="M9 3C6 3 3.5 4.5 1.5 7L9 15L16.5 7C14.5 4.5 12 3 9 3Z" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg viewBox="0 0 25 12" fill="none">
+            <rect x="0.5" y="0.5" width="20" height="11" rx="2" stroke="var(--fg)" stroke-width="1"/>
+            <rect x="1.5" y="1.5" width="18" height="9" rx="1.5" fill="var(--fg)"/>
+            <rect x="22" y="3.5" width="3" height="5" rx="1" fill="var(--fg)"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="content-area">
+        <section class="hero-section" data-od-id="hero-image">
+          <div class="ph-img">Product Image</div>
+          <div class="hero-actions">
+            <button class="icon-btn" aria-label="Go back">
+              <svg viewBox="0 0 24 24">
+                <path d="M19 12H5M12 19L5 12L12 5"/>
+              </svg>
+            </button>
+            <button class="icon-btn" aria-label="Add to favorites">
+              <svg viewBox="0 0 24 24">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <section class="product-info" data-od-id="product-info">
+          <span class="eyebrow-pill">IN STOCK</span>
+          <h2 class="product-name">Sony WH-1000XM5 Wireless Noise Cancelling Headphones</h2>
+          <div class="price-row">
+            <span class="price-current"><span class="num">GH₵</span> <span class="num">2,199</span></span>
+            <span class="price-original"><span class="num">GH₵</span> <span class="num">3,099</span></span>
+            <span class="discount-badge">-29%</span>
+          </div>
+        </section>
+
+        <section class="seller-section" data-od-id="seller-info">
+          <div class="seller-avatar">
+            <div class="ph-img">Logo</div>
+          </div>
+          <div class="seller-details">
+            <div class="seller-name">TechHub Ghana</div>
+            <div class="seller-label">Verified Seller</div>
+          </div>
+          <button class="btn-outline">Contact</button>
+        </section>
+
+        <section class="delivery-section" data-od-id="delivery-options">
+          <h3 class="section-title">Delivery Options</h3>
+          <div class="delivery-options">
+            <div class="delivery-option">
+              <div class="delivery-left">
+                <div class="delivery-icon">
+                  <svg viewBox="0 0 24 24">
+                    <rect x="1" y="3" width="15" height="13" rx="2"/>
+                    <path d="M16 8L20 8C21.1 8 22 8.9 22 10L22 16"/>
+                    <circle cx="5.5" cy="18.5" r="2.5"/>
+                    <circle cx="18.5" cy="18.5" r="2.5"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="delivery-name">Standard Delivery</div>
+                  <div class="delivery-time">3-5 business days</div>
+                </div>
+              </div>
+              <span class="delivery-fee"><span class="num">GH₵</span> <span class="num">25</span></span>
+            </div>
+            <div class="delivery-option">
+              <div class="delivery-left">
+                <div class="delivery-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="delivery-name">Express Delivery</div>
+                  <div class="delivery-time">24 hours</div>
+                </div>
+              </div>
+              <span class="delivery-fee"><span class="num">GH₵</span> <span class="num">50</span></span>
+            </div>
+            <div class="delivery-option">
+              <div class="delivery-left">
+                <div class="delivery-icon">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M3 9L12 2L21 9V20C21 20.5 20.5 21 20 21H4C3.5 21 3 20.5 3 20V9Z"/>
+                    <path d="M9 21V12H15V21"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="delivery-name">Pickup Station</div>
+                  <div class="delivery-time">Free pickup</div>
+                </div>
+              </div>
+              <span class="delivery-fee"><span class="num">FREE</span></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="reviews-section" data-od-id="reviews-summary">
+          <div class="reviews-header">
+            <div class="reviews-summary">
+              <svg class="star-icon" viewBox="0 0 24 24">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+              <span class="reviews-score"><span class="num">4.5</span></span>
+              <span class="reviews-count">· <span class="num">128</span> reviews</span>
+            </div>
+            <div class="review-stars">
+              <svg viewBox="0 0 24 24" fill="#FFC107"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="#FFC107"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="#FFC107"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="#FFC107"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              <svg viewBox="0 0 24 24" fill="#E4E7EC"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="description-section" data-od-id="product-description">
+          <h3 class="section-title">Description</h3>
+          <p class="description-text">
+            Experience industry-leading noise cancellation with the Sony WH-1000XM5. Featuring two processors controlling 8 microphones, these headphones deliver unprecedented noise canceling performance. With up to 30 hours of battery life, ultra-comfortable fit, and crystal-clear call quality, they're perfect for campus life.
+            <button class="read-more-btn">Read more</button>
+          </p>
+        </section>
+
+        <div style="height: 100px;"></div>
+      </div>
+
+      <div class="bottom-bar" data-od-id="bottom-action-bar">
+        <div class="quantity-control">
+          <button class="qty-btn" aria-label="Decrease quantity">
+            <svg viewBox="0 0 24 24">
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+          <span class="qty-value"><span class="num">1</span></span>
+          <button class="qty-btn" aria-label="Increase quantity">
+            <svg viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn-add-cart">Add to Cart</button>
+        <button class="btn-heart" aria-label="Add to favorites">
+          <svg viewBox="0 0 24 24">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</body>
+</html>
