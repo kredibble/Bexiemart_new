@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BexieMart - Notifications</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FFFFFF;
+    --surface: #FFFFFF;
+    --fg: #111322;
+    --muted: #5F6C7B;
+    --border: #E4E7EC;
+    --accent: #004CFF;
+    --font-display: 'Raleway', Georgia, serif;
+    --font-body: 'Nunito', -apple-system, system-ui, sans-serif;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background: #F2F2F7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  .iphone-frame {
+    width: 393px;
+    height: 852px;
+    background: var(--bg);
+    border-radius: 55px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 0 0 2px #1C1C1E, 0 20px 60px rgba(0,0,0,0.3);
+  }
+
+  .dynamic-island {
+    width: 126px;
+    height: 36px;
+    background: #000;
+    border-radius: 20px;
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .status-bar {
+    height: 54px;
+    padding: 14px 24px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--fg);
+    position: relative;
+    z-index: 50;
+  }
+
+  .status-bar-time {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 15px;
+  }
+
+  .status-bar-icons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .status-bar-icons svg {
+    width: 18px;
+    height: 12px;
+  }
+
+  .content {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .content::-webkit-scrollbar {
+    display: none;
+  }
+
+  .header {
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .back-btn {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .back-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .header-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--fg);
+    flex: 1;
+    margin-left: 8px;
+  }
+
+  .badge {
+    background: #EEF2FF;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-right: 8px;
+  }
+
+  .notification-list {
+    background: var(--bg);
+  }
+
+  .notification-item {
+    display: flex;
+    padding: 16px;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    min-height: 72px;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .notification-item.unread {
+    background: #F0F4FF;
+  }
+
+  .notification-item.read {
+    background: #FFFFFF;
+  }
+
+  .icon-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .notification-item.unread .icon-container {
+    background: #EEF2FF;
+  }
+
+  .notification-item.read .icon-container {
+    background: #F5F5F5;
+  }
+
+  .icon-container svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .unread-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  .notification-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .notification-title {
+    font-family: var(--font-body);
+    font-size: 15px;
+    color: var(--fg);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .notification-item.unread .notification-title {
+    font-weight: 700;
+  }
+
+  .notification-item.read .notification-title {
+    font-weight: 400;
+  }
+
+  .notification-body {
+    font-family: var(--font-body);
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .notification-time {
+    font-family: var(--font-body);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .home-indicator {
+    width: 134px;
+    height: 5px;
+    background: var(--fg);
+    border-radius: 3px;
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+</style>
+</head>
+<body>
+
+<div class="iphone-frame">
+  <div class="dynamic-island"></div>
+
+  <div class="screen">
+    <div class="status-bar">
+      <span class="status-bar-time">9:41</span>
+      <div class="status-bar-icons">
+        <svg viewBox="0 0 18 12" fill="none">
+          <path d="M1 6C3 3 6 1.5 9 1.5C12 1.5 15 3 17 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M4 8.5C5.5 6.5 7.5 5.5 9 5.5C10.5 5.5 12.5 6.5 14 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="9" cy="10.5" r="1.5" fill="currentColor"/>
+        </svg>
+        <svg viewBox="0 0 18 12" fill="none">
+          <rect x="0.5" y="0.5" width="15" height="11" rx="2" stroke="currentColor" stroke-width="1"/>
+          <path d="M16 4.5V7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        <svg viewBox="0 0 25 12" fill="none">
+          <rect x="0.5" y="0.5" width="21" height="11" rx="2" stroke="currentColor" stroke-width="1"/>
+          <path d="M23 3.5V8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M24.5 5V7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="header" data-od-id="header">
+      <div class="back-btn" data-od-id="back-btn">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M15 18L9 12L15 6" stroke="#111322" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span class="header-title">Notifications</span>
+      <span class="badge">3 new</span>
+    </div>
+
+    <div class="content" data-od-id="notification-list">
+      <!-- Notification 1 - UNREAD, order -->
+      <div class="notification-item unread" data-od-id="notif-1">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 2H20V22L16 20L12 22L8 20L4 22V2Z" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 7H16" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M8 11H14" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div class="unread-dot"></div>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Order Shipped</div>
+          <div class="notification-body">Your order #BM-2847 has been shipped</div>
+          <div class="notification-time">2h</div>
+        </div>
+      </div>
+
+      <!-- Notification 2 - UNREAD, promo -->
+      <div class="notification-item unread" data-od-id="notif-2">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M20.59 13.41L13.42 20.58C13.04 20.97 12.55 21.25 12 21.38V21.38C11.45 21.51 10.88 21.48 10.34 21.3L3.85 19.23C3.28 19.04 2.79 18.66 2.47 18.18L2.47 18.18C2.15 17.7 2.02 17.14 2.1 16.59L3.35 7.94C3.43 7.39 3.72 6.9 4.16 6.58L4.16 6.58C4.6 6.26 5.16 6.13 5.71 6.21L14.36 7.46C14.91 7.54 15.4 7.83 15.72 8.27L15.72 8.27C16.04 8.71 16.17 9.27 16.09 9.82L15.91 11.32" stroke="#004CFF" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20.59 13.41L15.74 8.56C15.35 8.17 14.78 8.03 14.24 8.19L10.24 9.19C9.7 9.35 9.35 9.87 9.39 10.42L9.59 13.42" stroke="#004CFF" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M18.5 15.5L21 18L18.5 20.5" stroke="#004CFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 18H15" stroke="#004CFF" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div class="unread-dot"></div>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Flash Sale!</div>
+          <div class="notification-body">50% off electronics today only</div>
+          <div class="notification-time">5h</div>
+        </div>
+      </div>
+
+      <!-- Notification 3 - UNREAD, system -->
+      <div class="notification-item unread" data-od-id="notif-3">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C14.12 2 16 3.88 16 6V8C16 8 21 9.5 21 14V16C21 16 21.7 17.7 19 18H5C2.3 17.7 3 16 3 16V14C3 9.5 8 8 8 8V6C8 3.88 9.88 2 12 2Z" stroke="#004CFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 21C10 22.1 10.9 23 12 23C13.1 23 14 22.1 14 21" stroke="#004CFF" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <div class="unread-dot"></div>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">New Message</div>
+          <div class="notification-body">TechHub Ghana replied to your inquiry</div>
+          <div class="notification-time">8h</div>
+        </div>
+      </div>
+
+      <!-- Notification 4 - READ, order -->
+      <div class="notification-item read" data-od-id="notif-4">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M4 7V17C4 18.1 4.9 19 6 19H18C19.1 19 20 18.1 20 17V7" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M4 7L12 13L20 7" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="2" y="5" width="20" height="2" rx="1" stroke="#5F6C7B" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Order Delivered</div>
+          <div class="notification-body">Order #BM-2841 has been delivered</div>
+          <div class="notification-time">1d</div>
+        </div>
+      </div>
+
+      <!-- Notification 5 - READ, promo -->
+      <div class="notification-item read" data-od-id="notif-5">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M20.59 13.41L13.42 20.58C13.04 20.97 12.55 21.25 12 21.38V21.38C11.45 21.51 10.88 21.48 10.34 21.3L3.85 19.23C3.28 19.04 2.79 18.66 2.47 18.18L2.47 18.18C2.15 17.7 2.02 17.14 2.1 16.59L3.35 7.94C3.43 7.39 3.72 6.9 4.16 6.58L4.16 6.58C4.6 6.26 5.16 6.13 5.71 6.21L14.36 7.46C14.91 7.54 15.4 7.83 15.72 8.27L15.72 8.27C16.04 8.71 16.17 9.27 16.09 9.82L15.91 11.32" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M20.59 13.41L15.74 8.56C15.35 8.17 14.78 8.03 14.24 8.19L10.24 9.19C9.7 9.35 9.35 9.87 9.39 10.42L9.59 13.42" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M18.5 15.5L21 18L18.5 20.5" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 18H15" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Price Drop</div>
+          <div class="notification-body">Wireless Earbuds now GH₵ 199</div>
+          <div class="notification-time">2d</div>
+        </div>
+      </div>
+
+      <!-- Notification 6 - READ, system -->
+      <div class="notification-item read" data-od-id="notif-6">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C14.12 2 16 3.88 16 6V8C16 8 21 9.5 21 14V16C21 16 21.7 17.7 19 18H5C2.3 17.7 3 16 3 16V14C3 9.5 8 8 8 8V6C8 3.88 9.88 2 12 2Z" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 21C10 22.1 10.9 23 12 23C13.1 23 14 22.1 14 21" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Review Reminder</div>
+          <div class="notification-body">How was your experience?</div>
+          <div class="notification-time">3d</div>
+        </div>
+      </div>
+
+      <!-- Notification 7 - READ, system -->
+      <div class="notification-item read" data-od-id="notif-7">
+        <div class="icon-container">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C14.12 2 16 3.88 16 6V8C16 8 21 9.5 21 14V16C21 16 21.7 17.7 19 18H5C2.3 17.7 3 16 3 16V14C3 9.5 8 8 8 8V6C8 3.88 9.88 2 12 2Z" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 21C10 22.1 10.9 23 12 23C13.1 23 14 22.1 14 21" stroke="#5F6C7B" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">Welcome to BexieMart!</div>
+          <div class="notification-body">Start exploring campus vendors</div>
+          <div class="notification-time">5d</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-indicator"></div>
+  </div>
+</div>
+
+</body>
+</html>
