@@ -1,4 +1,3 @@
-// ForgotPasswordScreen - 3-step password recovery flow (email → token → new password)
 import React from 'react';
 import {
   View,
@@ -8,38 +7,44 @@ import {
   ScrollView,
   Platform,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { forgotPasswordSchema, type ForgotPasswordFormValues } from '@/utils/validation';
-import { useForgotPassword } from '@/hooks/useAuth';
+import { newPasswordSchema, type NewPasswordFormValues } from '@/utils/validation';
+import { useResetPassword } from '@/hooks/useAuth';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
-type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
+type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'NewPassword'>;
+type RoutePropType = RouteProp<AuthStackParamList, 'NewPassword'>;
 
-export default function ForgotPasswordScreen() {
+export default function NewPasswordScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RoutePropType>();
   const insets = useSafeAreaInsets();
-  const { mutate: sendReset, isPending, error } = useForgotPassword();
+
+  const { email, token } = route.params;
+
+  const { mutate: resetPassword, isPending, error } = useResetPassword();
 
   const {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<ForgotPasswordFormValues>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: { email: '' },
+  } = useForm<NewPasswordFormValues>({
+    resolver: zodResolver(newPasswordSchema),
+    defaultValues: { password: '', confirmPassword: '' },
   });
 
-  const onSubmit = (values: ForgotPasswordFormValues) => {
-    sendReset(values.email);
-    // useForgotPassword navigates to PasswordVerify on success (see hooks/useAuth.ts)
+  const onSubmit = (values: NewPasswordFormValues) => {
+    resetPassword({ email, token, newPassword: values.password });
+    // useResetPassword navigates to Login on success
   };
 
   const apiError = (error as any)?.response?.data?.message as string | undefined;
@@ -61,9 +66,9 @@ export default function ForgotPasswordScreen() {
           className="flex-row items-center gap-1 p-2"
           onPress={() => navigation.goBack()}
           activeOpacity={0.75}
+          style={{ minWidth: 44, minHeight: 44 }}
           accessibilityRole="button"
           accessibilityLabel="Go back"
-          style={{ minWidth: 44, minHeight: 44 }}
         >
           <Ionicons name="arrow-back" size={22} color="#111322" />
         </TouchableOpacity>
@@ -78,44 +83,26 @@ export default function ForgotPasswordScreen() {
         <View
           className="items-center justify-center mb-8"
           style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
+            width: 88,
+            height: 88,
+            borderRadius: 44,
             backgroundColor: '#EEF2FF',
             alignSelf: 'center',
-            marginTop: 16,
-            shadowColor: '#004CFF',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 16,
-            elevation: 3,
+            marginTop: 24,
           }}
         >
-          <Ionicons name="lock-closed-outline" size={52} color="#004CFF" />
+          <Ionicons name="shield-checkmark-outline" size={44} color="#004CFF" />
         </View>
 
         <Text
-          style={{
-            fontFamily: 'Raleway_700Bold',
-            fontSize: 28,
-            color: '#111322',
-            marginBottom: 6,
-            letterSpacing: -0.5,
-          }}
+          style={{ fontFamily: 'Raleway_700Bold', fontSize: 28, color: '#111322', marginBottom: 6, letterSpacing: -0.5 }}
         >
-          Forgot Password?
+          Set New Password
         </Text>
-
         <Text
-          style={{
-            fontFamily: 'Nunito_400Regular',
-            fontSize: 16,
-            color: '#5F6C7B',
-            marginBottom: 32,
-            lineHeight: 24,
-          }}
+          style={{ fontFamily: 'Nunito_400Regular', fontSize: 16, color: '#5F6C7B', marginBottom: 32, lineHeight: 24 }}
         >
-          Enter your email address and we'll send you a reset code.
+          Create a strong password for your account
         </Text>
 
         {/* Form card */}
@@ -132,18 +119,31 @@ export default function ForgotPasswordScreen() {
         >
           <Controller
             control={control}
-            name="email"
+            name="password"
             render={({ field: { onChange, onBlur, value } }) => (
               <FormInput
-                label="Email"
-                placeholder="Enter your email address"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
+                label="New Password"
+                placeholder="Create a new password"
+                secureTextEntry
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
-                error={errors.email?.message}
+                error={errors.password?.message}
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="confirmPassword"
+            render={({ field: { onChange, onBlur, value } }) => (
+              <FormInput
+                label="Confirm New Password"
+                placeholder="Re-enter your new password"
+                secureTextEntry
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                error={errors.confirmPassword?.message}
               />
             )}
           />
@@ -173,7 +173,7 @@ export default function ForgotPasswordScreen() {
           }}
         >
           <Button
-            title="Send Reset Link"
+            title="Reset Password"
             onPress={handleSubmit(onSubmit)}
             loading={isPending}
           />
