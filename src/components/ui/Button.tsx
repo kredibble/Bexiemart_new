@@ -1,140 +1,95 @@
-import { TextClassContext, Text } from '@/components/ui/Text';
-import { cn } from '@/lib/utils';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { Platform, Pressable, ActivityIndicator, View } from 'react-native';
+import React from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  Text,
+  type PressableProps,
+  type StyleProp,
+  type ViewStyle,
+} from "react-native";
 
-const buttonVariants = cva(
-  cn(
-    'group shrink-0 flex-row items-center justify-center gap-2 rounded-xl',
-    Platform.select({
-      web: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 whitespace-nowrap outline-none transition-all focus-visible:ring-[3px] disabled:pointer-events-none [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-    })
-  ),
-  {
-    variants: {
-      variant: {
-        default: cn(
-          'bg-[#004CFF] active:bg-[#0040E0]',
-          Platform.select({
-            web: 'hover:bg-[#0040E0] shadow-[0_2px_8px_rgba(0,76,255,0.25)]',
-          })
-        ),
-        destructive: cn(
-          'bg-[#B3261E] active:bg-[#991F19]',
-          Platform.select({ web: 'hover:bg-[#991F19]' })
-        ),
-        danger: cn(
-          'bg-[#B3261E] active:bg-[#991F19]',
-          Platform.select({ web: 'hover:bg-[#991F19]' })
-        ),
-        outline: cn(
-          'border border-[#E4E7EC] bg-white active:bg-[#F8F9FA]',
-          Platform.select({ web: 'hover:bg-[#F8F9FA]' })
-        ),
-        secondary: cn(
-          'bg-[#F0F2F5] active:bg-[#E4E7EC]',
-          Platform.select({ web: 'hover:bg-[#E4E7EC]' })
-        ),
-        ghost: cn(
-          'bg-transparent active:bg-[#F0F2F5]',
-          Platform.select({ web: 'hover:bg-[#F0F2F5]' })
-        ),
-        link: 'bg-transparent active:bg-transparent',
-        soft: cn(
-          'bg-[#EEF2FF] active:bg-[#D4DCFF]',
-          Platform.select({ web: 'hover:bg-[#D4DCFF]' })
-        ),
-      },
-      size: {
-        default: 'h-12 px-6',
-        sm: 'h-10 gap-1.5 rounded-lg px-4',
-        lg: 'h-14 rounded-xl px-8',
-        icon: 'h-12 w-12',
-        pill: 'h-12 rounded-full px-6',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  }
-);
+type ButtonVariant = "default" | "secondary" | "outline" | "ghost" | "danger";
+type ButtonSize = "default" | "sm" | "lg";
 
-const buttonTextVariants = cva(
-  'text-base font-semibold font-["Nunito_600SemiBold"]',
-  {
-    variants: {
-      variant: {
-        default: 'text-white',
-        destructive: 'text-white',
-        danger: 'text-white',
-        outline: 'text-[#111322]',
-        secondary: 'text-[#111322]',
-        ghost: 'text-[#111322]',
-        link: 'text-[#004CFF]',
-        soft: 'text-[#004CFF]',
-      },
-      size: {
-        default: '',
-        sm: 'text-sm',
-        lg: 'text-lg',
-        icon: '',
-        pill: '',
-      },
-    },
-    defaultVariants: {
-      variant: 'default',
-      size: 'default',
-    },
-  }
-);
+export type ButtonProps = PressableProps & {
+  title?: string;
+  loading?: boolean;
+  fullWidth?: boolean;
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+};
 
-type ButtonProps = React.ComponentProps<typeof Pressable> &
-  VariantProps<typeof buttonVariants> & {
-    title?: string;
-    loading?: boolean;
-    fullWidth?: boolean;
-  };
+const variantStyles: Record<ButtonVariant, StyleProp<ViewStyle>> = {
+  default: { backgroundColor: "#004CFF" },
+  secondary: { backgroundColor: "#F0F2F5" },
+  outline: { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E4E7EC" },
+  ghost: { backgroundColor: "transparent" },
+  danger: { backgroundColor: "#B3261E" },
+};
 
-function Button({ className, variant, size, title, loading, fullWidth, disabled, style: customStyle, ...props }: ButtonProps) {
-  const elevationStyle: React.ComponentProps<typeof Pressable>['style'] = Platform.OS !== 'web' && variant === 'default' ? {
-    shadowColor: '#004CFF',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 3,
-  } : undefined;
+const textColors: Record<ButtonVariant, string> = {
+  default: "#FFFFFF",
+  secondary: "#111322",
+  outline: "#111322",
+  ghost: "#004CFF",
+  danger: "#FFFFFF",
+};
 
-  const combinedStyle = elevationStyle
-    ? (state: any) => {
-        const resolved = typeof customStyle === 'function' ? customStyle(state) : customStyle;
-        return [elevationStyle, resolved].filter(Boolean);
-      }
-    : customStyle;
+const sizeStyles: Record<ButtonSize, StyleProp<ViewStyle>> = {
+  sm: { minHeight: 44, paddingHorizontal: 16 },
+  default: { minHeight: 52, paddingHorizontal: 24 },
+  lg: { minHeight: 56, paddingHorizontal: 28 },
+};
+
+export function Button({
+  title,
+  loading = false,
+  fullWidth = false,
+  variant = "default",
+  size = "default",
+  disabled,
+  style,
+  children,
+  ...props
+}: ButtonProps) {
+  const isDisabled = disabled || loading;
+
   return (
-    <TextClassContext.Provider value={buttonTextVariants({ variant, size })}>
-      <Pressable
-        className={cn(
-          disabled && 'opacity-50',
-          loading && 'opacity-80',
-          fullWidth && 'w-full',
-          buttonVariants({ variant, size }),
-          className
-        )}
-        role="button"
-        disabled={disabled || loading}
-        style={combinedStyle}
-        {...props}
-      >
-        {loading ? (
-          <ActivityIndicator color={variant === 'outline' || variant === 'ghost' || variant === 'link' || variant === 'secondary' ? '#111322' : '#fff'} size="small" />
-        ) : title ? (
-          <Text className={cn('font-["Nunito_600SemiBold"]', buttonTextVariants({ variant, size }))}>{title}</Text>
-        ) : props.children}
-      </Pressable>
-    </TextClassContext.Provider>
+    <Pressable
+      accessibilityRole="button"
+      disabled={isDisabled}
+      style={({ pressed }) => [
+        {
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: 16,
+          opacity: isDisabled ? 0.6 : pressed ? 0.9 : 1,
+        },
+        fullWidth ? { width: "100%" } : null,
+        sizeStyles[size],
+        variantStyles[variant],
+        style,
+      ]}
+      {...props}
+    >
+      {loading ? (
+        <ActivityIndicator
+          color={textColors[variant]}
+          size="small"
+        />
+      ) : title ? (
+        <Text
+          style={{
+            fontFamily: "Nunito_600SemiBold",
+            fontSize: size === "lg" ? 17 : 15,
+            color: textColors[variant],
+          }}
+        >
+          {title}
+        </Text>
+      ) : (
+        children
+      )}
+    </Pressable>
   );
 }
-
-export { Button, buttonTextVariants, buttonVariants };
-export type { ButtonProps };
