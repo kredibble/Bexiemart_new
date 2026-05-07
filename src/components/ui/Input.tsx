@@ -1,32 +1,23 @@
-import { cn } from '@/lib/utils';
-import { Platform, TextInput } from 'react-native';
+import React from "react";
+import { TextInput, type TextInputProps } from "react-native";
 
-function Input({
-  className,
-  ...props
-}: React.ComponentProps<typeof TextInput>) {
+export function Input({ style, ...props }: TextInputProps) {
   return (
     <TextInput
-      className={cn(
-        'bg-background border-input text-foreground flex h-12 w-full flex-row items-center rounded-xl border px-4 text-base leading-5 shadow-sm',
-        props.editable === false &&
-          cn(
-            'opacity-50',
-            Platform.select({ web: 'disabled:pointer-events-none disabled:cursor-not-allowed' })
-          ),
-        Platform.select({
-          web: cn(
-            'placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground outline-none transition-[color,box-shadow] md:text-sm',
-            'focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]',
-            'aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive'
-          ),
-          native: 'placeholder:text-muted-foreground/50',
-        }),
-        className
-      )}
+      style={[
+        {
+          minHeight: 48,
+          borderWidth: 1,
+          borderColor: "#E4E7EC",
+          borderRadius: 12,
+          paddingHorizontal: 14,
+          backgroundColor: "#FFFFFF",
+          color: "#111322",
+        },
+        style,
+      ]}
+      placeholderTextColor="#98A2B3"
       {...props}
     />
   );
 }
-
-export { Input };
