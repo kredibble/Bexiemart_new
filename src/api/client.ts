@@ -1,3 +1,8 @@
+/**
+ * @deprecated Legacy Axios client — no longer used.
+ * Authentication is now handled by Better Auth via `@/lib/auth-client`.
+ * Keep this file only as reference for the old custom backend integration.
+ */
 import axios from 'axios';
 import { API_BASE_URL } from '@/utils/constants';
 import storage from '@/utils/storage';

@@ -1,3 +1,9 @@
+/**
+ * @deprecated Legacy auth API — no longer used.
+ * All auth flows are now handled by Better Auth via `@/lib/auth-client`
+ * and the hooks in `@/hooks/useAuth`.
+ * Keep this file only as reference for the old custom backend integration.
+ */
 import client from './client';
 import type { User, LoginResponse, RegisterResponse } from '@/types';
 import storage from '@/utils/storage';

@@ -90,7 +90,7 @@ export default function PasswordVerifyScreen() {
     inputRefs.current[0]?.focus();
   };
 
-  const apiError = (error as any)?.response?.data?.message as string | undefined;
+  const apiError = error instanceof Error ? error.message : undefined;
   const isComplete = otp.every((d) => d !== '');
   const filledCount = otp.filter((d) => d !== '').length;
 

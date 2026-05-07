@@ -7,6 +7,8 @@ import {
   Raleway_400Regular,
   Raleway_600SemiBold,
   Raleway_700Bold,
+} from "@expo-google-fonts/raleway";
+import {
   Nunito_300Light,
   Nunito_400Regular,
   Nunito_500Medium,

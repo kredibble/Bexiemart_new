@@ -1,6 +1,14 @@
+/**
+ * RootNavigator — Auth gate using Better Auth session.
+ *
+ * Uses useSession() from Better Auth to determine auth state.
+ * Uses a stable key to prevent NativeStackNavigator state corruption
+ * when Better Auth's session store emits updates.
+ */
 import { useEffect, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View } from "react-native";
+import { useSession } from "@/lib/auth-client";
 import { useAuthStore } from "@/stores/authStore";
 import AuthNavigator from "./AuthNavigator";
 import CustomerTabs from "./CustomerTabs";
@@ -15,18 +23,20 @@ export type RootStackParamList = {
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-  const { isAuthenticated, user, isLoading, hydrate } = useAuthStore();
-  const [isHydrating, setIsHydrating] = useState(true);
+  const { data: session, isPending } = useSession();
+  const { setUser } = useAuthStore();
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const init = async () => {
-      await hydrate();
-      setIsHydrating(false);
-    };
-    init();
-  }, []);
+    if (!isPending) {
+      if (session?.user) {
+        setUser(session.user as any);
+      }
+      setIsReady(true);
+    }
+  }, [isPending, session]);
 
-  if (isHydrating || isLoading) {
+  if (!isReady) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" }}>
         <ActivityIndicator size="large" color="#004CFF" />
@@ -34,9 +44,21 @@ export default function RootNavigator() {
     );
   }
 
-  if (!isAuthenticated) {
-    return <AuthNavigator />;
+  const userRole = (session?.user as any)?.role;
+
+  if (!session) {
+    return <AuthNavigator key="auth" />;
   }
 
-  return user?.role === "vendor" ? <VendorTabs /> : <CustomerTabs />;
+  return (
+    <Stack.Navigator
+      key={`app-${userRole ?? "customer"}`}
+      screenOptions={{ headerShown: false, animation: "fade" }}
+    >
+      <Stack.Screen
+        name={userRole === "vendor" ? "VendorApp" : "CustomerApp"}
+        component={userRole === "vendor" ? VendorTabs : CustomerTabs}
+      />
+    </Stack.Navigator>
+  );
 }

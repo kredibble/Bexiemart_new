@@ -45,7 +45,7 @@ export default function ForgotPasswordScreen() {
     sendReset(values.email);
   };
 
-  const apiError = (error as any)?.response?.data?.message as string | undefined;
+  const apiError = error instanceof Error ? error.message : undefined;
 
   return (
     <KeyboardAvoidingView

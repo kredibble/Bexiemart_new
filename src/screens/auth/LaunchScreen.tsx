@@ -141,7 +141,7 @@ export default function LaunchScreen() {
         </View>
           <TouchableOpacity
             style={[styles.skipButton, { top: insets.top + 24 }]}
-            onPress={() => navigation.navigate('SocialRoleSelect')}
+            onPress={() => navigation.navigate('SocialRoleSelect', {})}
             activeOpacity={0.6}
           >
           <Text style={styles.skipText}>Skip</Text>
@@ -208,7 +208,7 @@ export default function LaunchScreen() {
                   }),
                 },
               ]}
-              onPress={() => navigation.navigate('SocialRoleSelect')}
+              onPress={() => navigation.navigate('SocialRoleSelect', {})}
               activeOpacity={0.85}
             >
               <Text style={styles.primaryButtonText}>Get Started</Text>

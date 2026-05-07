@@ -1,8 +1,13 @@
+/**
+ * useAuth — React Query hooks for Better Auth email/password flows.
+ *
+ * Social auth is handled directly via authClient.signIn.social().
+ * Email/password flows use these hooks for consistency with the existing form UI.
+ */
 import { useMutation } from '@tanstack/react-query';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as authApi from '@/api/auth';
-import { useAuthStore } from '@/stores/authStore';
+import { authClient } from '@/lib/auth-client';
 import type { RootStackParamList } from '@/navigation/RootNavigator';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
@@ -15,17 +20,26 @@ function useAuthNav() {
 
 export function useLogin() {
   const navigation = useNavigation<RootNavProp>();
-  const { setUser, setTokens } = useAuthStore();
 
   return useMutation({
-    mutationFn: authApi.login,
-    onSuccess: async (data) => {
-      await setUser(data.user);
-      await setTokens(data.accessToken, data.refreshToken);
+    mutationFn: async (data: { email: string; password: string }) => {
+      const result = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message ?? 'Login failed');
+      }
+
+      return result.data;
+    },
+    onSuccess: (data) => {
+      const role = (data?.user as any)?.role ?? 'customer';
       navigation.dispatch(
         CommonActions.reset({
           index: 0,
-          routes: [{ name: data.user.role === 'customer' ? 'CustomerApp' : 'VendorApp' }],
+          routes: [{ name: role === 'customer' ? 'CustomerApp' : 'VendorApp' }],
         })
       );
     },
@@ -33,13 +47,25 @@ export function useLogin() {
 }
 
 export function useRegister() {
-  const authNav = useAuthNav();
+  const navigation = useNavigation<RootNavProp>();
 
   return useMutation({
-    mutationFn: authApi.register,
+    mutationFn: async (data: { name: string; email: string; phone: string; password: string }) => {
+      const result = await authClient.signUp.email({
+        email: data.email,
+        password: data.password,
+        name: data.name,
+        callbackURL: '/role-select',
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message ?? 'Registration failed');
+      }
+
+      return result.data;
+    },
     onSuccess: () => {
-      // Registration succeeded — go to Login so user can sign in
-      authNav.reset({ index: 0, routes: [{ name: 'Login' }] });
+      navigation.navigate('Auth' as any);
     },
   });
 }
@@ -48,7 +74,18 @@ export function useForgotPassword() {
   const authNav = useAuthNav();
 
   return useMutation({
-    mutationFn: (email: string) => authApi.forgotPassword({ email }),
+    mutationFn: async (email: string) => {
+      const result = await authClient.requestPasswordReset({
+        email,
+        redirectTo: 'bexiemartnew://reset-password',
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message ?? 'Failed to send reset email');
+      }
+
+      return result.data;
+    },
     onSuccess: (_, email) => {
       authNav.navigate('PasswordVerify', { email });
     },
@@ -59,8 +96,12 @@ export function useVerifyOtp() {
   const authNav = useAuthNav();
 
   return useMutation({
-    mutationFn: ({ email, code }: { email: string; code: string }) =>
-      authApi.verifyOtp({ email, code }),
+    mutationFn: async ({ email, code }: { email: string; code: string }) => {
+      if (!code || code.length < 6) {
+        throw new Error('Invalid verification code');
+      }
+      return { email, token: code };
+    },
     onSuccess: (data, variables) => {
       authNav.navigate('NewPassword', {
         email: variables.email,
@@ -74,7 +115,18 @@ export function useResetPassword() {
   const authNav = useAuthNav();
 
   return useMutation({
-    mutationFn: authApi.resetPassword,
+    mutationFn: async ({ token, newPassword }: { token: string; newPassword: string }) => {
+      const result = await authClient.resetPassword({
+        newPassword,
+        token,
+      });
+
+      if (result.error) {
+        throw new Error(result.error.message ?? 'Failed to reset password');
+      }
+
+      return result.data;
+    },
     onSuccess: () => {
       authNav.reset({ index: 0, routes: [{ name: 'Login' }] });
     },
@@ -82,12 +134,11 @@ export function useResetPassword() {
 }
 
 export function useLogout() {
-  const { logout } = useAuthStore();
   const navigation = useNavigation<RootNavProp>();
 
   return useMutation({
     mutationFn: async () => {
-      await logout();
+      await authClient.signOut();
     },
     onSuccess: () => {
       navigation.dispatch(
@@ -102,6 +153,12 @@ export function useLogout() {
 
 export function useGetMe() {
   return useMutation({
-    mutationFn: authApi.getMe,
+    mutationFn: async () => {
+      const result = await authClient.getSession();
+      if (!result.data?.user) {
+        throw new Error('Not authenticated');
+      }
+      return result.data.user;
+    },
   });
 }

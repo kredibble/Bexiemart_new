@@ -58,10 +58,10 @@ export default function NewPasswordScreen() {
   ], [password]);
 
   const onSubmit = (values: NewPasswordFormValues) => {
-    resetPassword({ email, token, newPassword: values.password });
+    resetPassword({ token, newPassword: values.password });
   };
 
-  const apiError = (error as any)?.response?.data?.message as string | undefined;
+  const apiError = error instanceof Error ? error.message : undefined;
 
   return (
     <KeyboardAvoidingView

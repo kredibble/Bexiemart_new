@@ -1,9 +1,8 @@
 /**
  * RegisterScreen — Step-by-step wizard with animated progress,
- * password strength meter, and visually rich role selection.
+ * password strength meter, and role selection.
  *
- * Step 1: Personal info (name, email, phone)
- * Step 2: Password + role selection
+ * Updated for Better Auth email/password sign-up.
  */
 import React, { useState } from 'react';
 import {
@@ -23,7 +22,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { registerSchema, type RegisterFormValues } from '@/utils/validation';
-import { useRegister } from '@/hooks/useAuth';
+import { authClient } from '@/lib/auth-client';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
@@ -37,8 +36,9 @@ const TOTAL_STEPS = 2;
 export default function RegisterScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const { mutate: register, isPending, error } = useRegister();
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     control,
@@ -78,11 +78,48 @@ export default function RegisterScreen() {
     setValue('role', role, { shouldValidate: true });
   };
 
-  const onSubmit = (values: RegisterFormValues) => {
-    register(values);
-  };
+  const onSubmit = async (values: RegisterFormValues) => {
+    setIsSubmitting(true);
+    setError(null);
 
-  const apiError = (error as any)?.response?.data?.message as string | undefined;
+    try {
+      const { data, error: authError } = await authClient.signUp.email({
+        email: values.email,
+        password: values.password,
+        name: values.name,
+        callbackURL: '/role-select',
+      });
+
+      if (authError) {
+        setError(authError.message ?? 'Failed to create account');
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (data?.user) {
+        // After successful sign-up, update the user's role
+        const { error: updateError } = await authClient.updateUser({
+          role: values.role,
+        } as any);
+
+        if (updateError) {
+          setError(updateError.message ?? 'Account created but role update failed');
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Navigate to appropriate dashboard
+        navigation.reset({
+          index: 0,
+          routes: [{ name: values.role === 'customer' ? ('CustomerApp' as any) : ('VendorApp' as any) }],
+        });
+      }
+    } catch (err: any) {
+      setError(err?.message ?? 'An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -91,8 +128,10 @@ export default function RegisterScreen() {
     >
       <StatusBar style="dark" />
 
-      {/* Accent bar */}
-      <View style={styles.accentBar} />
+      <View style={styles.bgLayer} pointerEvents="none">
+        <View style={styles.orbPrimary} />
+        <View style={styles.orbAccent} />
+      </View>
 
       {/* Header */}
       <View style={[styles.headerRow, { paddingTop: insets.top + 12 }]}>
@@ -100,13 +139,10 @@ export default function RegisterScreen() {
           onPress={handleBack}
           style={styles.backButton}
           activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
         >
-          <Ionicons name="arrow-back" size={22} color="#111322" />
+          <Ionicons name="arrow-back" size={20} color="#111322" />
         </TouchableOpacity>
 
-        {/* Step dots */}
         <View style={styles.stepDots}>
           {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
             <View
@@ -120,14 +156,17 @@ export default function RegisterScreen() {
           ))}
         </View>
 
-        <View style={{ width: 44 }} />
+        <View style={{ width: 40 }} />
       </View>
 
       {/* Scrollable body */}
       <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 12, paddingBottom: insets.bottom + 32 }}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: insets.top + 72 },
+        ]}
       >
         {/* Step title */}
         <Text style={styles.stepTitle}>
@@ -139,15 +178,15 @@ export default function RegisterScreen() {
             : 'Choose a password and how you will use BexieMart'}
         </Text>
 
-        {/* API error */}
-        {apiError && (
+        {/* Error banner */}
+        {error && (
           <View style={styles.errorBanner}>
             <Ionicons name="alert-circle" size={18} color="#B3261E" style={{ marginRight: 8 }} />
-            <Text style={styles.errorText} accessibilityLiveRegion="polite">{apiError}</Text>
+            <Text style={styles.errorText} accessibilityLiveRegion="polite">{error}</Text>
           </View>
         )}
 
-        {/* ── Step 1: Personal info ─────────────────────────────────── */}
+        {/* Step 1: Personal info */}
         {currentStep === 1 && (
           <View style={styles.formCard}>
             <Controller
@@ -203,7 +242,7 @@ export default function RegisterScreen() {
           </View>
         )}
 
-        {/* ── Step 2: Password + Role ───────────────────────────────── */}
+        {/* Step 2: Password + Role */}
         {currentStep === 2 && (
           <>
             <View style={styles.formCard}>
@@ -244,7 +283,6 @@ export default function RegisterScreen() {
               />
             </View>
 
-            {/* Role selector */}
             <Text style={styles.roleLabel}>I want to...</Text>
             <View style={styles.roleRow}>
               <RoleCard
@@ -268,17 +306,12 @@ export default function RegisterScreen() {
         {/* Action button */}
         <View style={styles.buttonWrapper}>
           {currentStep === 1 ? (
-            <Button
-              title="Continue"
-              onPress={handleNext}
-              fullWidth
-              size="lg"
-            />
+            <Button title="Continue" onPress={handleNext} fullWidth size="lg" />
           ) : (
             <Button
               title="Create Account"
               onPress={handleSubmit(onSubmit)}
-              loading={isPending}
+              loading={isSubmitting}
               fullWidth
               size="lg"
             />
@@ -291,8 +324,6 @@ export default function RegisterScreen() {
           <TouchableOpacity
             onPress={() => navigation.navigate('Login')}
             activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel="Login"
           >
             <Text style={styles.footerLink}>Sign In</Text>
           </TouchableOpacity>
@@ -301,8 +332,6 @@ export default function RegisterScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-/* ── RoleCard ─────────────────────────────────────────────────────────── */
 
 interface RoleCardProps {
   icon: string;
@@ -318,9 +347,6 @@ function RoleCard({ icon, label, sublabel, isSelected, onPress }: RoleCardProps)
       style={[styles.roleCard, isSelected && styles.roleCardSelected]}
       onPress={onPress}
       activeOpacity={0.75}
-      accessibilityRole="radio"
-      accessibilityState={{ checked: isSelected }}
-      accessibilityLabel={`${label} — ${sublabel}`}
     >
       <View style={[styles.roleIconCircle, isSelected && styles.roleIconCircleSelected]}>
         <Ionicons name={icon as any} size={24} color={isSelected ? '#004CFF' : '#8E8E93'} />
@@ -331,153 +357,74 @@ function RoleCard({ icon, label, sublabel, isSelected, onPress }: RoleCardProps)
   );
 }
 
-/* ── Styles ────────────────────────────────────────────────────────────── */
-
 const styles = StyleSheet.create({
-  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  bgLayer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
+  orbPrimary: {
+    position: 'absolute', width: 400, height: 400, borderRadius: 200,
+    backgroundColor: '#004CFF', top: -200, right: -150, opacity: 0.06,
+  },
+  orbAccent: {
+    position: 'absolute', width: 140, height: 140, borderRadius: 70,
+    backgroundColor: '#FFD60A', top: '45%', right: -30, opacity: 0.08,
+  },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingBottom: 8,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingBottom: 8,
   },
   backButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 40, height: 40, borderRadius: 20, backgroundColor: '#F5F7FA',
+    alignItems: 'center', justifyContent: 'center',
   },
-  stepDots: {
-    flexDirection: 'row',
-    gap: 6,
-    alignItems: 'center',
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E4E7EC',
-  },
+  stepDots: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E4E7EC' },
   dotActive: { backgroundColor: '#004CFF' },
   dotCurrent: { width: 24 },
+  scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
   stepTitle: {
-    fontFamily: 'Raleway_700Bold',
-    fontSize: 28,
-    color: '#111322',
-    letterSpacing: -0.5,
-    marginBottom: 6,
+    fontFamily: 'Raleway_700Bold', fontSize: 28, color: '#111322',
+    letterSpacing: -0.5, marginBottom: 6,
   },
   stepSubtitle: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 15,
-    color: '#5F6C7B',
-    lineHeight: 22,
-    marginBottom: 24,
+    fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#5F6C7B',
+    lineHeight: 22, marginBottom: 24,
   },
   errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FEE2E2',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 20,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2',
+    borderRadius: 14, padding: 14, marginBottom: 16,
   },
   errorText: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 14,
-    color: '#7F1D1D',
-    flex: 1,
-    lineHeight: 20,
+    fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#7F1D1D', flex: 1, lineHeight: 20,
   },
   formCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 4,
-    marginBottom: 24,
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 4, marginBottom: 24,
   },
   roleLabel: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 14,
-    color: '#111322',
-    marginBottom: 12,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+    fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#111322',
+    marginBottom: 12, letterSpacing: 0.3, textTransform: 'uppercase',
   },
-  roleRow: {
-    flexDirection: 'row',
-    gap: 12,
-    marginBottom: 24,
-  },
+  roleRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
   roleCard: {
-    flex: 1,
-    padding: 20,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: '#E4E7EC',
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    gap: 8,
+    flex: 1, padding: 20, borderRadius: 20, borderWidth: 2,
+    borderColor: '#E4E7EC', backgroundColor: '#FFFFFF', alignItems: 'center', gap: 8,
   },
-  roleCardSelected: {
-    borderColor: '#004CFF',
-    backgroundColor: '#EEF2FF',
-  },
+  roleCardSelected: { borderColor: '#004CFF', backgroundColor: '#EEF2FF' },
   roleIconCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#F0F2F5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 48, height: 48, borderRadius: 24, backgroundColor: '#F0F2F5',
+    alignItems: 'center', justifyContent: 'center',
   },
-  roleIconCircleSelected: {
-    backgroundColor: '#FFFFFF',
-  },
-  roleCardText: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 15,
-    color: '#111322',
-  },
-  roleCardTextSelected: {
-    color: '#004CFF',
-  },
-  roleSublabel: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 12,
-    color: '#8E8E93',
-    textAlign: 'center',
-  },
-  roleSublabelSelected: {
-    color: '#5F6C7B',
-  },
+  roleIconCircleSelected: { backgroundColor: '#FFFFFF' },
+  roleCardText: { fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#111322' },
+  roleCardTextSelected: { color: '#004CFF' },
+  roleSublabel: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#8E8E93', textAlign: 'center' },
+  roleSublabelSelected: { color: '#5F6C7B' },
   buttonWrapper: {
     marginBottom: 12,
     ...Platform.select({
-      ios: {
-        shadowColor: '#004CFF',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-      },
+      ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
       android: { elevation: 4 },
     }),
   },
-  footerRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
-  },
-  footerText: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 15,
-    color: '#5F6C7B',
-  },
-  footerLink: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 15,
-    color: '#004CFF',
-  },
+  footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 8 },
+  footerText: { fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#5F6C7B' },
+  footerLink: { fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#004CFF' },
 });

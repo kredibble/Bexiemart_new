@@ -58,7 +58,7 @@ export function Button({
     <Pressable
       accessibilityRole="button"
       disabled={isDisabled}
-      style={({ pressed }) => [
+      style={({ pressed }) => ([
         {
           alignItems: "center",
           justifyContent: "center",
@@ -68,8 +68,8 @@ export function Button({
         fullWidth ? { width: "100%" } : null,
         sizeStyles[size],
         variantStyles[variant],
-        style,
-      ]}
+        style as StyleProp<ViewStyle>,
+      ] as StyleProp<ViewStyle>)}
       {...props}
     >
       {loading ? (

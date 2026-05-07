@@ -16,7 +16,7 @@ import NewPasswordScreen from "@/screens/auth/NewPasswordScreen";
 export type AuthStackParamList = {
   Launch: undefined;
   Login: undefined;
-  SocialRoleSelect: undefined;
+  SocialRoleSelect: { provider?: 'google' | 'facebook'; idToken?: string };
   Register: undefined;
   ForgotPassword: undefined;
   PasswordVerify: { email: string };
