@@ -1,5 +1,5 @@
 import client from './client';
-import { User } from '@/types';
+import type { User, LoginResponse, RegisterResponse } from '@/types';
 import storage from '@/utils/storage';
 import { STORAGE_KEYS } from '@/utils/constants';
 
@@ -31,20 +31,28 @@ export interface ResetPasswordPayload {
   newPassword: string;
 }
 
-interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  user: User;
+export interface SocialLoginPayload {
+  provider: 'google' | 'facebook';
+  idToken: string;
+  role?: 'customer' | 'vendor';
 }
 
 export const login = async (data: LoginPayload) => {
-  const res = await client.post<AuthResponse>('/auth/login', data);
-  return res.data;
+  const res = await client.post<LoginResponse>('/auth/login', data);
+  return {
+    user: res.data.user,
+    accessToken: res.data.tokens.accessToken,
+    refreshToken: res.data.tokens.refreshToken,
+  };
 };
 
 export const register = async (data: RegisterPayload) => {
-  const res = await client.post<AuthResponse>('/auth/register', data);
-  return res.data;
+  const res = await client.post<RegisterResponse>('/auth/register', data);
+  return {
+    user: res.data.user,
+    accessToken: res.data.tokens?.accessToken ?? null,
+    refreshToken: res.data.tokens?.refreshToken ?? null,
+  };
 };
 
 export const forgotPassword = async (data: ForgotPasswordPayload) => {
@@ -65,6 +73,15 @@ export const resetPassword = async (data: ResetPasswordPayload) => {
 export const getMe = async () => {
   const res = await client.get<{ user: User }>('/auth/me');
   return res.data.user;
+};
+
+export const socialLogin = async (data: SocialLoginPayload) => {
+  const res = await client.post<LoginResponse>('/auth/social-login', data);
+  return {
+    user: res.data.user,
+    accessToken: res.data.tokens.accessToken,
+    refreshToken: res.data.tokens.refreshToken,
+  };
 };
 
 export const logout = async () => {

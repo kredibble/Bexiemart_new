@@ -1,33 +1,42 @@
-import { NavigationContainer } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View } from "react-native";
-import AuthNavigator from "@/navigation/AuthNavigator";
-import CustomerTabs from "@/navigation/CustomerTabs";
-import VendorTabs from "@/navigation/VendorTabs";
 import { useAuthStore } from "@/stores/authStore";
+import AuthNavigator from "./AuthNavigator";
+import CustomerTabs from "./CustomerTabs";
+import VendorTabs from "./VendorTabs";
+
+export type RootStackParamList = {
+  Auth: undefined;
+  CustomerApp: undefined;
+  VendorApp: undefined;
+};
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-  const isHydrated = useAuthStore((state) => state.isHydrated);
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const role = useAuthStore((state) => state.user?.role);
+  const { isAuthenticated, user, isLoading, hydrate } = useAuthStore();
+  const [isHydrating, setIsHydrating] = useState(true);
 
-  if (!isHydrated) {
+  useEffect(() => {
+    const init = async () => {
+      await hydrate();
+      setIsHydrating(false);
+    };
+    init();
+  }, []);
+
+  if (isHydrating || isLoading) {
     return (
-      <View
-        style={{
-          flex: 1,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#FFFFFF",
-        }}
-      >
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" }}>
         <ActivityIndicator size="large" color="#004CFF" />
       </View>
     );
   }
 
-  return (
-    <NavigationContainer independent>
-      {isAuthenticated ? role === "vendor" ? <VendorTabs /> : <CustomerTabs /> : <AuthNavigator />}
-    </NavigationContainer>
-  );
+  if (!isAuthenticated) {
+    return <AuthNavigator />;
+  }
+
+  return user?.role === "vendor" ? <VendorTabs /> : <CustomerTabs />;
 }

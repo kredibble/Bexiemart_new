@@ -1,4 +1,8 @@
-import React from 'react';
+/**
+ * NewPasswordScreen — Reset password with real-time strength meter,
+ * requirements checklist, and elevated form design.
+ */
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,6 +10,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -19,6 +24,7 @@ import { newPasswordSchema, type NewPasswordFormValues } from '@/utils/validatio
 import { useResetPassword } from '@/hooks/useAuth';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
+import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'NewPassword'>;
@@ -36,37 +42,43 @@ export default function NewPasswordScreen() {
   const {
     control,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<NewPasswordFormValues>({
     resolver: zodResolver(newPasswordSchema),
     defaultValues: { password: '', confirmPassword: '' },
   });
 
+  const password = watch('password');
+
+  const requirements = useMemo(() => [
+    { label: 'At least 8 characters', met: password.length >= 8 },
+    { label: 'One uppercase letter', met: /[A-Z]/.test(password) },
+    { label: 'One number', met: /[0-9]/.test(password) },
+  ], [password]);
+
   const onSubmit = (values: NewPasswordFormValues) => {
     resetPassword({ email, token, newPassword: values.password });
-    // useResetPassword navigates to Login on success
   };
 
   const apiError = (error as any)?.response?.data?.message as string | undefined;
 
   return (
     <KeyboardAvoidingView
-      className="flex-1"
-      style={{ backgroundColor: '#F8F9FA' }}
+      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="dark" />
 
+      {/* Accent bar */}
+      <View style={styles.accentBar} />
+
       {/* Header */}
-      <View
-        className="flex-row items-center px-4"
-        style={{ paddingTop: insets.top + 12 }}
-      >
+      <View style={[styles.headerRow, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity
-          className="flex-row items-center gap-1 p-2"
           onPress={() => navigation.goBack()}
-          activeOpacity={0.75}
-          style={{ minWidth: 44, minHeight: 44 }}
+          style={styles.backButton}
+          activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
@@ -75,48 +87,33 @@ export default function NewPasswordScreen() {
       </View>
 
       <ScrollView
-        className="flex-1 px-6"
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
       >
-        {/* Illustration circle */}
-        <View
-          className="items-center justify-center mb-8"
-          style={{
-            width: 88,
-            height: 88,
-            borderRadius: 44,
-            backgroundColor: '#EEF2FF',
-            alignSelf: 'center',
-            marginTop: 24,
-          }}
-        >
-          <Ionicons name="shield-checkmark-outline" size={44} color="#004CFF" />
+        {/* Illustration */}
+        <View style={styles.illustrationContainer}>
+          <View style={styles.illustrationCircle}>
+            <Ionicons name="shield-checkmark-outline" size={40} color="#004CFF" />
+          </View>
         </View>
 
-        <Text
-          style={{ fontFamily: 'Raleway_700Bold', fontSize: 28, color: '#111322', marginBottom: 6, letterSpacing: -0.5 }}
-        >
-          Set New Password
-        </Text>
-        <Text
-          style={{ fontFamily: 'Nunito_400Regular', fontSize: 16, color: '#5F6C7B', marginBottom: 32, lineHeight: 24 }}
-        >
-          Create a strong password for your account
+        {/* Title */}
+        <Text style={styles.title}>Set New Password</Text>
+        <Text style={styles.subtitle}>
+          Create a strong password to keep your account secure
         </Text>
 
+        {/* API error */}
+        {apiError && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="alert-circle" size={18} color="#B3261E" style={{ marginRight: 8 }} />
+            <Text style={styles.errorText} accessibilityLiveRegion="polite">{apiError}</Text>
+          </View>
+        )}
+
         {/* Form card */}
-        <View
-          className="p-5 rounded-2xl mb-4"
-          style={{
-            backgroundColor: '#FFFFFF',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 8,
-            elevation: 2,
-          }}
-        >
+        <View style={styles.formCard}>
           <Controller
             control={control}
             name="password"
@@ -125,6 +122,7 @@ export default function NewPasswordScreen() {
                 label="New Password"
                 placeholder="Create a new password"
                 secureTextEntry
+                prefixIcon="lock-closed-outline"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -132,14 +130,35 @@ export default function NewPasswordScreen() {
               />
             )}
           />
+
+          {/* Strength meter */}
+          <PasswordStrengthMeter password={password} />
+
+          {/* Requirements checklist */}
+          {password.length > 0 && (
+            <View style={styles.requirements}>
+              {requirements.map((req, i) => (
+                <View key={i} style={styles.requirementRow}>
+                  <View style={[styles.reqDot, req.met && styles.reqDotMet]}>
+                    {req.met && <Ionicons name="checkmark" size={10} color="#FFFFFF" />}
+                  </View>
+                  <Text style={[styles.reqText, req.met && styles.reqTextMet]}>
+                    {req.label}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+
           <Controller
             control={control}
             name="confirmPassword"
             render={({ field: { onChange, onBlur, value } }) => (
               <FormInput
-                label="Confirm New Password"
+                label="Confirm Password"
                 placeholder="Re-enter your new password"
                 secureTextEntry
+                prefixIcon="shield-checkmark-outline"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -147,38 +166,108 @@ export default function NewPasswordScreen() {
               />
             )}
           />
-
-          {apiError && (
-            <View className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#FEF2F2' }}>
-              <Text
-                style={{ fontFamily: 'Nunito_500Medium', fontSize: 13, color: '#B3261E' }}
-                accessibilityLiveRegion="polite"
-              >
-                {apiError}
-              </Text>
-            </View>
-          )}
         </View>
 
-        <View
-          className="items-center mt-4"
-          style={{
-            ...Platform.OS !== 'web' && {
-              shadowColor: '#004CFF',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              elevation: 4,
-            },
-          }}
-        >
+        {/* Submit button */}
+        <View style={styles.buttonWrapper}>
           <Button
             title="Reset Password"
             onPress={handleSubmit(onSubmit)}
             loading={isPending}
+            fullWidth
+            size="lg"
           />
+        </View>
+
+        {/* Trust note */}
+        <View style={styles.trustNote}>
+          <Ionicons name="information-circle-outline" size={16} color="#5F6C7B" />
+          <Text style={styles.trustNoteText}>
+            You'll need to sign in again with your new password
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  headerRow: { paddingHorizontal: 24, paddingBottom: 8 },
+  backButton: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  illustrationContainer: { alignItems: 'center', marginTop: 16, marginBottom: 20 },
+  illustrationCircle: {
+    width: 80, height: 80, borderRadius: 40,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center', justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004CFF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1, shadowRadius: 16,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  title: {
+    fontFamily: 'Raleway_700Bold', fontSize: 28,
+    color: '#111322', textAlign: 'center',
+    letterSpacing: -0.5, marginBottom: 6,
+  },
+  subtitle: {
+    fontFamily: 'Nunito_400Regular', fontSize: 15,
+    color: '#5F6C7B', textAlign: 'center',
+    lineHeight: 22, marginBottom: 24,
+  },
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FEE2E2', borderRadius: 12,
+    padding: 14, marginBottom: 20,
+  },
+  errorText: {
+    fontFamily: 'Nunito_400Regular', fontSize: 14,
+    color: '#7F1D1D', flex: 1, lineHeight: 20,
+  },
+  formCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 4,
+    marginBottom: 24,
+  },
+  requirements: {
+    paddingHorizontal: 16, marginBottom: 8,
+  },
+  requirementRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 4,
+  },
+  reqDot: {
+    width: 18, height: 18, borderRadius: 9,
+    backgroundColor: '#E4E7EC',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  reqDotMet: { backgroundColor: '#08A81D' },
+  reqText: {
+    fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#9BA5B0',
+  },
+  reqTextMet: { color: '#111322' },
+  buttonWrapper: {
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004CFF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3, shadowRadius: 12,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  trustNote: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    justifyContent: 'center', paddingVertical: 8,
+  },
+  trustNoteText: {
+    fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#5F6C7B',
+  },
+});

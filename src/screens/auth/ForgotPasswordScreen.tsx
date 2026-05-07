@@ -1,4 +1,7 @@
-// ForgotPasswordScreen - 3-step password recovery flow (email → token → new password)
+/**
+ * ForgotPasswordScreen — Elevated design with trust indicators
+ * and clear step-by-step guidance.
+ */
 import React from 'react';
 import {
   View,
@@ -7,6 +10,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -39,97 +43,61 @@ export default function ForgotPasswordScreen() {
 
   const onSubmit = (values: ForgotPasswordFormValues) => {
     sendReset(values.email);
-    // useForgotPassword navigates to PasswordVerify on success (see hooks/useAuth.ts)
   };
 
   const apiError = (error as any)?.response?.data?.message as string | undefined;
 
   return (
     <KeyboardAvoidingView
-      className="flex-1"
-      style={{ backgroundColor: '#F8F9FA' }}
+      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="dark" />
 
+      {/* Accent bar */}
+      <View style={styles.accentBar} />
+
       {/* Header */}
-      <View
-        className="flex-row items-center px-4"
-        style={{ paddingTop: insets.top + 12 }}
-      >
+      <View style={[styles.headerRow, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity
-          className="flex-row items-center gap-1 p-2"
           onPress={() => navigation.goBack()}
-          activeOpacity={0.75}
+          style={styles.backButton}
+          activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel="Go back"
-          style={{ minWidth: 44, minHeight: 44 }}
         >
           <Ionicons name="arrow-back" size={22} color="#111322" />
         </TouchableOpacity>
       </View>
 
       <ScrollView
-        className="flex-1 px-6"
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
       >
-        {/* Illustration circle */}
-        <View
-          className="items-center justify-center mb-8"
-          style={{
-            width: 120,
-            height: 120,
-            borderRadius: 60,
-            backgroundColor: '#EEF2FF',
-            alignSelf: 'center',
-            marginTop: 16,
-            shadowColor: '#004CFF',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 16,
-            elevation: 3,
-          }}
-        >
-          <Ionicons name="lock-closed-outline" size={52} color="#004CFF" />
+        {/* Illustration */}
+        <View style={styles.illustrationContainer}>
+          <View style={styles.illustrationCircle}>
+            <Ionicons name="lock-closed-outline" size={44} color="#004CFF" />
+          </View>
         </View>
 
-        <Text
-          style={{
-            fontFamily: 'Raleway_700Bold',
-            fontSize: 28,
-            color: '#111322',
-            marginBottom: 6,
-            letterSpacing: -0.5,
-          }}
-        >
-          Forgot Password?
+        {/* Title */}
+        <Text style={styles.title}>Forgot Password?</Text>
+        <Text style={styles.subtitle}>
+          No worries — enter your email and we'll send you a verification code to reset your password.
         </Text>
 
-        <Text
-          style={{
-            fontFamily: 'Nunito_400Regular',
-            fontSize: 16,
-            color: '#5F6C7B',
-            marginBottom: 32,
-            lineHeight: 24,
-          }}
-        >
-          Enter your email address and we'll send you a reset code.
-        </Text>
+        {/* API error */}
+        {apiError && (
+          <View style={styles.errorBanner}>
+            <Ionicons name="alert-circle" size={18} color="#B3261E" style={{ marginRight: 8 }} />
+            <Text style={styles.errorText} accessibilityLiveRegion="polite">{apiError}</Text>
+          </View>
+        )}
 
         {/* Form card */}
-        <View
-          className="p-5 rounded-2xl mb-4"
-          style={{
-            backgroundColor: '#FFFFFF',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 8,
-            elevation: 2,
-          }}
-        >
+        <View style={styles.formCard}>
           <Controller
             control={control}
             name="email"
@@ -140,6 +108,7 @@ export default function ForgotPasswordScreen() {
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
+                prefixIcon="mail-outline"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
@@ -147,38 +116,128 @@ export default function ForgotPasswordScreen() {
               />
             )}
           />
-
-          {apiError && (
-            <View className="mt-3 p-3 rounded-lg" style={{ backgroundColor: '#FEF2F2' }}>
-              <Text
-                style={{ fontFamily: 'Nunito_500Medium', fontSize: 13, color: '#B3261E' }}
-                accessibilityLiveRegion="polite"
-              >
-                {apiError}
-              </Text>
-            </View>
-          )}
         </View>
 
-        <View
-          className="items-center mt-4"
-          style={{
-            ...Platform.OS !== 'web' && {
-              shadowColor: '#004CFF',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              elevation: 4,
-            },
-          }}
-        >
+        {/* Submit button */}
+        <View style={styles.buttonWrapper}>
           <Button
-            title="Send Reset Link"
+            title="Send Reset Code"
             onPress={handleSubmit(onSubmit)}
             loading={isPending}
+            fullWidth
+            size="lg"
           />
+        </View>
+
+        {/* Trust indicators */}
+        <View style={styles.trustRow}>
+          <View style={styles.trustItem}>
+            <Ionicons name="shield-checkmark-outline" size={16} color="#5F6C7B" />
+            <Text style={styles.trustText}>Secure & encrypted</Text>
+          </View>
+          <View style={styles.trustItem}>
+            <Ionicons name="time-outline" size={16} color="#5F6C7B" />
+            <Text style={styles.trustText}>Code expires in 10 min</Text>
+          </View>
+        </View>
+
+        {/* Back to login */}
+        <View style={styles.footerRow}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login')}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Back to login"
+          >
+            <Text style={styles.footerLink}>
+              <Ionicons name="arrow-back" size={14} color="#004CFF" />{' '}
+              Back to Sign In
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  headerRow: { paddingHorizontal: 24, paddingBottom: 8 },
+  backButton: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  illustrationContainer: { alignItems: 'center', marginTop: 16, marginBottom: 24 },
+  illustrationCircle: {
+    width: 96, height: 96, borderRadius: 48,
+    backgroundColor: '#EEF2FF',
+    alignItems: 'center', justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004CFF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+      },
+      android: { elevation: 3 },
+    }),
+  },
+  title: {
+    fontFamily: 'Raleway_700Bold',
+    fontSize: 28,
+    color: '#111322',
+    textAlign: 'center',
+    letterSpacing: -0.5,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontFamily: 'Nunito_400Regular',
+    fontSize: 15,
+    color: '#5F6C7B',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 28,
+    paddingHorizontal: 8,
+  },
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FEE2E2', borderRadius: 12,
+    padding: 14, marginBottom: 20,
+  },
+  errorText: {
+    fontFamily: 'Nunito_400Regular', fontSize: 14,
+    color: '#7F1D1D', flex: 1, lineHeight: 20,
+  },
+  formCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 20, padding: 4,
+    marginBottom: 24,
+  },
+  buttonWrapper: {
+    marginBottom: 24,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004CFF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3, shadowRadius: 12,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  trustRow: {
+    flexDirection: 'row', justifyContent: 'center',
+    gap: 24, marginBottom: 24,
+  },
+  trustItem: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+  },
+  trustText: {
+    fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#5F6C7B',
+  },
+  footerRow: {
+    flexDirection: 'row', justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  footerLink: {
+    fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#004CFF',
+  },
+});

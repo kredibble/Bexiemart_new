@@ -1,10 +1,10 @@
 import "@/global.css";
-import RootNavigator from "@/navigation/RootNavigator";
+import { Redirect } from "expo-router";
 
 /**
- * Catch-all route: expo-router resolves any URL that isn't an exact file match
- * to this file, so React Navigation handles the actual screen routing.
+ * Catch-all route: any unrecognized URL redirects to root
+ * so React Navigation handles all internal screen routing.
  */
 export default function CatchAll() {
-  return <RootNavigator />;
+  return <Redirect href="/" />;
 }

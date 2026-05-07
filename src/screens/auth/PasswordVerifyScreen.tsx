@@ -1,3 +1,7 @@
+/**
+ * PasswordVerifyScreen — Animated OTP input with enhanced visual feedback,
+ * progress timer, and clear resend flow.
+ */
 import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
@@ -7,6 +11,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,6 +19,12 @@ import type { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useVerifyOtp, useForgotPassword } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
@@ -28,8 +39,6 @@ export default function PasswordVerifyScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
   const insets = useSafeAreaInsets();
-
-  // Read the email passed from ForgotPasswordScreen
   const { email } = route.params;
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
@@ -41,7 +50,6 @@ export default function PasswordVerifyScreen() {
   const { mutate: verifyOtp, isPending, error } = useVerifyOtp();
   const { mutate: resendCode, isPending: isResending } = useForgotPassword();
 
-  // Countdown timer for the resend button
   useEffect(() => {
     if (countdown <= 0) {
       setCanResend(true);
@@ -52,19 +60,17 @@ export default function PasswordVerifyScreen() {
   }, [countdown]);
 
   const handleOtpChange = (value: string, index: number) => {
-    // Only allow digits
     const digit = value.replace(/[^0-9]/g, '').slice(-1);
+    if (!digit && value.length > 0) return;
     const newOtp = [...otp];
     newOtp[index] = digit;
     setOtp(newOtp);
-    // Auto-advance to next box on input
     if (digit && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
   const handleKeyPress = (key: string, index: number) => {
-    // Go back to previous box on backspace when current box is empty
     if (key === 'Backspace' && !otp[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
@@ -74,7 +80,6 @@ export default function PasswordVerifyScreen() {
     const code = otp.join('');
     if (code.length < OTP_LENGTH) return;
     verifyOtp({ email, code });
-    // useVerifyOtp navigates to NewPassword on success (see hooks/useAuth.ts)
   };
 
   const handleResend = () => {
@@ -87,25 +92,24 @@ export default function PasswordVerifyScreen() {
 
   const apiError = (error as any)?.response?.data?.message as string | undefined;
   const isComplete = otp.every((d) => d !== '');
+  const filledCount = otp.filter((d) => d !== '').length;
 
   return (
     <KeyboardAvoidingView
-      className="flex-1"
-      style={{ backgroundColor: '#F8F9FA' }}
+      style={{ flex: 1, backgroundColor: '#FFFFFF' }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <StatusBar style="dark" />
 
+      {/* Accent bar */}
+      <View style={styles.accentBar} />
+
       {/* Header */}
-      <View
-        className="flex-row items-center px-4"
-        style={{ paddingTop: insets.top + 12 }}
-      >
+      <View style={[styles.headerRow, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity
-          className="flex-row items-center gap-1 p-2"
           onPress={() => navigation.goBack()}
-          activeOpacity={0.75}
-          style={{ minWidth: 44, minHeight: 44 }}
+          style={styles.backButton}
+          activeOpacity={0.7}
           accessibilityRole="button"
           accessibilityLabel="Go back"
         >
@@ -114,76 +118,50 @@ export default function PasswordVerifyScreen() {
       </View>
 
       <ScrollView
-        className="flex-1 px-6"
         keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 16, paddingBottom: insets.bottom + 32 }}
       >
-        {/* Illustration circle */}
-        <View
-          className="items-center justify-center mb-8"
-          style={{
-            width: 88,
-            height: 88,
-            borderRadius: 44,
-            backgroundColor: '#D1FAE5',
-            alignSelf: 'center',
-            marginTop: 24,
-          }}
-        >
-          <Ionicons name="mail-outline" size={40} color="#065F46" />
+        {/* Illustration */}
+        <View style={styles.illustrationContainer}>
+          <View style={[styles.illustrationCircle, { backgroundColor: '#D1FAE5' }]}>
+            <Ionicons name="mail-outline" size={40} color="#065F46" />
+          </View>
         </View>
 
-        <Text
-          style={{ fontFamily: 'Raleway_700Bold', fontSize: 28, color: '#111322', marginBottom: 6, textAlign: 'center', letterSpacing: -0.5 }}
-        >
-          Verify It's You
-        </Text>
-        <Text
-          style={{ fontFamily: 'Nunito_400Regular', fontSize: 16, color: '#5F6C7B', marginBottom: 8, lineHeight: 24, textAlign: 'center' }}
-        >
+        {/* Title */}
+        <Text style={styles.title}>Verify It's You</Text>
+        <Text style={styles.subtitle}>
           Enter the 6-digit code sent to
         </Text>
-        <Text
-          style={{ fontFamily: 'Nunito_700Bold', fontSize: 16, color: '#111322', marginBottom: 36, textAlign: 'center' }}
-        >
-          {email}
-        </Text>
+        <Text style={styles.emailText}>{email}</Text>
 
-        {/* OTP boxes card */}
-        <View
-          className="p-6 rounded-2xl mb-6 items-center"
-          style={{
-            backgroundColor: '#FFFFFF',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.06,
-            shadowRadius: 8,
-            elevation: 2,
-          }}
-        >
-          <View className="flex-row justify-between gap-2">
+        {/* Progress bar */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressTrack}>
+            <Animated.View
+              style={[
+                styles.progressFill,
+                { width: `${(filledCount / OTP_LENGTH) * 100}%` },
+              ]}
+            />
+          </View>
+          <Text style={styles.progressText}>{filledCount} of {OTP_LENGTH}</Text>
+        </View>
+
+        {/* OTP boxes */}
+        <View style={styles.otpCard}>
+          <View style={styles.otpRow}>
             {Array.from({ length: OTP_LENGTH }).map((_, index) => (
-              <TextInput
+              <OTPBox
                 key={index}
-                ref={(ref) => { inputRefs.current[index] = ref; }}
-                style={{
-                  width: 48,
-                  height: 60,
-                  borderWidth: 2,
-                  borderColor: otp[index] ? '#004CFF' : '#E4E7EC',
-                  borderRadius: 14,
-                  textAlign: 'center',
-                  fontFamily: 'Raleway_700Bold',
-                  fontSize: 24,
-                  color: '#111322',
-                  backgroundColor: otp[index] ? '#EEF2FF' : '#FFFFFF',
-                }}
-                maxLength={1}
-                keyboardType="number-pad"
+                index={index}
                 value={otp[index]}
-                onChangeText={(val) => handleOtpChange(val, index)}
-                onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
-                accessibilityLabel={`Digit ${index + 1} of 6`}
+                isFilled={otp[index] !== ''}
+                isComplete={isComplete}
+                inputRef={(ref) => { inputRefs.current[index] = ref; }}
+                onChange={(val) => handleOtpChange(val, index)}
+                onKeyPress={(key) => handleKeyPress(key, index)}
               />
             ))}
           </View>
@@ -191,39 +169,26 @@ export default function PasswordVerifyScreen() {
 
         {/* API error */}
         {apiError && (
-          <View className="mb-4 p-4 rounded-xl" style={{ backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA' }}>
-            <Text
-              style={{ fontFamily: 'Nunito_500Medium', fontSize: 14, color: '#B3261E', textAlign: 'center' }}
-              accessibilityLiveRegion="polite"
-            >
-              {apiError}
-            </Text>
+          <View style={styles.errorBanner}>
+            <Ionicons name="alert-circle" size={18} color="#B3261E" style={{ marginRight: 8 }} />
+            <Text style={styles.errorText} accessibilityLiveRegion="polite">{apiError}</Text>
           </View>
         )}
 
         {/* Verify button */}
-        <View
-          className="items-center mb-6"
-          style={{
-            ...Platform.OS !== 'web' && {
-              shadowColor: '#004CFF',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              elevation: 4,
-            },
-          }}
-        >
+        <View style={styles.buttonWrapper}>
           <Button
-            title="Verify"
+            title="Verify Code"
             onPress={handleVerify}
             loading={isPending}
             disabled={!isComplete}
+            fullWidth
+            size="lg"
           />
         </View>
 
-        {/* Resend countdown */}
-        <View className="items-center" style={{ minHeight: 44, justifyContent: 'center' }}>
+        {/* Resend section */}
+        <View style={styles.resendSection}>
           {canResend ? (
             <TouchableOpacity
               onPress={handleResend}
@@ -232,16 +197,13 @@ export default function PasswordVerifyScreen() {
               accessibilityRole="button"
               accessibilityLabel="Resend code"
             >
-              <Text style={{ fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#004CFF' }}>
+              <Text style={styles.resendLink}>
                 {isResending ? 'Sending...' : 'Resend Code'}
               </Text>
             </TouchableOpacity>
           ) : (
-            <Text style={{ fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E8E93' }}>
-              Resend code in{' '}
-              <Text style={{ fontFamily: 'Nunito_700Bold', color: '#111322' }}>
-                {countdown}s
-              </Text>
+            <Text style={styles.resendCountdown}>
+              Resend code in <Text style={styles.resendCountdownBold}>{countdown}s</Text>
             </Text>
           )}
         </View>
@@ -249,3 +211,155 @@ export default function PasswordVerifyScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+/* ── OTPBox ────────────────────────────────────────────────────────────── */
+
+interface OTPBoxProps {
+  index: number;
+  value: string;
+  isFilled: boolean;
+  isComplete: boolean;
+  inputRef: (ref: TextInput | null) => void;
+  onChange: (val: string) => void;
+  onKeyPress: (key: string) => void;
+}
+
+function OTPBox({ index, value, isFilled, isComplete, inputRef, onChange, onKeyPress }: OTPBoxProps) {
+  const scale = useSharedValue(1);
+
+  const rStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  useEffect(() => {
+    if (isFilled) {
+      scale.value = withSpring(1.1, { damping: 15 }, () => {
+        scale.value = withTiming(1, { duration: 150 });
+      });
+    }
+  }, [isFilled]);
+
+  return (
+    <Animated.View style={rStyle}>
+      <TextInput
+        ref={inputRef}
+        style={[
+          styles.otpBox,
+          isFilled && styles.otpBoxFilled,
+          isComplete && styles.otpBoxComplete,
+        ]}
+        maxLength={1}
+        keyboardType="number-pad"
+        value={value}
+        onChangeText={onChange}
+        onKeyPress={({ nativeEvent }) => onKeyPress(nativeEvent.key)}
+        accessibilityLabel={`Digit ${index + 1} of 6`}
+      />
+    </Animated.View>
+  );
+}
+
+const styles = StyleSheet.create({
+  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  headerRow: { paddingHorizontal: 24, paddingBottom: 8 },
+  backButton: {
+    width: 44, height: 44, borderRadius: 22,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  illustrationContainer: { alignItems: 'center', marginTop: 16, marginBottom: 20 },
+  illustrationCircle: {
+    width: 80, height: 80, borderRadius: 40,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  title: {
+    fontFamily: 'Raleway_700Bold', fontSize: 28,
+    color: '#111322', textAlign: 'center',
+    letterSpacing: -0.5, marginBottom: 6,
+  },
+  subtitle: {
+    fontFamily: 'Nunito_400Regular', fontSize: 15,
+    color: '#5F6C7B', textAlign: 'center',
+    lineHeight: 22, marginBottom: 4,
+  },
+  emailText: {
+    fontFamily: 'Nunito_700Bold', fontSize: 15,
+    color: '#111322', textAlign: 'center',
+    marginBottom: 24,
+  },
+  progressContainer: {
+    flexDirection: 'row', alignItems: 'center',
+    gap: 12, marginBottom: 20,
+  },
+  progressTrack: {
+    flex: 1, height: 4, borderRadius: 2,
+    backgroundColor: '#E4E7EC', overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%', borderRadius: 2,
+    backgroundColor: '#004CFF',
+  },
+  progressText: {
+    fontFamily: 'Nunito_600SemiBold', fontSize: 12,
+    color: '#5F6C7B', minWidth: 50, textAlign: 'right',
+  },
+  otpCard: {
+    backgroundColor: '#FFFFFF', borderRadius: 20,
+    padding: 24, marginBottom: 24, alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.06, shadowRadius: 8,
+      },
+      android: { elevation: 2 },
+    }),
+  },
+  otpRow: {
+    flexDirection: 'row', gap: 10, justifyContent: 'center',
+  },
+  otpBox: {
+    width: 48, height: 60,
+    borderWidth: 2, borderColor: '#E4E7EC',
+    borderRadius: 14, textAlign: 'center',
+    fontFamily: 'Raleway_700Bold', fontSize: 24,
+    color: '#111322', backgroundColor: '#FFFFFF',
+  },
+  otpBoxFilled: {
+    borderColor: '#004CFF', backgroundColor: '#EEF2FF',
+  },
+  otpBoxComplete: {
+    borderColor: '#004CFF', backgroundColor: '#EEF2FF',
+  },
+  errorBanner: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#FEE2E2', borderRadius: 12,
+    padding: 14, marginBottom: 20,
+  },
+  errorText: {
+    fontFamily: 'Nunito_400Regular', fontSize: 14,
+    color: '#7F1D1D', flex: 1, lineHeight: 20,
+  },
+  buttonWrapper: {
+    marginBottom: 20,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#004CFF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3, shadowRadius: 12,
+      },
+      android: { elevation: 4 },
+    }),
+  },
+  resendSection: {
+    alignItems: 'center', paddingVertical: 8,
+  },
+  resendLink: {
+    fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#004CFF',
+  },
+  resendCountdown: {
+    fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E8E93',
+  },
+  resendCountdownBold: {
+    fontFamily: 'Nunito_700Bold', color: '#111322',
+  },
+});

@@ -1,47 +1,20 @@
-import { Ionicons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text, View } from "react-native";
+import { Text, View, StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import DashboardScreen from "@/screens/vendor/DashboardScreen";
+import ProductsScreen from "@/screens/vendor/ProductsScreen";
+import OrdersScreen from "@/screens/vendor/OrdersScreen";
+import EarningsScreen from "@/screens/vendor/EarningsScreen";
+import SettingsScreen from "@/screens/vendor/SettingsScreen";
 
 const Tab = createBottomTabNavigator();
 
-function PlaceholderScreen({
-  title,
-  message,
-}: {
-  title: string;
-  message: string;
-}) {
+function ComingSoonScreen({ name }: { name: string }) {
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: "center",
-        justifyContent: "center",
-        paddingHorizontal: 24,
-        backgroundColor: "#FFFFFF",
-      }}
-    >
-      <Text
-        style={{
-          fontSize: 24,
-          fontFamily: "Raleway_700Bold",
-          color: "#111322",
-          marginBottom: 8,
-        }}
-      >
-        {title}
-      </Text>
-      <Text
-        style={{
-          fontSize: 15,
-          fontFamily: "Nunito_400Regular",
-          color: "#5F6C7B",
-          textAlign: "center",
-          lineHeight: 22,
-        }}
-      >
-        {message}
-      </Text>
+    <View style={styles.container}>
+      <Ionicons name="construct-outline" size={48} color="#5F6C7B" />
+      <Text style={styles.title}>{name}</Text>
+      <Text style={styles.subtitle}>Coming Soon</Text>
     </View>
   );
 }
@@ -50,72 +23,45 @@ export default function VendorTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false,
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName: keyof typeof Ionicons.glyphMap = "grid-outline";
+          if (route.name === "Dashboard") iconName = focused ? "grid" : "grid-outline";
+          else if (route.name === "Products") iconName = focused ? "bag" : "bag-outline";
+          else if (route.name === "Orders") iconName = focused ? "receipt" : "receipt-outline";
+          else if (route.name === "Earnings") iconName = focused ? "cash" : "cash-outline";
+          else if (route.name === "Settings") iconName = focused ? "settings" : "settings-outline";
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
         tabBarActiveTintColor: "#004CFF",
-        tabBarInactiveTintColor: "#8E8E93",
-        tabBarStyle: {
-          height: 70,
-          paddingTop: 8,
-          paddingBottom: 8,
-        },
-        tabBarIcon: ({ color, size }) => {
-          const iconMap: Record<string, keyof typeof Ionicons.glyphMap> = {
-            Dashboard: "grid-outline",
-            Products: "cube-outline",
-            Orders: "receipt-outline",
-            Earnings: "cash-outline",
-            Settings: "settings-outline",
-          };
-
-          return <Ionicons name={iconMap[route.name]} size={size} color={color} />;
-        },
+        tabBarInactiveTintColor: "#686262",
+        headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Dashboard"
-        children={() => (
-          <PlaceholderScreen
-            title="Vendor Dashboard"
-            message="Vendor login now lands in a working signed-in shell. The KPI cards and API hooks still need to be connected."
-          />
-        )}
-      />
-      <Tab.Screen
-        name="Products"
-        children={() => (
-          <PlaceholderScreen
-            title="Products"
-            message="Product CRUD is still partly scaffolded, so this tab stays honest about being unfinished instead of failing at runtime."
-          />
-        )}
-      />
-      <Tab.Screen
-        name="Orders"
-        children={() => (
-          <PlaceholderScreen
-            title="Orders"
-            message="Order management hooks are not implemented yet, but the navigation route is now in place for the vendor journey."
-          />
-        )}
-      />
-      <Tab.Screen
-        name="Earnings"
-        children={() => (
-          <PlaceholderScreen
-            title="Earnings"
-            message="This is ready to receive the vendor earnings UI after the API layer is built."
-          />
-        )}
-      />
-      <Tab.Screen
-        name="Settings"
-        children={() => (
-          <PlaceholderScreen
-            title="Settings"
-            message="Settings remains a placeholder until vendor profile actions are implemented."
-          />
-        )}
-      />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} />
+      <Tab.Screen name="Products" component={ProductsScreen} />
+      <Tab.Screen name="Orders" component={OrdersScreen} />
+      <Tab.Screen name="Earnings" component={EarningsScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    gap: 8,
+  },
+  title: {
+    fontFamily: "Raleway_700Bold",
+    fontSize: 20,
+    color: "#111322",
+  },
+  subtitle: {
+    fontFamily: "Nunito_400Regular",
+    fontSize: 14,
+    color: "#5F6C7B",
+  },
+});

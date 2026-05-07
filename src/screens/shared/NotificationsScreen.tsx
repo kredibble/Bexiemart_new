@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useNotifications, useMarkAsRead } from '@/hooks/useNotifications';
-import { formatRelativeTime } from '@/utils/format';
+import { formatDate } from '@/utils/format';
 import type { Notification } from '@/types';
 
 export default function NotificationsScreen() {
@@ -52,9 +52,9 @@ export default function NotificationsScreen() {
       >
         <Ionicons
           name={
-            item.category === 'order'
+            item.type === 'order_update'
               ? 'receipt-outline'
-              : item.category === 'promo'
+              : item.type === 'promotion'
               ? 'pricetag-outline'
               : 'notifications-outline'
           }
@@ -88,7 +88,7 @@ export default function NotificationsScreen() {
           {item.body}
         </Text>
         <Text style={{ fontFamily: 'Nunito_400Regular', fontSize: 11, color: '#8E8E93', marginTop: 4 }}>
-          {formatRelativeTime(item.createdAt)}
+          {formatDate(item.createdAt, 'relative')}
         </Text>
       </View>
     </TouchableOpacity>
