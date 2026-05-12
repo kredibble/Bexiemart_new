@@ -1,31 +1,253 @@
-// OrdersScreen - Vendor orders list with status filtering and badges
-import { View, Text, StyleSheet } from "react-native";
+/**
+ * OrdersScreen — Vendor orders list with status filter tabs.
+ *
+ * Features:
+ *  - Sticky filter bar (All, Pending, Confirmed, Processing, Shipped, Delivered, Cancelled)
+ *  - Order list with status badges
+ *  - Tap → OrderDetailsScreen
+ *  - Pull-to-refresh
+ */
+import React, { useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+import { OrderStatusBadge } from '@/components/vendor/OrderStatusBadge';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { useVendorOrders } from '@/hooks/useVendor';
+import { colors, shadows, radii } from '@/theme/colors';
+import { typePresets } from '@/theme/typography';
+import { formatCurrency, formatDate } from '@/utils/format';
+import type { OrderStatus, Order } from '@/types';
+import type { VendorTabsParamList } from '@/navigation/VendorTabs';
+
+type NavProp = NativeStackNavigationProp<VendorTabsParamList>;
+
+const STATUS_TABS: { label: string; value: OrderStatus | 'all' }[] = [
+  { label: 'All', value: 'all' },
+  { label: 'Pending', value: 'pending' },
+  { label: 'Confirmed', value: 'confirmed' },
+  { label: 'Processing', value: 'processing' },
+  { label: 'Shipped', value: 'shipped' },
+  { label: 'Delivered', value: 'delivered' },
+  { label: 'Cancelled', value: 'cancelled' },
+];
 
 export default function OrdersScreen() {
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation<NavProp>();
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
+
+  const queryStatus = selectedStatus === 'all' ? undefined : selectedStatus;
+  const { data: orders, isLoading, refetch, isRefetching } = useVendorOrders(queryStatus);
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: Order }) => (
+      <TouchableOpacity
+        style={styles.orderCard}
+        onPress={() =>
+          (navigation as any).navigate('OrderDetails', { orderId: item.id })
+        }
+        activeOpacity={0.7}
+      >
+        <View style={styles.orderLeft}>
+          <Text style={styles.orderId}>
+            #{item.orderNumber ?? item.id.slice(0, 8)}
+          </Text>
+          <Text style={styles.orderDate}>{formatDate(item.createdAt)}</Text>
+          <Text style={styles.orderItemCount}>
+            {item.items?.length ?? 0} item{(item.items?.length ?? 0) !== 1 ? 's' : ''}
+          </Text>
+        </View>
+        <View style={styles.orderRight}>
+          <Text style={styles.orderTotal}>{formatCurrency(item.total)}</Text>
+          <OrderStatusBadge status={item.status} />
+        </View>
+      </TouchableOpacity>
+    ),
+    [navigation]
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Vendor Orders</Text>
-      <Text style={styles.subtitle}>Coming soon</Text>
+    <View style={[styles.screen, { paddingTop: insets.top }]}>
+      <StatusBar style="dark" />
+
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Orders</Text>
+      </View>
+
+      {/* Status Filter Tabs */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.tabsContainer}
+        contentContainerStyle={styles.tabsContent}
+      >
+        {STATUS_TABS.map((tab) => (
+          <TouchableOpacity
+            key={tab.value}
+            style={[
+              styles.tab,
+              selectedStatus === tab.value && styles.tabSelected,
+            ]}
+            onPress={() => setSelectedStatus(tab.value)}
+          >
+            <Text
+              style={[
+                styles.tabLabel,
+                selectedStatus === tab.value && styles.tabLabelSelected,
+              ]}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* Orders List */}
+      <FlatList
+        data={orders ?? []}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 32 }]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+        ListEmptyComponent={
+          !isLoading ? (
+            <EmptyState
+              icon="receipt-outline"
+              title="No orders found"
+              subtitle={
+                selectedStatus !== 'all'
+                  ? `No ${selectedStatus} orders yet.`
+                  : 'When customers place orders, they will appear here.'
+              }
+            />
+          ) : null
+        }
+        ListHeaderComponent={
+          isLoading ? (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 }
 
+/* ── Styles ────────────────────────────────────────────────────────────── */
+
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: colors.surface,
   },
-  title: {
-    fontFamily: "Raleway_700Bold",
-    fontSize: 24,
-    color: "#111322",
+  header: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
   },
-  subtitle: {
-    fontFamily: "Nunito_400Regular",
-    fontSize: 14,
-    color: "#5F6C7B",
-    marginTop: 8,
+  headerTitle: {
+    ...typePresets.h2,
+    fontFamily: 'Raleway_700Bold',
+    color: colors.text,
+  },
+  tabsContainer: {
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  tabsContent: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  tab: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: radii.full,
+    backgroundColor: colors.surface,
+  },
+  tabSelected: {
+    backgroundColor: colors.primarySoft,
+  },
+  tabLabel: {
+    ...typePresets.bodySm,
+    fontFamily: 'Nunito_600SemiBold',
+    color: colors.textSecondary,
+  },
+  tabLabelSelected: {
+    color: colors.primary,
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+  },
+  orderCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    borderRadius: radii.xl,
+    padding: 16,
+    marginBottom: 12,
+    ...shadows.sm,
+  },
+  orderLeft: {
+    gap: 4,
+    flex: 1,
+  },
+  orderId: {
+    ...typePresets.body,
+    fontFamily: 'Nunito_700Bold',
+    color: colors.text,
+  },
+  orderDate: {
+    ...typePresets.caption,
+    color: colors.textSecondary,
+  },
+  orderItemCount: {
+    ...typePresets.caption,
+    color: colors.textLight,
+  },
+  orderRight: {
+    alignItems: 'flex-end',
+    gap: 6,
+  },
+  orderTotal: {
+    ...typePresets.priceSm,
+    fontFamily: 'Raleway_700Bold',
+    color: colors.text,
+  },
+  loaderContainer: {
+    paddingVertical: 40,
+    alignItems: 'center',
   },
 });

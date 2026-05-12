@@ -14,14 +14,15 @@ import {
   Platform,
   StyleSheet,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useSession, authClient } from '@/lib/auth-client';
+import { authClient } from '@/lib/auth-client';
+import { useAuthStore } from '@/stores/authStore';
+import { Button } from '@/components/ui/Button';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'SocialRoleSelect'>;
@@ -32,14 +33,16 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function SocialRoleSelectScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const { data: session, isPending: sessionLoading } = useSession();
+  const setUser = useAuthStore((s) => s.setUser);
+  const setRole = useAuthStore((s) => s.setRole);
+  const storedUser = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const isAlreadyAuthenticated = !!session?.user;
-
+  // Auto-select 'customer' after 600ms if user hasn't interacted
   useEffect(() => {
     if (!hasInteracted) {
       const timer = setTimeout(() => setSelectedRole('customer'), 600);
@@ -47,11 +50,15 @@ export default function SocialRoleSelectScreen() {
     }
   }, [hasInteracted]);
 
+  // When returning from OAuth: RootNavigator's AppState listener detects the
+  // session and calls setUser() with the mapped Better Auth user. Once the
+  // store has a user, apply the selected role. This handles the case where
+  // the user picked a role before OAuth but the role wasn't in the store yet.
   useEffect(() => {
-    if (isAlreadyAuthenticated && selectedRole) {
-      handleConfirmRole();
+    if (storedUser && selectedRole && storedUser.role !== selectedRole) {
+      setRole(selectedRole);
     }
-  }, [isAlreadyAuthenticated]);
+  }, [storedUser, selectedRole, setRole]);
 
   const handleSelectRole = (role: Role) => {
     setHasInteracted(true);
@@ -59,24 +66,23 @@ export default function SocialRoleSelectScreen() {
   };
 
   const handleConfirmRole = async () => {
-    if (!selectedRole || !isAlreadyAuthenticated) return;
+    if (!selectedRole) return;
+
+    // If user is already authenticated (arrived via OAuth callback), apply role immediately
+    if (isAuthenticated && storedUser) {
+      setRole(selectedRole);
+      // RootNavigator will re-render and show the correct tabs
+      return;
+    }
+
+    // If user is NOT authenticated yet, they need to sign in first
+    // (this shouldn't happen in normal flow — the user should tap a social button)
     setIsSubmitting(true);
     setError(null);
-
     try {
-      const { error: updateError } = await authClient.updateUser({
-        role: selectedRole,
-      } as any);
-
-      if (updateError) {
-        setError(updateError.message ?? 'Failed to update role');
-        return;
+      if (storedUser) {
+        setRole(selectedRole);
       }
-
-      navigation.reset({
-        index: 0,
-        routes: [{ name: selectedRole === 'customer' ? ('CustomerApp' as any) : ('VendorApp' as any) }],
-      });
     } catch (err: any) {
       setError(err?.message ?? 'An unexpected error occurred');
     } finally {
@@ -84,7 +90,7 @@ export default function SocialRoleSelectScreen() {
     }
   };
 
-  const handleSocialSignUp = async (provider: 'google') => {
+  const handleSocialSignUp = async (provider: 'google' | 'apple') => {
     if (!selectedRole) return;
     setIsSubmitting(true);
     setError(null);
@@ -92,7 +98,7 @@ export default function SocialRoleSelectScreen() {
     try {
       const { error: authError } = await authClient.signIn.social({
         provider,
-        callbackURL: "/role-select",
+        callbackURL: '/role-select',
       });
 
       if (authError) {
@@ -101,9 +107,10 @@ export default function SocialRoleSelectScreen() {
         return;
       }
 
-      // signIn.social() opens browser → OAuth → redirects back to /role-select.
-      // When the user returns, useSession() will have the session.
-      // The useEffect watching isAlreadyAuthenticated will trigger updateUser.
+      // signIn.social() opens browser → OAuth → redirects back to app.
+      // RootNavigator's AppState listener will detect the session and call setUser().
+      // The useEffect above will then apply the selected role to the store.
+      // RootNavigator will re-render and show the correct tabs.
     } catch (err: any) {
       setError(err?.message ?? 'An unexpected error occurred');
       setIsSubmitting(false);
@@ -117,7 +124,7 @@ export default function SocialRoleSelectScreen() {
     <View style={styles.container}>
       <StatusBar style="dark" />
 
-      <View style={styles.bgLayer} pointerEvents="none">
+      <View style={[styles.bgLayer, { pointerEvents: 'none' }]}>
         <View style={styles.orbPrimary} />
         <View style={styles.orbSecondary} />
         <View style={styles.orbAccent} />
@@ -205,63 +212,45 @@ export default function SocialRoleSelectScreen() {
         <View style={styles.authSection}>
           <View style={styles.authCard}>
             <Text style={styles.authTitle}>
-              {isAlreadyAuthenticated ? 'Confirm your role' : 'Create your account'}
+              {isAuthenticated ? 'Confirm your role' : 'Create your account'}
             </Text>
             <Text style={styles.authSubtitle}>
-              {isAlreadyAuthenticated
+              {isAuthenticated
                 ? 'We\'ll personalize your experience from day one.'
                 : 'Fast, secure, and personalized from day one.'}
             </Text>
 
-            {isAlreadyAuthenticated ? (
-              <TouchableOpacity
-                style={[
-                  styles.primaryButton,
-                  !isReady && styles.primaryButtonDisabled,
-                ]}
+            {isAuthenticated ? (
+              <Button
+                title={`Continue as ${selectedRole === 'customer' ? 'Shopper' : 'Seller'}`}
                 onPress={handleConfirmRole}
-                disabled={!isReady || isSubmitting}
-                activeOpacity={0.8}
-              >
-                {isSubmitting ? (
-                  <View style={styles.buttonSpinner} />
-                ) : (
-                  <>
-                    <Ionicons name="checkmark-circle" size={20} color="#FFFFFF" />
-                    <Text style={styles.primaryButtonText}>Continue as {selectedRole === 'customer' ? 'Shopper' : 'Seller'}</Text>
-                  </>
-                )}
-              </TouchableOpacity>
+                disabled={!isReady}
+                loading={isSubmitting}
+                fullWidth
+              />
             ) : (
               <>
                 <View style={styles.socialRow}>
-                  <TouchableOpacity
-                    style={[
-                      styles.socialButton,
-                      !isReady && styles.socialButtonDisabled,
-                    ]}
+                  <Button
+                    variant="outline"
+                    style={{ flex: 1 }}
                     onPress={() => handleSocialSignUp('google')}
                     disabled={!isReady || isSubmitting}
-                    activeOpacity={0.7}
+                    loading={isSubmitting}
                   >
-                    {isSubmitting ? (
-                      <View style={styles.socialIconPlaceholder}>
-                        <View style={styles.loadingSpinner} />
-                      </View>
-                    ) : (
-                      <Ionicons name="logo-google" size={20} color="#EA4335" />
-                    )}
+                    <Ionicons name="logo-google" size={20} color="#EA4335" />
                     <Text style={styles.socialText}>Google</Text>
-                  </TouchableOpacity>
+                  </Button>
 
-                  <TouchableOpacity
-                    style={[styles.socialButton, true && styles.socialButtonDisabled]}
-                    activeOpacity={0.7}
-                    onPress={() => Alert.alert('Coming Soon', 'Facebook sign-up will be available soon.')}
+                  <Button
+                    variant="outline"
+                    style={{ flex: 1 }}
+                    onPress={() => handleSocialSignUp('apple')}
+                    disabled={!isReady || isSubmitting}
                   >
-                    <Ionicons name="logo-facebook" size={22} color="#A0A8B4" />
-                    <Text style={[styles.socialText, { color: '#A0A8B4' }]}>Facebook</Text>
-                  </TouchableOpacity>
+                    <Ionicons name="logo-apple" size={22} color="#111322" />
+                    <Text style={styles.socialText}>Apple</Text>
+                  </Button>
                 </View>
 
                 <View style={styles.dividerRow}>
@@ -270,21 +259,12 @@ export default function SocialRoleSelectScreen() {
                   <View style={styles.dividerLine} />
                 </View>
 
-                <TouchableOpacity
-                  style={[
-                    styles.emailButton,
-                    !isReady && { backgroundColor: '#E4E7EC' },
-                  ]}
-                  onPress={() => isReady && navigation.navigate('Register')}
+                <Button
+                  title="Continue with email"
+                  onPress={() => navigation.navigate('Register')}
                   disabled={!isReady}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons name="mail-outline" size={18} color={isReady ? '#FFFFFF' : '#A0A8B4'} />
-                  <Text style={[
-                    styles.emailButtonText,
-                    !isReady && { color: '#A0A8B4' },
-                  ]}>Continue with email</Text>
-                </TouchableOpacity>
+                  fullWidth
+                />
               </>
             )}
           </View>
@@ -326,6 +306,7 @@ function RoleTile({ icon, label, tagline, isSelected, onPress, color, activeBg }
           ...Platform.select({
             ios: { shadowColor: color, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 12 },
             android: { elevation: 4 },
+            web: { boxShadow: `0px 4px 12px ${color}26` },
           }),
         },
       ]}
@@ -401,6 +382,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4 },
       android: { elevation: 1 },
+      web: { boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.03)' },
     }),
   },
   roleIconWrap: {
@@ -429,45 +411,16 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 16 },
       android: { elevation: 2 },
+      web: { boxShadow: '0px 2px 16px rgba(0, 76, 255, 0.06)' },
     }),
   },
   authTitle: { fontFamily: 'Nunito_700Bold', fontSize: 18, color: '#111322' },
   authSubtitle: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E96A6', marginTop: -12 },
-  primaryButton: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, height: 50, borderRadius: 14, backgroundColor: '#004CFF',
-  },
-  primaryButtonDisabled: { backgroundColor: '#E4E7EC' },
-  primaryButtonText: { fontFamily: 'Nunito_600SemiBold', fontSize: 15, color: '#FFFFFF' },
-  buttonSpinner: {
-    width: 20, height: 20, borderRadius: 10, borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.3)', borderTopColor: '#FFFFFF',
-  },
   socialRow: { flexDirection: 'row', gap: 12 },
-  socialButton: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, height: 50, borderRadius: 14, backgroundColor: '#FFFFFF',
-    borderWidth: 1.5, borderColor: '#E4E7EC',
-    ...Platform.select({
-      ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4 },
-      android: { elevation: 1 },
-    }),
-  },
-  socialButtonDisabled: { opacity: 0.4 },
   socialText: { fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#111322' },
-  socialIconPlaceholder: { width: 20, height: 20, alignItems: 'center', justifyContent: 'center' },
-  loadingSpinner: {
-    width: 16, height: 16, borderRadius: 8, borderWidth: 2,
-    borderColor: '#E4E7EC', borderTopColor: '#004CFF',
-  },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   dividerLine: { flex: 1, height: 1, backgroundColor: '#E8EBF0' },
   dividerText: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#9BA5B0' },
-  emailButton: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, height: 50, borderRadius: 14, backgroundColor: '#004CFF',
-  },
-  emailButtonText: { fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#FFFFFF' },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 8 },
   footerText: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E96A6' },
   footerLink: { fontFamily: 'Nunito_700Bold', fontSize: 14, color: '#004CFF' },

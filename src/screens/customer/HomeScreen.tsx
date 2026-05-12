@@ -20,7 +20,6 @@ import {
   StyleSheet,
   Dimensions,
   RefreshControl,
-  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -32,6 +31,8 @@ import { SearchBar } from '@/components/ui/SearchBar';
 import { Carousel, type CarouselItem } from '@/components/ui/Carousel';
 import { ProductCard } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { Badge } from '@/components/ui/Badge';
 import { useProducts, useCategories, useWishlist } from '@/hooks/useProducts';
 import { useAuthStore } from '@/stores/authStore';
 import { colors, shadows, radii } from '@/theme/colors';
@@ -144,7 +145,10 @@ export default function HomeScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.greeting}>{greeting},</Text>
-            <Text style={styles.userName} numberOfLines={1}>{firstName} 👋</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={styles.userName} numberOfLines={1}>{firstName}</Text>
+              <Ionicons name="hand-left-outline" size={20} color={colors.text} />
+            </View>
           </View>
           <TouchableOpacity
             style={styles.notifButton}
@@ -153,8 +157,7 @@ export default function HomeScreen() {
             activeOpacity={0.7}
           >
             <Ionicons name="notifications-outline" size={24} color={colors.text} />
-            {/* Notification dot */}
-            <View style={styles.notifDot} />
+            <Badge count={1} />
           </TouchableOpacity>
         </View>
 
@@ -181,11 +184,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Categories</Text>
         </View>
         {categoriesLoading ? (
-          <ActivityIndicator
-            size="small"
-            color={colors.primary}
-            style={styles.loader}
-          />
+          <LoadingSpinner size="small" />
         ) : (
           <FlatList
             data={categories ?? []}
@@ -216,11 +215,7 @@ export default function HomeScreen() {
         </View>
 
         {productsLoading ? (
-          <ActivityIndicator
-            size="large"
-            color={colors.primary}
-            style={styles.loader}
-          />
+          <LoadingSpinner />
         ) : featuredProducts.length === 0 ? (
           <EmptyState
             icon="bag-outline"
@@ -324,17 +319,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     ...shadows.sm,
   },
-  notifDot: {
-    position: 'absolute',
-    top: 10,
-    right: 11,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: colors.error,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-  },
+
 
   // Search
   searchSection: {
@@ -386,9 +371,7 @@ const styles = StyleSheet.create({
     marginBottom: GRID_GAP,
   },
 
-  loader: {
-    paddingVertical: 32,
-  },
+
 });
 
 const chipStyles = StyleSheet.create({

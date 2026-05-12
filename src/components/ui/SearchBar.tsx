@@ -181,6 +181,7 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
       },
       android: { elevation: 2 },
+      web: { boxShadow: '0px 0px 6px rgba(0, 76, 255, 0.12)' },
     }),
   },
   searchIcon: {

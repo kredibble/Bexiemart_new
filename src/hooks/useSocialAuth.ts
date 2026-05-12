@@ -10,4 +10,3 @@
  * - Replace `useLogout()` with `authClient.signOut()`
  */
 export { authClient } from "@/lib/auth-client";
-export { signOut } from "@/lib/auth-client";

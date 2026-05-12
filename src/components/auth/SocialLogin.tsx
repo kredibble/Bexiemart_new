@@ -1,5 +1,5 @@
 /**
- * SocialLogin — Google & Facebook social auth buttons with role-aware flow.
+ * SocialLogin — Google & Apple social auth buttons with role-aware flow.
  *
  * Three usage modes:
  * - "login": Existing user signs in → auto-route to their dashboard
@@ -7,19 +7,19 @@
  * - "both": Shows all options (used on unified screens)
  */
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { GoogleIcon, FacebookIcon } from './SocialIcons';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { GoogleIcon, AppleIcon } from './SocialIcons';
 
 export type SocialMode = 'login' | 'register' | 'both';
 
 interface SocialLoginProps {
   mode: SocialMode;
   onGooglePress: () => void;
-  onFacebookPress: () => void;
+  onApplePress: () => void;
   loading?: boolean;
 }
 
-export function SocialLogin({ mode, onGooglePress, onFacebookPress, loading }: SocialLoginProps) {
+export function SocialLogin({ mode, onGooglePress, onApplePress, loading }: SocialLoginProps) {
   const subtitleText =
     mode === 'login'
       ? 'Sign in with your existing account'
@@ -43,8 +43,8 @@ export function SocialLogin({ mode, onGooglePress, onFacebookPress, loading }: S
               disabled={loading}
             />
             <SocialButton
-              provider="facebook"
-              onPress={onFacebookPress}
+              provider="apple"
+              onPress={onApplePress}
               disabled={loading}
             />
           </View>
@@ -65,8 +65,8 @@ export function SocialLogin({ mode, onGooglePress, onFacebookPress, loading }: S
               disabled={loading}
             />
             <SocialButton
-              provider="facebook"
-              onPress={onFacebookPress}
+              provider="apple"
+              onPress={onApplePress}
               disabled={loading}
             />
           </View>
@@ -77,7 +77,7 @@ export function SocialLogin({ mode, onGooglePress, onFacebookPress, loading }: S
 }
 
 interface SocialButtonProps {
-  provider: 'google' | 'facebook';
+  provider: 'google' | 'apple';
   onPress: () => void;
   disabled?: boolean;
 }
@@ -95,10 +95,10 @@ function SocialButton({ provider, onPress, disabled }: SocialButtonProps) {
       {provider === 'google' ? (
         <GoogleIcon width={22} height={22} />
       ) : (
-        <FacebookIcon width={22} height={22} />
+        <AppleIcon width={22} height={22} />
       )}
       <Text style={styles.socialLabel}>
-        {provider === 'google' ? 'Google' : 'Facebook'}
+        {provider === 'google' ? 'Google' : 'Apple'}
       </Text>
     </TouchableOpacity>
   );

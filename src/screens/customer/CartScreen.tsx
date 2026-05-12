@@ -16,7 +16,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,6 +26,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useCartStore } from '@/stores/cartStore';
 import { useRemoveFromCart } from '@/hooks/useCart';
 import { colors, shadows, radii } from '@/theme/colors';
@@ -47,9 +47,8 @@ export default function CartScreen() {
   }, [removeItem]);
 
   const handleCheckout = useCallback(() => {
-    // Navigate to checkout screen — will be wired later
-    // (navigation as any).navigate('Checkout');
-  }, []);
+    (navigation as any).navigate('Checkout');
+  }, [navigation]);
 
   const handleContinueShopping = useCallback(() => {
     (navigation as any).navigate('ShopTab');
@@ -104,9 +103,7 @@ export default function CartScreen() {
 
       {/* Cart items */}
       {!isLoaded ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <LoadingSpinner />
       ) : (
         <FlatList
           data={cartItems}
@@ -289,6 +286,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
       },
       android: { elevation: 8 },
+      web: { boxShadow: '0px -2px 8px rgba(0, 0, 0, 0.06)' },
     }),
   },
   bottomTotal: {

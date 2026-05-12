@@ -9,15 +9,13 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
   FlatList,
-  Dimensions,
   StyleSheet,
   TouchableOpacity,
+  useWindowDimensions,
   type ViewToken,
   type ListRenderItem,
 } from 'react-native';
 import { Image } from 'expo-image';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export interface CarouselItem {
   id: string;
@@ -50,6 +48,7 @@ export function Carousel({
   const flatListRef = useRef<FlatList>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { width: SCREEN_WIDTH } = useWindowDimensions();
 
   const itemWidth = SCREEN_WIDTH - containerPadding * 2;
 

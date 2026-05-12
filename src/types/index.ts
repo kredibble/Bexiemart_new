@@ -20,7 +20,7 @@ export interface PaginatedResponse<T> {
 // ── User & Auth ─────────────────────────────────────────────────────────────────
 
 export type Role = "customer" | "vendor";
-export type UserRole = 'customer' | 'vendor' | 'admin';
+export type UserRole = Role; // Alias for backward compatibility
 
 export interface User {
   id: string;
@@ -32,6 +32,12 @@ export interface User {
   isVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  shopName?: string;
+  shopDescription?: string;
+  location?: string;
+  contact?: string;
+  logo?: string;
+  deliveryRange?: number;
 }
 
 export interface AuthTokens {
@@ -71,11 +77,13 @@ export interface Product {
   vendor: VendorProfile;
   vendorId: string;
   stock: number;
+  quantity?: number;
   rating: number;
   reviewCount: number;
   isActive: boolean;
   isFeatured: boolean;
   tags?: string[];
+  deliveryOptions?: { type: string; fee: number; duration: number; unit: string }[];
   createdAt: string;
   updatedAt: string;
   imageUrl?: string;
@@ -147,6 +155,7 @@ export interface Order {
   id: string;
   orderNumber: string;
   userId: string;
+  customer?: { name: string; email: string; phone?: string };
   items: OrderItem[];
   status: OrderStatus;
   subtotal: number;
@@ -154,6 +163,7 @@ export interface Order {
   deliveryFee: number;
   total: number;
   shippingAddress: ShippingAddress;
+  deliveryAddress?: string;
   paymentMethod: string;
   paymentReference?: string;
   isPaid: boolean;

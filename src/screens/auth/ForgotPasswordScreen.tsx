@@ -180,6 +180,7 @@ const styles = StyleSheet.create({
         shadowRadius: 16,
       },
       android: { elevation: 3 },
+      web: { boxShadow: '0px 4px 16px rgba(0, 76, 255, 0.1)' },
     }),
   },
   title: {
@@ -221,6 +222,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3, shadowRadius: 12,
       },
       android: { elevation: 4 },
+      web: { boxShadow: '0px 4px 12px rgba(0, 76, 255, 0.3)' },
     }),
   },
   trustRow: {

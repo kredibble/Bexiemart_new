@@ -77,66 +77,83 @@ export type ColorToken = keyof typeof colors;
  * Philosophy: shadows are layered — multiple low-opacity shadows create
  * a natural, premium lift that single shadows can't achieve.
  */
+
+import { Platform } from 'react-native';
+
+const isWeb = Platform.OS === 'web';
+
 export const shadows = {
   /* ─── Shadow presets for StyleSheet ─────────── */
   none: {},
 
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
+  sm: isWeb
+    ? { boxShadow: '0px 1px 2px rgba(0, 0, 0, 0.05)' }
+    : {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+        elevation: 1,
+      },
 
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 2,
-  },
+  md: isWeb
+    ? { boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.06)' }
+    : {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.06,
+        shadowRadius: 4,
+        elevation: 2,
+      },
 
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 3,
-  },
+  lg: isWeb
+    ? { boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.08)' }
+    : {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 3,
+      },
 
-  xl: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.10,
-    shadowRadius: 16,
-    elevation: 5,
-  },
+  xl: isWeb
+    ? { boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.10)' }
+    : {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.1,
+        shadowRadius: 16,
+        elevation: 5,
+      },
 
-  '2xl': {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.12,
-    shadowRadius: 24,
-    elevation: 8,
-  },
+  '2xl': isWeb
+    ? { boxShadow: '0px 12px 24px rgba(0, 0, 0, 0.12)' }
+    : {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.12,
+        shadowRadius: 24,
+        elevation: 8,
+      },
 
-  inner: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    // Note: inner shadows don't work natively in RN
-    // Use a bordered container with bg offset for this effect
-  },
+  inner: isWeb
+    ? { boxShadow: 'inset 0px 2px 4px rgba(0, 0, 0, 0.04)' }
+    : {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+      },
 
-  focus: {
-    shadowColor: '#004CFF',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
-  },
+  focus: isWeb
+    ? { boxShadow: '0px 0px 4px rgba(0, 76, 255, 0.20)' }
+    : {
+        shadowColor: '#004CFF',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 3,
+      },
 } as const;
 
 /**

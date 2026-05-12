@@ -4,11 +4,15 @@
 import { Platform } from 'react-native';
 import { STORAGE_KEYS as _STORAGE_KEYS } from './storage';
 
-// API base URL — auto-detects Android emulator (10.0.2.2) vs iOS simulator (localhost)
+// API base URL — points to unified dev proxy (port 8081)
+// The proxy routes /api/* to the backend (port 3000)
+// Web uses relative path (same origin), native uses proxy IP
 const DEV_HOST = Platform.OS === 'android' ? '10.0.2.2' : 'localhost';
 
 export const API_BASE_URL = __DEV__
-  ? `http://${DEV_HOST}:3000/api`
+  ? Platform.OS === 'web'
+    ? '/api'
+    : `http://${DEV_HOST}:8081/api`
   : 'https://api.bexiemart.com/api';
 
 export const PAYSTACK_PUBLIC_KEY = __DEV__

@@ -25,7 +25,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { useVerifyOtp, useForgotPassword } from '@/hooks/useAuth';
+import { useVerifyOtp, useResendOtp } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
@@ -48,7 +48,7 @@ export default function PasswordVerifyScreen() {
   const inputRefs = useRef<Array<TextInput | null>>(Array(OTP_LENGTH).fill(null));
 
   const { mutate: verifyOtp, isPending, error } = useVerifyOtp();
-  const { mutate: resendCode, isPending: isResending } = useForgotPassword();
+  const { mutate: resendCode, isPending: isResending } = useResendOtp();
 
   useEffect(() => {
     if (countdown <= 0) {
@@ -312,6 +312,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.06, shadowRadius: 8,
       },
       android: { elevation: 2 },
+      web: { boxShadow: '0px 1px 8px rgba(0, 0, 0, 0.06)' },
     }),
   },
   otpRow: {
@@ -348,6 +349,7 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.3, shadowRadius: 12,
       },
       android: { elevation: 4 },
+      web: { boxShadow: '0px 4px 12px rgba(0, 76, 255, 0.3)' },
     }),
   },
   resendSection: {

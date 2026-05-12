@@ -1,5 +1,6 @@
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import type { Product } from "@/types";
+import { formatCurrency } from "@/utils/format";
 
 type ProductGridProps = {
   products: Product[];
@@ -71,7 +72,7 @@ export default function ProductGrid({
               color: "#5F6C7B",
             }}
           >
-            GHS {item.price.toFixed(2)}
+            {formatCurrency(item.price)}
           </Text>
         </TouchableOpacity>
       )}

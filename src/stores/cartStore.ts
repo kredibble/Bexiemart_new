@@ -6,7 +6,7 @@
  * mutations in useCart hooks.
  */
 import { create } from 'zustand';
-import type { Cart, CartItem } from '@/types';
+import type { Cart } from '@/types';
 
 interface CartState {
   /** Badge count (fast local updates, no API wait) */

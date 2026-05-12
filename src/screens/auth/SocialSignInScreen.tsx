@@ -16,7 +16,6 @@ import {
   Platform,
   StyleSheet,
   Dimensions,
-  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -29,6 +28,7 @@ import { loginSchema, type LoginFormValues } from '@/utils/validation';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { authClient } from '@/lib/auth-client';
+import { useAuthStore } from '@/stores/authStore';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
@@ -38,6 +38,8 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function SocialSignInScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+  const setUser = useAuthStore((s) => s.setUser);
+  const storedUser = useAuthStore((s) => s.user);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export default function SocialSignInScreen() {
     defaultValues: { email: '', password: '' },
   });
 
-  const handleSocialPress = async (provider: 'google') => {
+  const handleSocialPress = async (provider: 'google' | 'apple') => {
     setIsLoading(true);
     setError(null);
 
@@ -94,15 +96,22 @@ export default function SocialSignInScreen() {
       }
 
       if (data?.user) {
-        const userRole = (data.user as any)?.role ?? 'customer';
-        if (userRole === 'vendor') {
-          navigation.reset({
-            index: 0,
-            routes: [{ name: 'VendorApp' as any }],
-          });
-        } else {
-          navigation.navigate('SocialRoleSelect', {});
-        }
+        // Read role from store (set during registration) or default to customer
+        const userRole = storedUser?.role ?? 'customer';
+        // Update store — RootNavigator will detect the change and show the correct tabs
+        setUser({
+          id: data.user.id ?? storedUser?.id ?? '',
+          name: data.user.name ?? storedUser?.name ?? '',
+          email: data.user.email ?? storedUser?.email ?? '',
+          phone: storedUser?.phone,
+          role: userRole,
+          avatar: (data.user as any)?.image ?? storedUser?.avatar,
+          isVerified: (data.user as any)?.emailVerified ?? storedUser?.isVerified ?? false,
+          createdAt: storedUser?.createdAt ?? new Date().toISOString(),
+          updatedAt: storedUser?.updatedAt ?? new Date().toISOString(),
+        });
+        // No explicit navigation needed — RootNavigator gates on the store
+        // and will re-render to show CustomerApp or VendorApp based on role
       }
     } catch (err: any) {
       setError(err?.message ?? 'An unexpected error occurred');
@@ -119,7 +128,7 @@ export default function SocialSignInScreen() {
       <StatusBar style="dark" />
 
       {/* Soft background orbs */}
-      <View style={styles.bgLayer} pointerEvents="none">
+      <View style={[styles.bgLayer, { pointerEvents: 'none' }]}>
         <View style={styles.orbPrimary} />
         <View style={styles.orbAccent} />
       </View>
@@ -183,12 +192,13 @@ export default function SocialSignInScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.socialButton, true && styles.socialButtonDisabled]}
+              style={[styles.socialButton, isLoading && styles.socialButtonDisabled]}
+              onPress={() => handleSocialPress('apple')}
+              disabled={isLoading}
               activeOpacity={0.7}
-              onPress={() => Alert.alert('Coming Soon', 'Facebook sign-in will be available soon.')}
             >
-              <Ionicons name="logo-facebook" size={22} color="#A0A8B4" />
-              <Text style={[styles.socialText, { color: '#A0A8B4' }]}>Facebook</Text>
+              <Ionicons name="logo-apple" size={22} color="#111322" />
+              <Text style={styles.socialText}>Apple</Text>
             </TouchableOpacity>
           </View>
 
@@ -388,6 +398,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 16 },
       android: { elevation: 2 },
+      web: { boxShadow: '0px 2px 16px rgba(0, 76, 255, 0.06)' },
     }),
   },
   socialRow: {
@@ -408,6 +419,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4 },
       android: { elevation: 1 },
+      web: { boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.03)' },
     }),
   },
   socialButtonDisabled: {
@@ -484,6 +496,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
       android: { elevation: 4 },
+      web: { boxShadow: '0px 4px 12px rgba(0, 76, 255, 0.3)' },
     }),
   },
   footer: {

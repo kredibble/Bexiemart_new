@@ -23,19 +23,22 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { registerSchema, type RegisterFormValues } from '@/utils/validation';
 import { authClient } from '@/lib/auth-client';
+import { useAuthStore } from '@/stores/authStore';
 import { FormInput } from '@/components/ui/FormInput';
 import { Button } from '@/components/ui/Button';
 import { PasswordStrengthMeter } from '@/components/auth/PasswordStrengthMeter';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
+import type { Role } from '@/types';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
-type Role = 'customer' | 'vendor';
 
 const TOTAL_STEPS = 2;
 
 export default function RegisterScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+  const setUser = useAuthStore((s) => s.setUser);
+  const setRole = useAuthStore((s) => s.setRole);
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -97,22 +100,18 @@ export default function RegisterScreen() {
       }
 
       if (data?.user) {
-        // After successful sign-up, update the user's role
-        const { error: updateError } = await authClient.updateUser({
+        // Set user in store with role — RootNavigator will handle the transition
+        setUser({
+          id: data.user.id ?? '',
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
           role: values.role,
-        } as any);
-
-        if (updateError) {
-          setError(updateError.message ?? 'Account created but role update failed');
-          setIsSubmitting(false);
-          return;
-        }
-
-        // Navigate to appropriate dashboard
-        navigation.reset({
-          index: 0,
-          routes: [{ name: values.role === 'customer' ? ('CustomerApp' as any) : ('VendorApp' as any) }],
+          isVerified: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         });
+        setRole(values.role);
       }
     } catch (err: any) {
       setError(err?.message ?? 'An unexpected error occurred');
@@ -128,7 +127,7 @@ export default function RegisterScreen() {
     >
       <StatusBar style="dark" />
 
-      <View style={styles.bgLayer} pointerEvents="none">
+      <View style={[styles.bgLayer, { pointerEvents: 'none' }]}>
         <View style={styles.orbPrimary} />
         <View style={styles.orbAccent} />
       </View>
@@ -422,6 +421,7 @@ const styles = StyleSheet.create({
     ...Platform.select({
       ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
       android: { elevation: 4 },
+      web: { boxShadow: '0px 4px 12px rgba(0, 76, 255, 0.3)' },
     }),
   },
   footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 8 },

@@ -2,7 +2,6 @@ import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
   Platform,
   StyleSheet,
   Dimensions,
@@ -21,6 +20,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import type { SharedValue } from 'react-native-reanimated';
+import { Button } from '@/components/ui/Button';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'Launch'>;
@@ -127,7 +127,7 @@ export default function LaunchScreen() {
       <StatusBar style="dark" />
 
       {/* ── Decorative background shapes ──────────────────── */}
-      <View style={styles.bgLayer} pointerEvents="none">
+      <View style={[styles.bgLayer, { pointerEvents: 'none' }]}>
         <View style={[styles.bgShape, styles.bgShape1, { backgroundColor: slide.orbPrimary }]} />
         <View style={[styles.bgShape, styles.bgShape2, { backgroundColor: slide.orbSecondary }]} />
         <View style={[styles.bgShape, styles.bgShape3, { backgroundColor: slide.orbAccent }]} />
@@ -139,13 +139,13 @@ export default function LaunchScreen() {
           <Text style={styles.brandWatermarkText}>Bexie</Text>
           <Text style={[styles.brandWatermarkText, styles.brandWatermarkAccent]}>Mart</Text>
         </View>
-          <TouchableOpacity
-            style={[styles.skipButton, { top: insets.top + 24 }]}
+          <Button
+            title="Skip"
+            variant="secondary"
+            size="sm"
+            style={{ borderRadius: 20 }}
             onPress={() => navigation.navigate('SocialRoleSelect', {})}
-            activeOpacity={0.6}
-          >
-          <Text style={styles.skipText}>Skip</Text>
-        </TouchableOpacity>
+          />
       </View>
 
       {/* ── Slide carousel ────────────────────────────────── */}
@@ -180,41 +180,13 @@ export default function LaunchScreen() {
 
         {/* CTA buttons */}
         <View style={styles.ctaRow}>
-          {currentIndex < slides.length - 1 ? (
-            <TouchableOpacity
-              style={[
-                styles.nextButton,
-                {
-                  backgroundColor: slide.accentColor,
-                  ...Platform.select({
-                    ios: { shadowColor: slide.accentColor },
-                  }),
-                },
-              ]}
-              onPress={handleNext}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.nextButtonText}>Next</Text>
-              <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                {
-                  backgroundColor: slide.accentColor,
-                  ...Platform.select({
-                    ios: { shadowColor: slide.accentColor },
-                  }),
-                },
-              ]}
-              onPress={() => navigation.navigate('SocialRoleSelect', {})}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.primaryButtonText}>Get Started</Text>
-              <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-            </TouchableOpacity>
-          )}
+          <Button
+            title={currentIndex < slides.length - 1 ? "Next" : "Get Started"}
+            size="lg"
+            fullWidth
+            style={{ backgroundColor: slide.accentColor }}
+            onPress={currentIndex < slides.length - 1 ? handleNext : () => navigation.navigate('SocialRoleSelect', {})}
+          />
         </View>
 
         {/* Login link */}
@@ -437,17 +409,6 @@ const styles = StyleSheet.create({
   brandWatermarkAccent: {
     color: '#004CFF',
   },
-  skipButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: '#F0F2F5',
-  },
-  skipText: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: '#5F6C7B',
-  },
   carousel: {
     flex: 1,
   },
@@ -480,6 +441,7 @@ const styles = StyleSheet.create({
         shadowRadius: 24,
       },
       android: { elevation: 4 },
+      web: { boxShadow: '0px 8px 24px rgba(0, 0, 0, 0.08)' },
     }),
   },
   illustrationImage: {
@@ -552,49 +514,6 @@ const styles = StyleSheet.create({
   },
   ctaRow: {
     gap: 12,
-  },
-  nextButton: {
-    height: 56,
-    borderRadius: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    ...Platform.select({
-      ios: {
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-      },
-      android: { elevation: 4 },
-    }),
-  },
-  nextButtonText: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 16,
-    color: '#FFFFFF',
-  },
-  primaryButton: {
-    height: 58,
-    borderRadius: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    ...Platform.select({
-      ios: {
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.35,
-        shadowRadius: 16,
-      },
-      android: { elevation: 6 },
-    }),
-  },
-  primaryButtonText: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 17,
-    color: '#FFFFFF',
-    letterSpacing: 0.3,
   },
   loginLinkRow: {
     flexDirection: 'row',

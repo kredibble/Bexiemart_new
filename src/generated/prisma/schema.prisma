@@ -7,6 +7,8 @@ datasource db {
   provider = "postgresql"
 }
 
+// ─── Better Auth Models ────────────────────────────────────────────────────────
+
 model User {
   id            String   @id
   name          String
@@ -19,6 +21,13 @@ model User {
 
   sessions Session[]
   accounts Account[]
+
+  vendorProfile VendorProfile?
+  cart          Cart?
+  wishlist      Wishlist[]
+  orders        Order[]        @relation("CustomerOrders")
+  notifications Notification[]
+  payments      Payment[]
 }
 
 model Session {
@@ -29,7 +38,7 @@ model Session {
   ipAddress String?
   userAgent String?
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Account {
@@ -42,7 +51,7 @@ model Account {
   idToken      String?
   expiresAt    DateTime?
 
-  user User @relation(fields: [userId], references: [id])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Verification {
@@ -50,4 +59,259 @@ model Verification {
   identifier String
   value      String
   expiresAt  DateTime
+}
+
+// ─── Vendor Models ──────────────────────────────────────────────────────────────
+
+model VendorProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  shopName    String
+  slug        String  @unique
+  description String?
+  logo        String?
+  banner      String?
+  address     String?
+  city        String?
+  state       String?
+  phone       String?
+  isActive    Boolean @default(true)
+
+  totalEarnings Float @default(0)
+  pendingPayout Float @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+}
+
+// ─── Product Models ─────────────────────────────────────────────────────────────
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  icon        String?
+  description String?
+  isActive    Boolean @default(true)
+
+  products Product[]
+
+  @@index([slug])
+}
+
+model Product {
+  id          String @id @default(cuid())
+  name        String
+  slug        String @unique
+  description String
+  price       Float
+  stock       Int    @default(0)
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  vendorId String?
+  vendor   VendorProfile? @relation(fields: [vendorId], references: [id])
+
+  isActive   Boolean @default(true)
+  isFeatured Boolean @default(false)
+  isDeleted  Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images     ProductImage[]
+  wishlist   Wishlist[]
+  orderItems OrderItem[]
+
+  @@index([categoryId])
+  @@index([vendorId])
+  @@index([slug])
+  @@index([isActive])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  isPrimary Boolean @default(false)
+  order     Int     @default(0)
+
+  @@index([productId])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+// ─── Cart Models ─────────────────────────────────────────────────────────────────
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items CartItem[]
+}
+
+model CartItem {
+  id          String   @id @default(cuid())
+  cartId      String
+  cart        Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId   String
+  productName String
+  price       Float
+  quantity    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([cartId, productId])
+  @@index([cartId])
+}
+
+// ─── Order Models ────────────────────────────────────────────────────────────────
+
+model Order {
+  id          String @id @default(cuid())
+  orderNumber String @unique
+  userId      String
+  user        User   @relation("CustomerOrders", fields: [userId], references: [id])
+
+  status      OrderStatus @default(pending)
+  subtotal    Float
+  shippingFee Float       @default(0)
+  tax         Float       @default(0)
+  total       Float
+
+  paymentStatus PaymentStatus @default(pending)
+  paymentMethod String?
+  paystackRef   String?
+
+  shippingAddress   ShippingAddress @relation(fields: [shippingAddressId], references: [id])
+  shippingAddressId String          @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([status])
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String
+  productSlug String
+  price       Float
+  quantity    Int
+  total       Float
+  imageUrl    String?
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model ShippingAddress {
+  id           String  @id @default(cuid())
+  firstName    String
+  lastName     String
+  phone        String
+  email        String
+  address      String
+  city         String
+  state        String
+  zipCode      String?
+  country      String  @default("Nigeria")
+  instructions String?
+
+  order Order?
+}
+
+// ─── Payment Model ───────────────────────────────────────────────────────────────
+
+model Payment {
+  id      String @id @default(cuid())
+  orderId String @unique
+  userId  String
+  user    User   @relation(fields: [userId], references: [id])
+
+  amount        Float
+  currency      String        @default("NGN")
+  status        PaymentStatus @default(pending)
+  paystackRef   String        @unique
+  paystackTxRef String?
+  paymentMethod String?
+  channel       String? // card, bank, ussd, mobile_money
+  paidAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([paystackRef])
+}
+
+// ─── Notification Model ──────────────────────────────────────────────────────────
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  data      String? // JSON string for additional data
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  pending
+  confirmed
+  processing
+  shipped
+  delivered
+  cancelled
+  refunded
+}
+
+enum PaymentStatus {
+  pending
+  success
+  failed
+  refunded
+}
+
+enum NotificationType {
+  order
+  payment
+  shipping
+  promotion
+  system
 }

@@ -1,17 +1,17 @@
-import client from './client';
-import { WishlistItem } from '@/types';
+/**
+ * Wishlist API — User wishlist management.
+ */
+import { apiClient } from '@/lib/api-client';
+import type { WishlistItem } from '@/types';
 
 export const getWishlist = async () => {
-  const res = await client.get<WishlistItem[]>('/wishlist');
-  return res.data;
+  return apiClient.get<WishlistItem[]>('/wishlist');
 };
 
 export const addToWishlist = async (productId: string) => {
-  const res = await client.post<WishlistItem>('/wishlist', { productId });
-  return res.data;
+  return apiClient.post<WishlistItem>('/wishlist', { productId });
 };
 
 export const removeFromWishlist = async (wishlistId: string) => {
-  const res = await client.delete(`/wishlist/${wishlistId}`);
-  return res.data;
+  return apiClient.delete(`/wishlist/${wishlistId}`);
 };

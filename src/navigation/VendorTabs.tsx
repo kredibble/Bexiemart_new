@@ -1,40 +1,68 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Text, View, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import DashboardScreen from "@/screens/vendor/DashboardScreen";
-import ProductsScreen from "@/screens/vendor/ProductsScreen";
-import OrdersScreen from "@/screens/vendor/OrdersScreen";
-import EarningsScreen from "@/screens/vendor/EarningsScreen";
-import SettingsScreen from "@/screens/vendor/SettingsScreen";
+/**
+ * VendorTabs + Vendor Stack — Tab navigation with nested screens.
+ *
+ * Dashboard | Products | Orders | Earnings | Settings
+ *  ├─ OrderDetails (from Dashboard/Orders)
+ *  └─ AddEditProduct (from Products)
+ */
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Text, View, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-const Tab = createBottomTabNavigator();
+import DashboardScreen from '@/screens/vendor/DashboardScreen';
+import ProductsScreen from '@/screens/vendor/ProductsScreen';
+import OrdersScreen from '@/screens/vendor/OrdersScreen';
+import EarningsScreen from '@/screens/vendor/EarningsScreen';
+import SettingsScreen from '@/screens/vendor/SettingsScreen';
+import OrderDetailsScreen from '@/screens/vendor/OrderDetailsScreen';
+import AddEditProductScreen from '@/screens/vendor/AddEditProductScreen';
 
-function ComingSoonScreen({ name }: { name: string }) {
-  return (
-    <View style={styles.container}>
-      <Ionicons name="construct-outline" size={48} color="#5F6C7B" />
-      <Text style={styles.title}>{name}</Text>
-      <Text style={styles.subtitle}>Coming Soon</Text>
-    </View>
-  );
-}
+export type VendorTabsParamList = {
+  Dashboard: undefined;
+  Products: undefined;
+  Orders: undefined;
+  Earnings: undefined;
+  Settings: undefined;
+};
 
-export default function VendorTabs() {
+export type VendorStackParamList = {
+  VendorTabsHome: undefined;
+  OrderDetails: { orderId: string };
+  AddEditProduct: { mode: 'add' } | { mode: 'edit'; product: any };
+};
+
+const Tab = createBottomTabNavigator<VendorTabsParamList>();
+const Stack = createNativeStackNavigator<VendorStackParamList>();
+
+function DashboardTab() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: keyof typeof Ionicons.glyphMap = "grid-outline";
-          if (route.name === "Dashboard") iconName = focused ? "grid" : "grid-outline";
-          else if (route.name === "Products") iconName = focused ? "bag" : "bag-outline";
-          else if (route.name === "Orders") iconName = focused ? "receipt" : "receipt-outline";
-          else if (route.name === "Earnings") iconName = focused ? "cash" : "cash-outline";
-          else if (route.name === "Settings") iconName = focused ? "settings" : "settings-outline";
-          return <Ionicons name={iconName} size={size} color={color} />;
+          let iconName: keyof typeof Ionicons.glyphMap = 'grid-outline';
+          if (route.name === 'Dashboard')
+            iconName = focused ? 'grid' : 'grid-outline';
+          else if (route.name === 'Products')
+            iconName = focused ? 'bag' : 'bag-outline';
+          else if (route.name === 'Orders')
+            iconName = focused ? 'receipt' : 'receipt-outline';
+          else if (route.name === 'Earnings')
+            iconName = focused ? 'cash' : 'cash-outline';
+          else if (route.name === 'Settings')
+            iconName = focused ? 'settings' : 'settings-outline';
+          return <Ionicons name={iconName as any} size={size} color={color} />;
         },
-        tabBarActiveTintColor: "#004CFF",
-        tabBarInactiveTintColor: "#686262",
+        tabBarActiveTintColor: '#004CFF',
+        tabBarInactiveTintColor: '#686262',
         headerShown: false,
+        tabBarStyle: {
+          borderTopWidth: 1,
+          borderTopColor: '#EBEBEB',
+          paddingBottom: 4,
+          paddingTop: 4,
+          height: 60,
+        },
       })}
     >
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
@@ -46,22 +74,12 @@ export default function VendorTabs() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#FFFFFF",
-    gap: 8,
-  },
-  title: {
-    fontFamily: "Raleway_700Bold",
-    fontSize: 20,
-    color: "#111322",
-  },
-  subtitle: {
-    fontFamily: "Nunito_400Regular",
-    fontSize: 14,
-    color: "#5F6C7B",
-  },
-});
+export default function VendorTabs() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="VendorTabsHome" component={DashboardTab} />
+      <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
+      <Stack.Screen name="AddEditProduct" component={AddEditProductScreen} />
+    </Stack.Navigator>
+  );
+}

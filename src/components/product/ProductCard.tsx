@@ -5,7 +5,7 @@
  * Designed for a 2-column grid layout. Shows product image, name, price,
  * rating, and a wishlist toggle heart.
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -16,6 +16,7 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, shadows, radii } from '@/theme/colors';
+import { formatCurrency } from '@/utils/format';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
@@ -38,6 +39,10 @@ export function ProductCard({
 }: ProductCardProps) {
   const [localFavorite, setLocalFavorite] = useState(isFavorite);
 
+  useEffect(() => {
+    setLocalFavorite(isFavorite);
+  }, [isFavorite]);
+
   const handleFavoritePress = useCallback(() => {
     setLocalFavorite((prev) => !prev);
     onToggleFavorite?.(product.id);
@@ -51,9 +56,9 @@ export function ProductCard({
     ? Math.round(((product.compareAtPrice! - product.price) / product.compareAtPrice!) * 100)
     : 0;
 
-  const formattedPrice = `\u20A6${product.price.toLocaleString()}`;
+  const formattedPrice = formatCurrency(product.price);
   const formattedOriginalPrice = hasDiscount
-    ? `\u20A6${product.compareAtPrice!.toLocaleString()}`
+    ? formatCurrency(product.compareAtPrice!)
     : null;
 
   return (
@@ -185,6 +190,7 @@ const styles = StyleSheet.create({
         shadowRadius: 3,
       },
       android: { elevation: 2 },
+      web: { boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)' },
     }),
   },
   outOfStockOverlay: {

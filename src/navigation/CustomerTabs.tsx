@@ -12,7 +12,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useCartStore } from '@/stores/cartStore';
-import { colors, shadows } from '@/theme/colors';
+import { colors } from '@/theme/colors';
 
 // Screens
 import HomeScreen from '@/screens/customer/HomeScreen';
@@ -21,6 +21,10 @@ import CartScreen from '@/screens/customer/CartScreen';
 import FavoritesScreen from '@/screens/customer/FavoritesScreen';
 import ProductDetailsScreen from '@/screens/customer/ProductDetailsScreen';
 import AllProductsScreen from '@/screens/customer/AllProductsScreen';
+import CheckoutScreen from '@/screens/customer/CheckoutScreen';
+import PaymentScreen from '@/screens/customer/PaymentScreen';
+import PaymentSuccessScreen from '@/screens/customer/PaymentSuccessScreen';
+import PaymentFailureScreen from '@/screens/customer/PaymentFailureScreen';
 
 // ── Type definitions ────────────────────────────────────────────────────────────
 
@@ -35,6 +39,14 @@ export type ShopStackParamList = {
   ProductDetails: { productId: string };
 };
 
+export type CartStackParamList = {
+  CartMain: undefined;
+  Checkout: undefined;
+  Payment: { orderId: string; totalAmount: number; email: string };
+  PaymentSuccess: { orderId: string; amount: number; reference: string };
+  PaymentFailure: { orderId?: string; error?: string };
+};
+
 export type CustomerTabParamList = {
   HomeTab: undefined;
   ShopTab: undefined;
@@ -47,6 +59,7 @@ export type CustomerTabParamList = {
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const ShopStack = createNativeStackNavigator<ShopStackParamList>();
+const CartStack = createNativeStackNavigator<CartStackParamList>();
 
 function HomeStackScreen() {
   return (
@@ -64,6 +77,18 @@ function ShopStackScreen() {
       <ShopStack.Screen name="ShopMain" component={ShopScreen} />
       <ShopStack.Screen name="ProductDetails" component={ProductDetailsScreen} />
     </ShopStack.Navigator>
+  );
+}
+
+function CartStackScreen() {
+  return (
+    <CartStack.Navigator screenOptions={{ headerShown: false }}>
+      <CartStack.Screen name="CartMain" component={CartScreen} />
+      <CartStack.Screen name="Checkout" component={CheckoutScreen} />
+      <CartStack.Screen name="Payment" component={PaymentScreen} />
+      <CartStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
+      <CartStack.Screen name="PaymentFailure" component={PaymentFailureScreen} />
+    </CartStack.Navigator>
   );
 }
 
@@ -153,13 +178,14 @@ export default function CustomerTabs() {
               shadowRadius: 12,
             },
             android: { elevation: 8 },
+            web: { boxShadow: '0px -4px 12px rgba(0, 0, 0, 0.06)' },
           }),
         },
       })}
     >
       <Tab.Screen name="HomeTab" component={HomeStackScreen} />
       <Tab.Screen name="ShopTab" component={ShopStackScreen} />
-      <Tab.Screen name="CartTab" component={CartScreen} />
+      <Tab.Screen name="CartTab" component={CartStackScreen} />
       <Tab.Screen name="FavoritesTab" component={FavoritesScreen} />
       <Tab.Screen name="ProfileTab" component={ProfilePlaceholder} />
     </Tab.Navigator>

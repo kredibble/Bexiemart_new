@@ -158,6 +158,153 @@ exports.Prisma.VerificationScalarFieldEnum = {
   expiresAt: 'expiresAt'
 };
 
+exports.Prisma.VendorProfileScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  shopName: 'shopName',
+  slug: 'slug',
+  description: 'description',
+  logo: 'logo',
+  banner: 'banner',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  phone: 'phone',
+  isActive: 'isActive',
+  totalEarnings: 'totalEarnings',
+  pendingPayout: 'pendingPayout',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CategoryScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  icon: 'icon',
+  description: 'description',
+  isActive: 'isActive'
+};
+
+exports.Prisma.ProductScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  slug: 'slug',
+  description: 'description',
+  price: 'price',
+  stock: 'stock',
+  categoryId: 'categoryId',
+  vendorId: 'vendorId',
+  isActive: 'isActive',
+  isFeatured: 'isFeatured',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ProductImageScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  url: 'url',
+  isPrimary: 'isPrimary',
+  order: 'order'
+};
+
+exports.Prisma.WishlistScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.CartScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CartItemScalarFieldEnum = {
+  id: 'id',
+  cartId: 'cartId',
+  productId: 'productId',
+  productName: 'productName',
+  price: 'price',
+  quantity: 'quantity',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  orderNumber: 'orderNumber',
+  userId: 'userId',
+  status: 'status',
+  subtotal: 'subtotal',
+  shippingFee: 'shippingFee',
+  tax: 'tax',
+  total: 'total',
+  paymentStatus: 'paymentStatus',
+  paymentMethod: 'paymentMethod',
+  paystackRef: 'paystackRef',
+  shippingAddressId: 'shippingAddressId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  productName: 'productName',
+  productSlug: 'productSlug',
+  price: 'price',
+  quantity: 'quantity',
+  total: 'total',
+  imageUrl: 'imageUrl'
+};
+
+exports.Prisma.ShippingAddressScalarFieldEnum = {
+  id: 'id',
+  firstName: 'firstName',
+  lastName: 'lastName',
+  phone: 'phone',
+  email: 'email',
+  address: 'address',
+  city: 'city',
+  state: 'state',
+  zipCode: 'zipCode',
+  country: 'country',
+  instructions: 'instructions'
+};
+
+exports.Prisma.PaymentScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  userId: 'userId',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  paystackRef: 'paystackRef',
+  paystackTxRef: 'paystackTxRef',
+  paymentMethod: 'paymentMethod',
+  channel: 'channel',
+  paidAt: 'paidAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  message: 'message',
+  type: 'type',
+  isRead: 'isRead',
+  data: 'data',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -172,13 +319,48 @@ exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
 };
+exports.OrderStatus = exports.$Enums.OrderStatus = {
+  pending: 'pending',
+  confirmed: 'confirmed',
+  processing: 'processing',
+  shipped: 'shipped',
+  delivered: 'delivered',
+  cancelled: 'cancelled',
+  refunded: 'refunded'
+};
 
+exports.PaymentStatus = exports.$Enums.PaymentStatus = {
+  pending: 'pending',
+  success: 'success',
+  failed: 'failed',
+  refunded: 'refunded'
+};
+
+exports.NotificationType = exports.$Enums.NotificationType = {
+  order: 'order',
+  payment: 'payment',
+  shipping: 'shipping',
+  promotion: 'promotion',
+  system: 'system'
+};
 
 exports.Prisma.ModelName = {
   User: 'User',
   Session: 'Session',
   Account: 'Account',
-  Verification: 'Verification'
+  Verification: 'Verification',
+  VendorProfile: 'VendorProfile',
+  Category: 'Category',
+  Product: 'Product',
+  ProductImage: 'ProductImage',
+  Wishlist: 'Wishlist',
+  Cart: 'Cart',
+  CartItem: 'CartItem',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  ShippingAddress: 'ShippingAddress',
+  Payment: 'Payment',
+  Notification: 'Notification'
 };
 
 /**

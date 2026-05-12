@@ -1,4 +1,7 @@
-import client from './client';
+/**
+ * Products API — Product catalog and categories.
+ */
+import { apiClient } from '@/lib/api-client';
 import { Product, Category, PaginatedResponse } from '@/types';
 
 export interface ProductsParams {
@@ -9,23 +12,19 @@ export interface ProductsParams {
 }
 
 export const getProducts = async (params?: ProductsParams) => {
-  const res = await client.get<PaginatedResponse<Product>>('/products', {
-    params: {
-      category: params?.category,
-      search: params?.search,
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 20,
-    },
-  });
-  return res.data;
+  const query = new URLSearchParams({
+    category: params?.category ?? '',
+    search: params?.search ?? '',
+    page: String(params?.page ?? 1),
+    pageSize: String(params?.pageSize ?? 20),
+  }).toString();
+  return apiClient.get<PaginatedResponse<Product>>(`/products?${query}`);
 };
 
 export const getProduct = async (productId: string) => {
-  const res = await client.get<Product>(`/products/${productId}`);
-  return res.data;
+  return apiClient.get<Product>(`/products/${productId}`);
 };
 
 export const getCategories = async () => {
-  const res = await client.get<Category[]>('/categories');
-  return res.data;
+  return apiClient.get<Category[]>('/categories');
 };

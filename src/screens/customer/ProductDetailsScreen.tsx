@@ -403,6 +403,7 @@ const styles = StyleSheet.create({
         shadowRadius: 8,
       },
       android: { elevation: 8 },
+      web: { boxShadow: '0px -2px 8px rgba(0, 0, 0, 0.06)' },
     }),
   },
   quantitySelector: {

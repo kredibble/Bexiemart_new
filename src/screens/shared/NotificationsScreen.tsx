@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -31,11 +32,16 @@ export default function NotificationsScreen() {
       className="flex-row items-start gap-3 px-4 py-4 mx-3 mt-2 rounded-xl"
       style={{
         backgroundColor: item.isRead ? '#FFFFFF' : '#F0F4FF',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 8,
-        elevation: 2,
+        ...Platform.select({
+          ios: {
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.06,
+            shadowRadius: 8,
+          },
+          android: { elevation: 2 },
+          web: { boxShadow: '0px 1px 8px rgba(0, 0, 0, 0.06)' },
+        }),
       }}
       onPress={() => {
         if (!item.isRead) markAsRead(item.id);
@@ -102,11 +108,16 @@ export default function NotificationsScreen() {
       <View
         className="flex-row items-center px-4 py-4 bg-white gap-3"
         style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.04,
-          shadowRadius: 4,
-          elevation: 1,
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.04,
+              shadowRadius: 4,
+            },
+            android: { elevation: 1 },
+            web: { boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)' },
+          }),
         }}
       >
         <TouchableOpacity

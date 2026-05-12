@@ -16,7 +16,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   Dimensions,
-  ActivityIndicator,
   RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -29,6 +28,7 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useProducts, useCategories, useWishlist } from '@/hooks/useProducts';
 import { colors, radii } from '@/theme/colors';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import type { ShopStackParamList } from '@/navigation/CustomerTabs';
 import type { Product, Category } from '@/types';
 
@@ -198,9 +198,7 @@ export default function ShopScreen() {
 
       {/* ── Product grid ────────────────────────────────────────────── */}
       {isLoading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
-        </View>
+        <LoadingSpinner />
       ) : products.length === 0 ? (
         <EmptyState
           icon="search-outline"
@@ -231,11 +229,7 @@ export default function ShopScreen() {
           }
           ListFooterComponent={
             isFetchingNextPage ? (
-              <ActivityIndicator
-                size="small"
-                color={colors.primary}
-                style={styles.footerLoader}
-              />
+              <LoadingSpinner size="small" />
             ) : null
           }
         />

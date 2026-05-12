@@ -1,19 +1,19 @@
-import client from './client';
+/**
+ * Cart API — Shopping cart management.
+ */
+import { apiClient } from '@/lib/api-client';
 
 export const addToCart = async (data: {
   productId: string;
   quantity: number;
 }) => {
-  const res = await client.post('/cart', data);
-  return res.data;
+  return apiClient.post('/cart/items', data);
 };
 
 export const getCart = async () => {
-  const res = await client.get('/cart');
-  return res.data;
+  return apiClient.get('/cart');
 };
 
 export const removeFromCart = async (cartItemId: string) => {
-  const res = await client.delete(`/cart/${cartItemId}`);
-  return res.data;
+  return apiClient.delete(`/cart/items/${cartItemId}`);
 };

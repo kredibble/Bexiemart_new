@@ -1,12 +1,13 @@
-import client from './client';
-import { Notification } from '@/types';
+/**
+ * Notifications API — User notification management.
+ */
+import { apiClient } from '@/lib/api-client';
+import type { Notification } from '@/types';
 
 export const getNotifications = async () => {
-  const res = await client.get<Notification[]>('/notifications');
-  return res.data;
+  return apiClient.get<Notification[]>('/notifications');
 };
 
 export const markAsRead = async (notificationId: string) => {
-  const res = await client.patch(`/notifications/${notificationId}/read`);
-  return res.data;
+  return apiClient.patch(`/notifications/${notificationId}/read`);
 };

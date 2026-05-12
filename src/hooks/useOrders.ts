@@ -1,49 +1,61 @@
+/**
+ * Order & Payment Hooks — TanStack Query mutations and queries.
+ *
+ * Customer-facing: createOrder, customer orders, single order
+ * Payment: initializePayment, verifyPayment
+ *
+ * Vendor-facing hooks are in useVendor.ts
+ */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as vendorApi from '@/api/vendor';
+import * as ordersApi from '@/api/orders';
+import * as paymentsApi from '@/api/payments';
 import type { OrderStatus } from '@/types';
 
-export function useVendorOrders(status?: OrderStatus) {
-  return useQuery({
-    queryKey: ['vendor-orders', status],
-    queryFn: () => vendorApi.getVendorOrders(status),
+/* ── Customer Orders ───────────────────────────────────────────────────── */
+
+export function useCreateOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ordersApi.createOrder,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cart'] });
+      queryClient.invalidateQueries({ queryKey: ['customer-orders'] });
+    },
   });
 }
 
-export function useOrderDetail(orderId: string) {
+export function useCustomerOrders(params?: {
+  status?: OrderStatus;
+  page?: number;
+  pageSize?: number;
+}) {
   return useQuery({
-    queryKey: ['order-detail', orderId],
-    queryFn: () => vendorApi.getOrderDetail(orderId),
+    queryKey: ['customer-orders', params?.status, params?.page],
+    queryFn: () => ordersApi.getCustomerOrders(params),
+  });
+}
+
+export function useOrder(orderId: string) {
+  return useQuery({
+    queryKey: ['order', orderId],
+    queryFn: () => ordersApi.getOrder(orderId),
     enabled: !!orderId,
   });
 }
 
-export function useUpdateOrderStatus() {
-  const queryClient = useQueryClient();
+/* ── Payments ──────────────────────────────────────────────────────────── */
 
+export function useInitializePayment() {
   return useMutation({
-    mutationFn: ({ orderId, status }: { orderId: string; status: OrderStatus }) =>
-      vendorApi.updateOrderStatus(orderId, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['order-detail'] });
-    },
+    mutationFn: paymentsApi.initializePayment,
   });
 }
 
-export function useVendorEarnings() {
+export function useVerifyPayment(reference: string) {
   return useQuery({
-    queryKey: ['vendor-earnings'],
-    queryFn: vendorApi.getVendorEarnings,
-  });
-}
-
-export function useWithdraw() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: vendorApi.withdraw,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['vendor-earnings'] });
-    },
+    queryKey: ['payment-verify', reference],
+    queryFn: () => paymentsApi.verifyPayment(reference),
+    enabled: !!reference,
   });
 }
