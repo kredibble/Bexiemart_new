@@ -42,6 +42,6 @@ const styles = StyleSheet.create({
   },
   text: {
     ...typePresets.labelSm,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
   },
 });

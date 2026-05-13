@@ -19,7 +19,7 @@ export interface PaginatedResponse<T> {
 
 // ── User & Auth ─────────────────────────────────────────────────────────────────
 
-export type Role = "customer" | "vendor";
+export type Role = "customer" | "vendor" | "admin";
 export type UserRole = Role; // Alias for backward compatibility
 
 export interface User {
@@ -40,19 +40,23 @@ export interface User {
   deliveryRange?: number;
 }
 
-export interface AuthTokens {
-  accessToken: string;
-  refreshToken: string;
+// ── Coupon ─────────────────────────────────────────────────────────────────────
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountPercent: number;
+  maxUses: number;
+  currentUses: number;
+  isActive: boolean;
+  expiresAt: string;
 }
 
-export interface LoginResponse {
-  user: User;
-  tokens: AuthTokens;
-}
-
-export interface RegisterResponse {
-  user: User;
-  tokens: AuthTokens;
+export interface CouponValidationResult {
+  valid: boolean;
+  coupon?: Coupon;
+  discountAmount?: number;
+  error?: string;
 }
 
 // ── Products ────────────────────────────────────────────────────────────────────
@@ -196,7 +200,20 @@ export interface WishlistItem {
   createdAt: string;
 }
 
-// ── Notifications ───────────────────────────────────────────────────────────────
+// ── Reviews ─────────────────────────────────────────────────────────────────────
+
+export interface Review {
+  id: string;
+  userId: string;
+  userName?: string;
+  userAvatar?: string;
+  productId: string;
+  rating: number;
+  comment?: string;
+  createdAt: string;
+  updatedAt: string;
+  user: { id: string; name: string; image?: string | null };
+}
 
 export type NotificationType =
   | 'order_update'
@@ -232,19 +249,6 @@ export interface PaymentVerification {
   orderId: string;
 }
 
-// ── Reviews ─────────────────────────────────────────────────────────────────────
-
-export interface Review {
-  id: string;
-  userId: string;
-  userName: string;
-  userAvatar?: string;
-  productId: string;
-  rating: number;
-  comment: string;
-  createdAt: string;
-}
-
 // ── Vendor Earnings ─────────────────────────────────────────────────────────────
 
 export interface VendorEarnings {
@@ -266,3 +270,85 @@ export interface EarningsTransaction {
 
 // Alias for API consistency
 export type EarningsData = VendorEarnings;
+
+// ── Chat ────────────────────────────────────────────────────────────────
+
+export interface Conversation {
+  id: string;
+  orderId?: string | null;
+  otherUser: { id: string; name: string; image?: string | null } | null;
+  lastMessage: { content: string; createdAt: string; isRead: boolean } | null;
+  unreadCount: number;
+  updatedAt: string;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  sender: { id: string; name: string; image?: string | null };
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+// ── Story ───────────────────────────────────────────────────────────────
+
+export interface StoryGroup {
+  user: { id: string; name: string; image?: string | null };
+  stories: StoryItem[];
+  allViewed: boolean;
+}
+
+export interface StoryItem {
+  id: string;
+  mediaUrl: string;
+  caption?: string | null;
+  createdAt: string;
+  expiresAt: string;
+  viewed: boolean;
+  viewCount: number;
+}
+
+// ── Order Tracking ─────────────────────────────────────────────────────
+
+export interface TrackingTimelineItem {
+  status: string;
+  label: string;
+  completed: boolean;
+  active: boolean;
+  date: string | null;
+}
+
+export interface OrderTracking {
+  id: string;
+  orderNumber: string;
+  status: OrderStatus;
+  total: number;
+  createdAt: string;
+  updatedAt: string;
+  shippingAddress: { address: string; city: string; state: string };
+  items: {
+    id: string;
+    productName: string;
+    price: number;
+    quantity: number;
+    total: number;
+    imageUrl: string | null;
+  }[];
+  timeline: TrackingTimelineItem[];
+  estimatedDelivery: string | null;
+}
+
+// ── Vendor Dashboard Analytics ─────────────────────────────────────────
+
+export interface DashboardAnalytics {
+  totalOrders: number;
+  pendingOrders: number;
+  recentOrdersCount: number;
+  recentOrders: { id: string; orderNumber: string; total: number; status: OrderStatus; createdAt: string }[];
+  revenue30Days: number;
+  dailyRevenue: { date: string; revenue: number }[];
+  topProducts: { name: string; quantity: number; revenue: number }[];
+  totalProducts: number;
+}

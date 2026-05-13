@@ -15,6 +15,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -107,13 +109,15 @@ export default function SettingsScreen() {
         <Text style={styles.headerTitle}>Settings</Text>
       </View>
 
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
         {/* Logo */}
         <View style={styles.logoSection}>
-          <TouchableOpacity style={styles.logoCircle} onPress={pickLogo} disabled={logoUploading}>
+          <TouchableOpacity style={styles.logoCircle} onPress={pickLogo} disabled={logoUploading} accessibilityLabel="Change shop logo" accessibilityHint="Opens photo gallery to select new logo" accessibilityRole="button">
             {logoUploading ? (
               <LoadingSpinner size="small" />
             ) : logo ? (
@@ -161,6 +165,8 @@ export default function SettingsScreen() {
           loading={updateProfileMutation.isPending}
           fullWidth
           style={{ marginTop: 32 }}
+          accessibilityLabel="Save settings"
+          accessibilityRole="button"
         />
 
         <Button
@@ -168,11 +174,14 @@ export default function SettingsScreen() {
           fullWidth
           style={{ marginTop: 12 }}
           onPress={handleSignOut}
+          accessibilityLabel="Sign out of account"
+          accessibilityRole="button"
         >
           <Ionicons name="log-out-outline" size={20} color={colors.error} />
-          <Text style={{ fontFamily: 'Nunito_700Bold', fontSize: 15, color: colors.error }}>Sign Out</Text>
+          <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 15, color: colors.error }}>Sign Out</Text>
         </Button>
       </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h2,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   scrollContent: {
@@ -207,7 +216,7 @@ const styles = StyleSheet.create({
   logoCircle: {
     width: 100,
     height: 100,
-    borderRadius: 50,
+    borderRadius: radii.full,
     backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',

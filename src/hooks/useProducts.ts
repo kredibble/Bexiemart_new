@@ -39,6 +39,7 @@ export function useWishlist() {
   return useQuery({
     queryKey: ['wishlist'],
     queryFn: wishlistApi.getWishlist,
+    select: (data): WishlistItem[] => (Array.isArray(data) ? data : []),
   });
 }
 

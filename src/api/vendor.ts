@@ -2,7 +2,7 @@
  * Vendor API — Vendor-specific endpoints for products, orders, earnings.
  */
 import { apiClient } from '@/lib/api-client';
-import type { Product, Order, OrderStatus, EarningsData } from '@/types';
+import type { Product, Order, OrderStatus, EarningsData, DashboardAnalytics } from '@/types';
 
 export interface CreateProductDto {
   name: string;
@@ -65,6 +65,10 @@ export const getVendorEarnings = async (): Promise<EarningsData> => {
 
 export const withdraw = async (data: { amount: number; destination: 'bank' | 'momo' }) => {
   return apiClient.post('/vendor/withdraw', data);
+};
+
+export const getDashboardAnalytics = async () => {
+  return apiClient.get<DashboardAnalytics>('/vendor/dashboard/analytics');
 };
 
 export const updateShopProfile = async (data: {

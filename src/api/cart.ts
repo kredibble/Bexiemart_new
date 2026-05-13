@@ -2,6 +2,7 @@
  * Cart API — Shopping cart management.
  */
 import { apiClient } from '@/lib/api-client';
+import type { Cart } from '@/types';
 
 export const addToCart = async (data: {
   productId: string;
@@ -11,7 +12,7 @@ export const addToCart = async (data: {
 };
 
 export const getCart = async () => {
-  return apiClient.get('/cart');
+  return apiClient.get<Cart>('/cart');
 };
 
 export const removeFromCart = async (cartItemId: string) => {

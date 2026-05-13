@@ -8,7 +8,7 @@
  *  - Empty state with CTA to browse shop
  *  - Swipe-to-delete (future enhancement)
  */
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -26,10 +26,12 @@ import { useNavigation } from '@react-navigation/native';
 
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { SkeletonRow } from '@/components/ui/Skeleton';
 import { useCartStore } from '@/stores/cartStore';
-import { useRemoveFromCart } from '@/hooks/useCart';
-import { colors, shadows, radii } from '@/theme/colors';
+import { useGetCart, useRemoveFromCart } from '@/hooks/useCart';
+import { useValidateCoupon } from '@/hooks/useCoupon';
+import { CartSummary } from '@/components/cart/CartSummary';
+import { colors, radii, shadows } from '@/theme/colors';
 import type { CartItem } from '@/types';
 
 export default function CartScreen() {
@@ -39,25 +41,32 @@ export default function CartScreen() {
   const cart = useCartStore((state) => state.cart);
   const isLoaded = useCartStore((state) => state.isLoaded);
   const { mutate: removeItem, isPending: isRemoving } = useRemoveFromCart();
+  const { isError, error, refetch, isLoading: cartLoading, isRefetching } = useGetCart();
+
+  const { validateCoupon, appliedCoupon, discountAmount, clearCoupon } = useValidateCoupon();
 
   const cartItems = cart?.items ?? [];
+
+  // Order summary calculations
+  const subtotal = cart?.subtotal ?? 0;
+  const deliveryFee = subtotal > 0 ? 500 : 0; // placeholder delivery fee
+  const couponDiscount = discountAmount > 0 ? discountAmount : (cart?.discount ?? 0);
+  const total = subtotal + deliveryFee - couponDiscount;
 
   const handleRemoveItem = useCallback((cartItemId: string) => {
     removeItem(cartItemId);
   }, [removeItem]);
 
   const handleCheckout = useCallback(() => {
-    (navigation as any).navigate('Checkout');
-  }, [navigation]);
+    (navigation as any).navigate('Checkout', {
+      couponCode: appliedCoupon?.code,
+      discountAmount: couponDiscount > 0 ? couponDiscount : undefined,
+    });
+  }, [navigation, appliedCoupon?.code, couponDiscount]);
 
   const handleContinueShopping = useCallback(() => {
     (navigation as any).navigate('ShopTab');
   }, [navigation]);
-
-  // Order summary calculations
-  const subtotal = cart?.subtotal ?? 0;
-  const deliveryFee = subtotal > 0 ? 500 : 0; // placeholder delivery fee
-  const total = subtotal + deliveryFee - (cart?.discount ?? 0);
 
   // Render cart item
   const renderCartItem = useCallback(
@@ -69,6 +78,24 @@ export default function CartScreen() {
     ),
     [handleRemoveItem]
   );
+
+  // Error state
+  if (isError && !cartLoading) {
+    return (
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <StatusBar style="dark" />
+        <View style={styles.centerContainer}>
+          <Ionicons name="cloud-offline-outline" size={48} color={colors.textLight} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message || 'Failed to load cart'}</Text>
+          <Button variant="default" style={styles.retryBtn} onPress={() => refetch()}>
+            <Ionicons name="refresh" size={16} color={colors.white} />
+            <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 14, color: colors.white }}>Try Again</Text>
+          </Button>
+        </View>
+      </View>
+    );
+  }
 
   // Show empty state if cart is empty or not loaded
   if (isLoaded && cartItems.length === 0) {
@@ -103,7 +130,11 @@ export default function CartScreen() {
 
       {/* Cart items */}
       {!isLoaded ? (
-        <LoadingSpinner />
+        <View style={styles.listContent}>
+          {[1, 2, 3].map((i) => (
+            <SkeletonRow key={i} />
+          ))}
+        </View>
       ) : (
         <FlatList
           data={cartItems}
@@ -111,17 +142,20 @@ export default function CartScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshing={isRefetching}
+          onRefresh={() => refetch()}
           ListFooterComponent={
-            <View style={styles.summaryCard}>
-              <Text style={styles.summaryTitle}>Order Summary</Text>
-              <SummaryRow label="Subtotal" value={subtotal} />
-              <SummaryRow label="Delivery" value={deliveryFee} />
-              {(cart?.discount ?? 0) > 0 && (
-                <SummaryRow label="Discount" value={-(cart?.discount ?? 0)} isDiscount />
-              )}
-              <View style={styles.summaryDivider} />
-              <SummaryRow label="Total" value={total} isBold />
-            </View>
+            <CartSummary
+              subtotal={subtotal}
+              deliveryFee={deliveryFee}
+              discount={couponDiscount}
+              total={total}
+              couponCode={appliedCoupon?.code}
+              onApplyCoupon={(code) => validateCoupon.mutate({ code, cartTotal: subtotal })}
+              onRemoveCoupon={clearCoupon}
+              isApplyingCoupon={validateCoupon.isPending}
+              couponError={validateCoupon.error?.message}
+            />
           }
         />
       )}
@@ -190,37 +224,6 @@ function CartItemRow({ item, onRemove }: CartItemRowProps) {
   );
 }
 
-// ── SummaryRow sub-component ────────────────────────────────────────────────────
-
-function SummaryRow({
-  label,
-  value,
-  isBold = false,
-  isDiscount = false,
-}: {
-  label: string;
-  value: number;
-  isBold?: boolean;
-  isDiscount?: boolean;
-}) {
-  return (
-    <View style={summaryStyles.row}>
-      <Text style={[summaryStyles.label, isBold && summaryStyles.bold]}>
-        {label}
-      </Text>
-      <Text
-        style={[
-          summaryStyles.value,
-          isBold && summaryStyles.bold,
-          isDiscount && summaryStyles.discount,
-        ]}
-      >
-        {isDiscount ? '-' : ''}{'\u20A6'}{Math.abs(value).toLocaleString()}
-      </Text>
-    </View>
-  );
-}
-
 // ── Styles ───────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
@@ -237,37 +240,19 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   headerTitle: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
     color: colors.text,
     letterSpacing: -0.5,
   },
   headerCount: {
-    fontFamily: 'Nunito_500Medium',
+    fontFamily: 'NunitoSans_500Medium',
     fontSize: 14,
     color: colors.textSecondary,
   },
   listContent: {
     paddingHorizontal: 20,
     paddingBottom: 24,
-  },
-  summaryCard: {
-    backgroundColor: colors.white,
-    borderRadius: radii.xl,
-    padding: 20,
-    marginTop: 16,
-    ...shadows.sm,
-  },
-  summaryTitle: {
-    fontFamily: 'Raleway_700Bold',
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: 12,
-  },
-  summaryDivider: {
-    height: 1,
-    backgroundColor: colors.borderLight,
-    marginVertical: 12,
   },
   bottomBar: {
     flexDirection: 'row',
@@ -293,12 +278,12 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   bottomTotalLabel: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 12,
     color: colors.textSecondary,
   },
   bottomTotalValue: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 20,
     color: colors.text,
   },
@@ -309,6 +294,32 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  errorTitle: {
+    fontFamily: 'Rubik_700Bold',
+    fontSize: 16,
+    color: colors.text,
+    marginTop: 8,
+  },
+  errorMessage: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  retryBtn: {
+    marginTop: 8,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
 });
 
@@ -334,18 +345,18 @@ const itemStyles = StyleSheet.create({
     gap: 4,
   },
   name: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 14,
     color: colors.text,
     lineHeight: 20,
   },
   price: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 16,
     color: colors.text,
   },
   quantity: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 13,
     color: colors.textSecondary,
   },
@@ -360,29 +371,4 @@ const itemStyles = StyleSheet.create({
   },
 });
 
-const summaryStyles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  label: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  value: {
-    fontFamily: 'Nunito_500Medium',
-    fontSize: 14,
-    color: colors.text,
-  },
-  bold: {
-    fontFamily: 'Raleway_700Bold',
-    fontSize: 16,
-    color: colors.text,
-  },
-  discount: {
-    color: colors.success,
-  },
-});
+

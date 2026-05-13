@@ -16,6 +16,7 @@ import {
   type ListRenderItem,
 } from 'react-native';
 import { Image } from 'expo-image';
+import { colors } from '@/theme/colors';
 
 export interface CarouselItem {
   id: string;
@@ -168,7 +169,7 @@ export function Carousel({
 const styles = StyleSheet.create({
   image: {
     width: '100%',
-    backgroundColor: '#F0F2F5',
+    backgroundColor: colors.surfaceDark,
   },
   dotsContainer: {
     flexDirection: 'row',
@@ -183,13 +184,13 @@ const styles = StyleSheet.create({
   dotActive: {
     width: 20,
     height: 6,
-    backgroundColor: '#004CFF',
+    backgroundColor: colors.primary,
     borderRadius: 3,
   },
   dotInactive: {
     width: 6,
     height: 6,
-    backgroundColor: '#D1D5DB',
+    backgroundColor: colors.border,
     borderRadius: 3,
   },
 });

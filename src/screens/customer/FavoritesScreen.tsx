@@ -9,6 +9,7 @@ import {
   View,
   Text,
   FlatList,
+  TouchableOpacity,
   StyleSheet,
   Dimensions,
   ActivityIndicator,
@@ -16,12 +17,13 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import { ProductCard } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useWishlist, useRemoveFromWishlist } from '@/hooks/useProducts';
-import { colors } from '@/theme/colors';
+import { colors, radii } from '@/theme/colors';
 import type { Product } from '@/types';
 
 const GRID_GAP = 12;
@@ -31,23 +33,19 @@ export default function FavoritesScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
 
-  const { data: wishlistItems, isLoading, refetch, isRefetching } = useWishlist();
+  const { data: wishlistItems, isLoading, isError, error, refetch, isRefetching } = useWishlist();
   const { mutate: removeFromWishlist } = useRemoveFromWishlist();
 
   const products: Product[] = useMemo(() => {
-    return wishlistItems?.map((item) => item.product) ?? [];
+    return (Array.isArray(wishlistItems) ? wishlistItems : []).map((item) => item.product);
   }, [wishlistItems]);
 
   const handleProductPress = useCallback((product: Product) => {
-    // Navigate to product details (works from any tab)
-    (navigation as any).navigate('HomeTab', {
-      screen: 'ProductDetails',
-      params: { productId: product.id },
-    });
+    (navigation as any).navigate('ProductDetails', { productId: product.id });
   }, [navigation]);
 
   const handleRemoveFavorite = useCallback((productId: string) => {
-    const wishlistItem = wishlistItems?.find((item) => item.productId === productId);
+    const wishlistItem = (Array.isArray(wishlistItems) ? wishlistItems : []).find((item) => item.productId === productId);
     if (wishlistItem) {
       removeFromWishlist(wishlistItem.id);
     }
@@ -106,6 +104,15 @@ export default function FavoritesScreen() {
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
+      ) : isError ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message ?? 'Unable to load your saved items. Please try again.'}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()} accessibilityRole="button" accessibilityLabel="Retry loading saved items">
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
       ) : products.length === 0 ? (
         <EmptyState
           icon="heart-outline"
@@ -150,13 +157,13 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   headerTitle: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
     color: colors.text,
     letterSpacing: -0.5,
   },
   headerCount: {
-    fontFamily: 'Nunito_500Medium',
+    fontFamily: 'NunitoSans_500Medium',
     fontSize: 14,
     color: colors.textSecondary,
   },
@@ -177,5 +184,36 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  errorTitle: {
+    fontFamily: 'Rubik_700Bold',
+    fontSize: 20,
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: radii.full,
+    backgroundColor: colors.primary,
+  },
+  retryBtnText: {
+    fontFamily: 'NunitoSans_600SemiBold',
+    fontSize: 14,
+    color: colors.white,
   },
 });

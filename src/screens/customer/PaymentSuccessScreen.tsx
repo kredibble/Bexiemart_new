@@ -16,16 +16,16 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
 
 import { Button } from '@/components/ui/Button';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
-import { CartStackParamList } from '@/navigation/CustomerTabs';
+import { HomeStackParamList } from '@/navigation/CustomerTabs';
 import { useCartStore } from '@/stores/cartStore';
 
-type NavProp = NativeStackNavigationProp<CartStackParamList>;
-type RouteType = RouteProp<CartStackParamList, 'PaymentSuccess'>;
+type NavProp = NativeStackNavigationProp<HomeStackParamList>;
+type RouteType = RouteProp<HomeStackParamList, 'PaymentSuccess'>;
 
 export default function PaymentSuccessScreen() {
   const insets = useSafeAreaInsets();
@@ -40,11 +40,11 @@ export default function PaymentSuccessScreen() {
   }, []);
 
   const handleViewOrder = () => {
-    navigation.getParent()?.navigate('HomeTab');
+    navigation.navigate('HomeMain');
   };
 
   const handleContinueShopping = () => {
-    navigation.getParent()?.navigate('HomeTab');
+    navigation.navigate('HomeMain');
   };
 
   return (
@@ -75,11 +75,11 @@ export default function PaymentSuccessScreen() {
 
         {/* Order details card */}
         <Animated.View
-          entering={FadeIn.delay(600)}
+          entering={FadeInDown.delay(400).springify()}
           style={styles.detailsCard}
         >
           <DetailRow icon="receipt-outline" label="Order ID" value={orderId.slice(0, 12)} />
-          <DetailRow icon="cash-outline" label="Amount Paid" value={`₦${amount.toLocaleString()}`} />
+          <DetailRow icon="cash-outline" label="Amount Paid" value={`GH₵ ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
           <DetailRow icon="pricetag-outline" label="Reference" value={reference} />
         </Animated.View>
 
@@ -95,6 +95,8 @@ export default function PaymentSuccessScreen() {
             style={styles.secondaryButton}
             onPress={handleContinueShopping}
             activeOpacity={0.7}
+            accessibilityLabel="Continue shopping"
+            accessibilityRole="button"
           >
             <Text style={styles.secondaryButtonText}>Continue Shopping</Text>
           </TouchableOpacity>
@@ -142,7 +144,7 @@ const detailStyles = StyleSheet.create({
   },
   value: {
     ...typePresets.body,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.text,
     flex: 1,
   },
@@ -172,7 +174,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typePresets.h1,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
     textAlign: 'center',
     marginBottom: 6,
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.primary,
   },
 });

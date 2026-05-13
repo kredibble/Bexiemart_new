@@ -7,6 +7,7 @@
  * Vendor-facing hooks are in useVendor.ts
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
 import * as ordersApi from '@/api/orders';
 import * as paymentsApi from '@/api/payments';
 import type { OrderStatus } from '@/types';
@@ -57,5 +58,18 @@ export function useVerifyPayment(reference: string) {
     queryKey: ['payment-verify', reference],
     queryFn: () => paymentsApi.verifyPayment(reference),
     enabled: !!reference,
+  });
+}
+
+/* ── Order Tracking ──────────────────────────────────────────────────── */
+
+import type { OrderTracking } from '@/types';
+
+export function useOrderTracking(orderId: string) {
+  return useQuery({
+    queryKey: ['order-tracking', orderId],
+    queryFn: () => apiClient.get<OrderTracking>(`/orders/${orderId}/tracking`),
+    enabled: !!orderId,
+    refetchInterval: 15_000,
   });
 }

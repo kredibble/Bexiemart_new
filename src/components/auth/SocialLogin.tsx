@@ -6,9 +6,10 @@
  * - "register": New user signs up → attaches pre-selected role to account
  * - "both": Shows all options (used on unified screens)
  */
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Pressable } from 'react-native';
 import { GoogleIcon, AppleIcon } from './SocialIcons';
+import { colors } from '@/theme/colors';
 
 export type SocialMode = 'login' | 'register' | 'both';
 
@@ -83,24 +84,51 @@ interface SocialButtonProps {
 }
 
 function SocialButton({ provider, onPress, disabled }: SocialButtonProps) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = useCallback(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.96,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 4,
+    }).start();
+  }, [scaleAnim]);
+
+  const handlePressOut = useCallback(() => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 20,
+      bounciness: 4,
+    }).start();
+  }, [scaleAnim]);
+
   return (
-    <TouchableOpacity
-      style={[styles.socialButton, disabled && styles.socialButtonDisabled]}
-      onPress={onPress}
-      disabled={disabled}
-      activeOpacity={0.7}
-      accessibilityRole="button"
-      accessibilityLabel={`Sign in with ${provider}`}
-    >
-      {provider === 'google' ? (
-        <GoogleIcon width={22} height={22} />
-      ) : (
-        <AppleIcon width={22} height={22} />
-      )}
-      <Text style={styles.socialLabel}>
-        {provider === 'google' ? 'Google' : 'Apple'}
-      </Text>
-    </TouchableOpacity>
+    <Animated.View style={[{ flex: 1, transform: [{ scale: scaleAnim }] }]}>
+      <Pressable
+        style={({ pressed }) => [
+          styles.socialButton,
+          disabled && styles.socialButtonDisabled,
+          pressed && { opacity: 0.7 }
+        ]}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={`Sign in with ${provider}`}
+      >
+        {provider === 'google' ? (
+          <GoogleIcon width={22} height={22} />
+        ) : (
+          <AppleIcon width={22} height={22} />
+        )}
+        <Text style={styles.socialLabel}>
+          {provider === 'google' ? 'Google' : 'Apple'}
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
 
@@ -116,12 +144,12 @@ const styles = StyleSheet.create({
   line: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E4E7EC',
+    backgroundColor: colors.border,
   },
   dividerText: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 13,
-    color: '#9BA5B0',
+    color: colors.textLight,
   },
   buttonsRow: {
     flexDirection: 'row',
@@ -132,19 +160,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 12,
     height: 50,
-    borderRadius: 14,
+    borderRadius: 9999,
     borderWidth: 1,
-    borderColor: '#E4E7EC',
-    backgroundColor: '#FFFFFF',
+    borderColor: colors.border,
+    backgroundColor: colors.white,
+    paddingHorizontal: 20,
   },
   socialButtonDisabled: {
     opacity: 0.5,
   },
   socialLabel: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 14,
-    color: '#111322',
+    fontFamily: 'NunitoSans_700Bold',
+    fontSize: 16,
+    color: colors.text,
+    letterSpacing: 0.2,
   },
 });

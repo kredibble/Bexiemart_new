@@ -11,6 +11,7 @@ import { create } from "zustand";
 import type { User, Role } from "@/types";
 import { authClient } from "@/lib/auth-client";
 import * as SecureStore from "expo-secure-store";
+import { useCartStore } from "./cartStore";
 
 const COOKIE_KEY = "bexiemart_cookie";
 const USER_KEY = "bexiemart_user";
@@ -67,11 +68,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // ignore
     }
+    useCartStore.getState().clearCart();
     set({ user: null, isAuthenticated: false });
   },
 
   hydrate: async () => {
     try {
+      // First try Better Auth's own session (source of truth)
+      const { data: session } = await authClient.getSession();
+      if (session?.user) {
+        const user = session.user as unknown as User;
+        await SecureStore.setItemAsync(USER_KEY, JSON.stringify(user));
+        set({ user, isAuthenticated: true });
+        return;
+      }
+
+      // Fallback: restore from SecureStore
       const userStr = await SecureStore.getItemAsync(USER_KEY);
       if (userStr) {
         const user = JSON.parse(userStr) as User;

@@ -41,15 +41,12 @@ export function RoleGuard({
   const navigation = useNavigation<NavProp>();
 
   useEffect(() => {
-    if (!user) return; // Let RootNavigator handle unauthenticated
+    if (!user) return;
 
     if (user.role !== requiredRole) {
-      // Redirect to correct role's app
-      const target = user.role === 'vendor' ? 'VendorApp' : 'CustomerApp';
-      navigation.reset({
-        index: 0,
-        routes: [{ name: target }],
-      });
+      const target = user.role === 'admin' ? 'AdminApp' : user.role === 'vendor' ? 'VendorApp' : 'CustomerApp';
+      // navigate walks up the tree to find the route — works from any nested navigator
+      (navigation as any).navigate(target);
     }
   }, [user, requiredRole, navigation]);
 
@@ -78,11 +75,8 @@ export function useRequireRole(requiredRole: UserRole) {
     if (!user) return;
 
     if (user.role !== requiredRole) {
-      const target = user.role === 'vendor' ? 'VendorApp' : 'CustomerApp';
-      navigation.reset({
-        index: 0,
-        routes: [{ name: target }],
-      });
+      const target = user.role === 'admin' ? 'AdminApp' : user.role === 'vendor' ? 'VendorApp' : 'CustomerApp';
+      (navigation as any).navigate(target);
     }
   }, [user, requiredRole, navigation]);
 }

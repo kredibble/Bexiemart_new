@@ -78,7 +78,7 @@ export default function RegisterScreen() {
   };
 
   const handleRoleSelect = (role: Role) => {
-    setValue('role', role, { shouldValidate: true });
+    setValue('role', role as 'customer' | 'vendor', { shouldValidate: true });
   };
 
   const onSubmit = async (values: RegisterFormValues) => {
@@ -138,6 +138,8 @@ export default function RegisterScreen() {
           onPress={handleBack}
           style={styles.backButton}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back" size={20} color="#111322" />
         </TouchableOpacity>
@@ -151,6 +153,8 @@ export default function RegisterScreen() {
                 i + 1 <= currentStep && styles.dotActive,
                 i + 1 === currentStep && styles.dotCurrent,
               ]}
+              accessible
+              accessibilityLabel={`Step ${i + 1} of ${TOTAL_STEPS}`}
             />
           ))}
         </View>
@@ -323,6 +327,8 @@ export default function RegisterScreen() {
           <TouchableOpacity
             onPress={() => navigation.navigate('Login')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="Already have an account, sign in"
           >
             <Text style={styles.footerLink}>Sign In</Text>
           </TouchableOpacity>
@@ -346,9 +352,11 @@ function RoleCard({ icon, label, sublabel, isSelected, onPress }: RoleCardProps)
       style={[styles.roleCard, isSelected && styles.roleCardSelected]}
       onPress={onPress}
       activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityLabel={label === 'Shop' ? 'Register as customer' : 'Register as vendor'}
     >
       <View style={[styles.roleIconCircle, isSelected && styles.roleIconCircleSelected]}>
-        <Ionicons name={icon as any} size={24} color={isSelected ? '#004CFF' : '#8E8E93'} />
+        <Ionicons name={icon as any} size={24} color={isSelected ? '#7C3AED' : '#8E8E93'} />
       </View>
       <Text style={[styles.roleCardText, isSelected && styles.roleCardTextSelected]}>{label}</Text>
       <Text style={[styles.roleSublabel, isSelected && styles.roleSublabelSelected]}>{sublabel}</Text>
@@ -359,11 +367,11 @@ function RoleCard({ icon, label, sublabel, isSelected, onPress }: RoleCardProps)
 const styles = StyleSheet.create({
   bgLayer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
   orbPrimary: {
-    position: 'absolute', width: 400, height: 400, borderRadius: 200,
-    backgroundColor: '#004CFF', top: -200, right: -150, opacity: 0.06,
+    position: 'absolute', width: 400, height: 400, borderRadius: 9999,
+    backgroundColor: '#7C3AED', top: -200, right: -150, opacity: 0.06,
   },
   orbAccent: {
-    position: 'absolute', width: 140, height: 140, borderRadius: 70,
+    position: 'absolute', width: 140, height: 140, borderRadius: 9999,
     backgroundColor: '#FFD60A', top: '45%', right: -30, opacity: 0.08,
   },
   headerRow: {
@@ -371,20 +379,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, paddingBottom: 8,
   },
   backButton: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: '#F5F7FA',
+    width: 40, height: 40, borderRadius: 9999, backgroundColor: '#F5F7FA',
     alignItems: 'center', justifyContent: 'center',
   },
   stepDots: { flexDirection: 'row', gap: 6, alignItems: 'center' },
-  dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#E4E7EC' },
-  dotActive: { backgroundColor: '#004CFF' },
+  dot: { width: 8, height: 8, borderRadius: 9999, backgroundColor: '#E4E7EC' },
+  dotActive: { backgroundColor: '#7C3AED' },
   dotCurrent: { width: 24 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
   stepTitle: {
-    fontFamily: 'Raleway_700Bold', fontSize: 28, color: '#111322',
+    fontFamily: 'Rubik_700Bold', fontSize: 28, color: '#111322',
     letterSpacing: -0.5, marginBottom: 6,
   },
   stepSubtitle: {
-    fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#5F6C7B',
+    fontFamily: 'NunitoSans_400Regular', fontSize: 15, color: '#5F6C7B',
     lineHeight: 22, marginBottom: 24,
   },
   errorBanner: {
@@ -392,13 +400,13 @@ const styles = StyleSheet.create({
     borderRadius: 14, padding: 14, marginBottom: 16,
   },
   errorText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#7F1D1D', flex: 1, lineHeight: 20,
+    fontFamily: 'NunitoSans_400Regular', fontSize: 14, color: '#7F1D1D', flex: 1, lineHeight: 20,
   },
   formCard: {
     backgroundColor: '#FFFFFF', borderRadius: 20, padding: 4, marginBottom: 24,
   },
   roleLabel: {
-    fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#111322',
+    fontFamily: 'NunitoSans_600SemiBold', fontSize: 14, color: '#111322',
     marginBottom: 12, letterSpacing: 0.3, textTransform: 'uppercase',
   },
   roleRow: { flexDirection: 'row', gap: 12, marginBottom: 24 },
@@ -406,25 +414,25 @@ const styles = StyleSheet.create({
     flex: 1, padding: 20, borderRadius: 20, borderWidth: 2,
     borderColor: '#E4E7EC', backgroundColor: '#FFFFFF', alignItems: 'center', gap: 8,
   },
-  roleCardSelected: { borderColor: '#004CFF', backgroundColor: '#EEF2FF' },
+  roleCardSelected: { borderColor: '#7C3AED', backgroundColor: '#F3E8FF' },
   roleIconCircle: {
-    width: 48, height: 48, borderRadius: 24, backgroundColor: '#F0F2F5',
+    width: 48, height: 48, borderRadius: 9999, backgroundColor: '#F0F2F5',
     alignItems: 'center', justifyContent: 'center',
   },
   roleIconCircleSelected: { backgroundColor: '#FFFFFF' },
-  roleCardText: { fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#111322' },
-  roleCardTextSelected: { color: '#004CFF' },
-  roleSublabel: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#8E8E93', textAlign: 'center' },
+  roleCardText: { fontFamily: 'NunitoSans_700Bold', fontSize: 15, color: '#111322' },
+  roleCardTextSelected: { color: '#7C3AED' },
+  roleSublabel: { fontFamily: 'NunitoSans_400Regular', fontSize: 12, color: '#8E8E93', textAlign: 'center' },
   roleSublabelSelected: { color: '#5F6C7B' },
   buttonWrapper: {
     marginBottom: 12,
     ...Platform.select({
-      ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+      ios: { shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
       android: { elevation: 4 },
       web: { boxShadow: '0px 4px 12px rgba(0, 76, 255, 0.3)' },
     }),
   },
   footerRow: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingVertical: 8 },
-  footerText: { fontFamily: 'Nunito_400Regular', fontSize: 15, color: '#5F6C7B' },
-  footerLink: { fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#004CFF' },
+  footerText: { fontFamily: 'NunitoSans_400Regular', fontSize: 15, color: '#5F6C7B' },
+  footerLink: { fontFamily: 'NunitoSans_700Bold', fontSize: 15, color: '#7C3AED' },
 });

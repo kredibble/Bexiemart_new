@@ -4,34 +4,46 @@
  * Shopify (display at light weight, precise variable scales)
  *
  * Rules:
- * - Raleway for display/headings (700 for bold, 600 for emphasis, 400 for light display)
- * - Nunito for body/UI (500 as default body weight — confident, not light)
+ * - Rubik for display/headings (700 for bold, 600 for emphasis, 400 for light display)
+ * - Nunito Sans for body/UI (500 as default body weight — confident, not light)
  * - Tight line-heights for headings (1.1-1.3), generous for body (1.5+)
  * - Tracking: negative on display only, neutral on body
  */
 
 export const fonts = {
-  heading: 'Raleway_700Bold',
-  headingSemi: 'Raleway_600SemiBold',
-  headingLight: 'Raleway_400Regular',
-  body: 'Nunito_400Regular',
-  bodyMedium: 'Nunito_500Medium',
-  bodySemiBold: 'Nunito_600SemiBold',
-  bodyBold: 'Nunito_700Bold',
-  light: 'Nunito_300Light',
+  heading: 'Rubik_700Bold',
+  headingSemi: 'Rubik_600SemiBold',
+  headingLight: 'Rubik_400Regular',
+  body: 'NunitoSans_400Regular',
+  bodyMedium: 'NunitoSans_500Medium',
+  bodySemiBold: 'NunitoSans_600SemiBold',
+  bodyBold: 'NunitoSans_700Bold',
+  light: 'NunitoSans_300Light',
 } as const;
 
 export const fontSizes = {
+  xxs: 8,
   xs: 10,
   sm: 12,
+  md: 13,
   base: 14,
+  base2: 15,
   lg: 16,
+  lg2: 17,
   xl: 18,
+  xl2: 19,
   '2xl': 20,
+  '2xl2': 21,
   '3xl': 22,
   '4xl': 24,
+  '4xl2': 26,
   '5xl': 28,
+  '5xl2': 29,
   '6xl': 32,
+  '7xl': 45,
+  '8xl': 52,
+  '9xl': 64,
+  hero: 128,
 } as const;
 
 /**

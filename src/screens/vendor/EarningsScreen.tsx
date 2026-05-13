@@ -15,12 +15,14 @@ import {
   StyleSheet,
   Modal,
   Alert,
+  RefreshControl,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useVendorEarnings, useWithdraw } from '@/hooks/useVendor';
+import { useWalletTransactions } from '@/hooks/useWallet';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
 import { formatCurrency, formatDate } from '@/utils/format';
@@ -31,7 +33,8 @@ import { FormInput } from '@/components/ui/FormInput';
 
 export default function EarningsScreen() {
   const insets = useSafeAreaInsets();
-  const { data: earnings, isLoading } = useVendorEarnings();
+  const { data: earnings, isLoading, isError, error, refetch, isRefetching } = useVendorEarnings();
+  const { refetch: refetchWallet } = useWalletTransactions();
   const withdrawMutation = useWithdraw();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -74,9 +77,27 @@ export default function EarningsScreen() {
         <Text style={styles.headerTitle}>Earnings</Text>
       </View>
 
+      {isError ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message || 'Failed to load earnings'}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()} accessibilityRole="button" accessibilityLabel="Retry loading earnings">
+            <Text style={{ fontFamily: 'NunitoSans_700Bold', color: colors.white, fontSize: 14 }}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
       <ScrollView
         contentContainerStyle={[styles.scrollContent, { paddingBottom: insets.bottom + 32 }]}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefetching}
+            onRefresh={() => { refetch(); refetchWallet(); }}
+            colors={[colors.primary]}
+            tintColor={colors.primary}
+          />
+        }
       >
         {/* Balance Cards */}
         {isLoading ? (
@@ -94,6 +115,7 @@ export default function EarningsScreen() {
                 style={{ borderRadius: radii.full, paddingHorizontal: 20, backgroundColor: 'rgba(255,255,255,0.2)' }}
                 onPress={() => setModalVisible(true)}
                 disabled={available <= 0}
+                accessibilityLabel="Withdraw funds"
               >
                 <Ionicons name="arrow-down-circle" size={18} color={colors.white} />
               </Button>
@@ -128,7 +150,7 @@ export default function EarningsScreen() {
             ) : (
               <View style={styles.historyList}>
                 {(earnings?.transactions ?? []).map((item, i) => (
-                  <View key={i} style={styles.historyRow}>
+                  <View key={i} style={styles.historyRow} accessible accessibilityLabel={`${item.type === 'withdrawal' ? 'Withdrawal' : 'Order Payment'} of ${formatCurrency(item.amount)} on ${formatDate(item.createdAt)}`}>
                     <View style={[styles.historyIcon, { backgroundColor: item.type === 'withdrawal' ? colors.errorSoft : colors.successSoft }]}>
                       <Ionicons
                         name={item.type === 'withdrawal' ? 'arrow-up-circle' : 'arrow-down-circle'}
@@ -157,8 +179,10 @@ export default function EarningsScreen() {
           </>
         )}
       </ScrollView>
+      )}
 
-      {/* Withdraw Modal */}
+      {!isError && (
+      /* Withdraw Modal */
       <Modal
         visible={modalVisible}
         animationType="slide"
@@ -187,6 +211,9 @@ export default function EarningsScreen() {
                   withdrawMethod === 'bank' && styles.methodBtnSelected,
                 ]}
                 onPress={() => setWithdrawMethod('bank')}
+                accessibilityRole="radio"
+                accessibilityLabel="Bank Account"
+                accessibilityState={{ selected: withdrawMethod === 'bank' }}
               >
                 <Ionicons
                   name="business-outline"
@@ -208,6 +235,9 @@ export default function EarningsScreen() {
                   withdrawMethod === 'momo' && styles.methodBtnSelected,
                 ]}
                 onPress={() => setWithdrawMethod('momo')}
+                accessibilityRole="radio"
+                accessibilityLabel="Mobile Money"
+                accessibilityState={{ selected: withdrawMethod === 'momo' }}
               >
                 <Ionicons
                   name="phone-portrait-outline"
@@ -231,21 +261,24 @@ export default function EarningsScreen() {
                 variant="secondary"
                 style={{ flex: 1, borderRadius: radii.lg }}
                 onPress={() => setModalVisible(false)}
+                accessibilityLabel="Cancel withdrawal"
               >
-                <Text style={{ fontFamily: 'Nunito_700Bold', color: colors.textSecondary }}>Cancel</Text>
+                <Text style={{ fontFamily: 'NunitoSans_700Bold', color: colors.textSecondary }}>Cancel</Text>
               </Button>
               <Button
                 variant="default"
                 style={{ flex: 1, borderRadius: radii.lg }}
                 onPress={handleWithdraw}
                 loading={withdrawMutation.isPending}
+                accessibilityLabel="Confirm withdrawal"
               >
-                <Text style={{ fontFamily: 'Nunito_700Bold', color: colors.white }}>Confirm</Text>
+                <Text style={{ fontFamily: 'NunitoSans_700Bold', color: colors.white }}>Confirm</Text>
               </Button>
             </View>
           </View>
         </View>
       </Modal>
+      )}
     </View>
   );
 }
@@ -266,7 +299,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h2,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   scrollContent: {
@@ -284,12 +317,12 @@ const styles = StyleSheet.create({
   },
   balanceLabel: {
     ...typePresets.bodySm,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: 'rgba(255,255,255,0.8)',
   },
   balanceValue: {
     ...typePresets.price,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.white,
     fontSize: 36,
   },
@@ -310,7 +343,7 @@ const styles = StyleSheet.create({
   summaryIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -320,12 +353,12 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   sectionTitle: {
     ...typePresets.h4,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
     marginBottom: 14,
   },
@@ -344,7 +377,7 @@ const styles = StyleSheet.create({
   historyIcon: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: radii.full,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -353,7 +386,7 @@ const styles = StyleSheet.create({
   },
   historyType: {
     ...typePresets.bodySm,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
   },
   historyDate: {
@@ -362,7 +395,7 @@ const styles = StyleSheet.create({
   },
   historyAmount: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
   },
   modalOverlay: {
     flex: 1,
@@ -379,7 +412,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     ...typePresets.h3,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
     textAlign: 'center',
   },
@@ -405,16 +438,48 @@ const styles = StyleSheet.create({
   },
   methodText: {
     ...typePresets.bodySm,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.textSecondary,
   },
   methodTextSelected: {
     color: colors.primary,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
   },
   modalActions: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 8,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  errorTitle: {
+    ...typePresets.h4,
+    fontFamily: 'Rubik_700Bold',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    ...typePresets.bodySm,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  label: {
+    ...typePresets.bodySm,
+    fontFamily: 'NunitoSans_600SemiBold',
+    color: colors.text,
+    marginBottom: 6,
+  },
+  retryBtn: {
+    marginTop: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: radii.full,
   },
 });

@@ -127,6 +127,7 @@ exports.Prisma.UserScalarFieldEnum = {
   emailVerified: 'emailVerified',
   image: 'image',
   role: 'role',
+  onboardingCompleted: 'onboardingCompleted',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -137,7 +138,9 @@ exports.Prisma.SessionScalarFieldEnum = {
   token: 'token',
   expiresAt: 'expiresAt',
   ipAddress: 'ipAddress',
-  userAgent: 'userAgent'
+  userAgent: 'userAgent',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.AccountScalarFieldEnum = {
@@ -148,14 +151,23 @@ exports.Prisma.AccountScalarFieldEnum = {
   accessToken: 'accessToken',
   refreshToken: 'refreshToken',
   idToken: 'idToken',
-  expiresAt: 'expiresAt'
+  accessTokenExpiresAt: 'accessTokenExpiresAt',
+  refreshTokenExpiresAt: 'refreshTokenExpiresAt',
+  scope: 'scope',
+  tokenType: 'tokenType',
+  password: 'password',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.VerificationScalarFieldEnum = {
   id: 'id',
   identifier: 'identifier',
   value: 'value',
-  expiresAt: 'expiresAt'
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.VendorProfileScalarFieldEnum = {
@@ -199,7 +211,8 @@ exports.Prisma.ProductScalarFieldEnum = {
   isFeatured: 'isFeatured',
   isDeleted: 'isDeleted',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  deliveryOptions: 'deliveryOptions'
 };
 
 exports.Prisma.ProductImageScalarFieldEnum = {
@@ -266,6 +279,7 @@ exports.Prisma.OrderItemScalarFieldEnum = {
 
 exports.Prisma.ShippingAddressScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   firstName: 'firstName',
   lastName: 'lastName',
   phone: 'phone',
@@ -294,6 +308,19 @@ exports.Prisma.PaymentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CouponScalarFieldEnum = {
+  id: 'id',
+  code: 'code',
+  vendorId: 'vendorId',
+  discountPercent: 'discountPercent',
+  minOrderAmount: 'minOrderAmount',
+  maxUses: 'maxUses',
+  currentUses: 'currentUses',
+  isActive: 'isActive',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -305,9 +332,63 @@ exports.Prisma.NotificationScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.ReviewScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  productId: 'productId',
+  rating: 'rating',
+  comment: 'comment',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConversationScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ConversationParticipantScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  userId: 'userId',
+  lastReadAt: 'lastReadAt',
+  joinedAt: 'joinedAt'
+};
+
+exports.Prisma.MessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  senderId: 'senderId',
+  content: 'content',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StoryScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  mediaUrl: 'mediaUrl',
+  caption: 'caption',
+  expiresAt: 'expiresAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.StoryViewScalarFieldEnum = {
+  id: 'id',
+  storyId: 'storyId',
+  viewerId: 'viewerId',
+  viewedAt: 'viewedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -318,6 +399,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.OrderStatus = exports.$Enums.OrderStatus = {
   pending: 'pending',
@@ -341,7 +428,8 @@ exports.NotificationType = exports.$Enums.NotificationType = {
   payment: 'payment',
   shipping: 'shipping',
   promotion: 'promotion',
-  system: 'system'
+  system: 'system',
+  review: 'review'
 };
 
 exports.Prisma.ModelName = {
@@ -360,7 +448,14 @@ exports.Prisma.ModelName = {
   OrderItem: 'OrderItem',
   ShippingAddress: 'ShippingAddress',
   Payment: 'Payment',
-  Notification: 'Notification'
+  Coupon: 'Coupon',
+  Notification: 'Notification',
+  Review: 'Review',
+  Conversation: 'Conversation',
+  ConversationParticipant: 'ConversationParticipant',
+  Message: 'Message',
+  Story: 'Story',
+  StoryView: 'StoryView'
 };
 
 /**

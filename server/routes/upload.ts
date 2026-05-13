@@ -1,21 +1,7 @@
-/**
- * Cloudinary Upload API — Server routes for image upload.
- *
- * POST /api/upload
- * Body: { image: string (base64 or URL), folder?: string }
- * Response: { url: string, publicId: string, width: number, height: number }
- *
- * POST /api/upload/multiple
- * Body: { images: string[], folder?: string }
- * Response: { urls: Array<{ url, publicId, width, height }> }
- *
- * DELETE /api/upload/:publicId
- * Deletes an image from Cloudinary.
- */
-import { eventHandler, readBody } from 'h3';
+import { eventHandler, readBody, getRouterParam, setResponseStatus, createError } from 'h3';
 import { v2 as cloudinary } from 'cloudinary';
-
-// ── Cloudinary Config ─────────────────────────────────────────────────────────
+import { requireAuth } from '../middleware/auth';
+import { success, error } from '../utils/response';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
@@ -24,7 +10,26 @@ cloudinary.config({
   secure: true,
 });
 
-// ── Upload Helper ──────────────────────────────────────────────────────────────
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_BATCH_SIZE = 10;
+const ALLOWED_MIME_PREFIXES = ['image/', 'application/pdf'];
+
+function isBase64Image(str: string): boolean {
+  const mimeMatch = str.match(/^data:([a-zA-Z0-9]+\/[a-zA-Z0-9-.+]+);base64,/);
+  if (mimeMatch) {
+    const mimeType = mimeMatch[1];
+    return ALLOWED_MIME_PREFIXES.some((p) => mimeType.startsWith(p));
+  }
+  // URL-based images — accept http/https URLs
+  if (str.startsWith('http://') || str.startsWith('https://')) return true;
+  return false;
+}
+
+function getBase64Size(str: string): number {
+  // Strip data:...;base64, prefix → get raw base64 size
+  const base64Data = str.replace(/^data:image\/\w+;base64,/, '');
+  return Math.ceil((base64Data.length * 3) / 4);
+}
 
 async function uploadToCloudinary(
   imageSource: string,
@@ -35,6 +40,7 @@ async function uploadToCloudinary(
     transformation: [
       { quality: 'auto:good' },
       { fetch_format: 'auto' },
+      { max_bytes: MAX_FILE_SIZE },
     ],
   });
 
@@ -46,14 +52,24 @@ async function uploadToCloudinary(
   };
 }
 
-// ── Routes ─────────────────────────────────────────────────────────────────────
-
 export const uploadSingle = eventHandler(async (event) => {
+  await requireAuth(event);
   const body = await readBody(event);
   const { image, folder } = body as { image: string; folder?: string };
 
   if (!image) {
-    throw new Error('Image data is required');
+    setResponseStatus(event, 400);
+    return error(event as any, 400, 'Image data is required');
+  }
+
+  if (!isBase64Image(image)) {
+    setResponseStatus(event, 400);
+    return error(event as any, 400, 'Invalid image format. Only images and PDFs are allowed');
+  }
+
+  if (getBase64Size(image) > MAX_FILE_SIZE) {
+    setResponseStatus(event, 400);
+    return error(event as any, 400, 'Image exceeds maximum size of 10MB');
   }
 
   const result = await uploadToCloudinary(image, folder);
@@ -61,11 +77,29 @@ export const uploadSingle = eventHandler(async (event) => {
 });
 
 export const uploadMultiple = eventHandler(async (event) => {
+  await requireAuth(event);
   const body = await readBody(event);
   const { images, folder } = body as { images: string[]; folder?: string };
 
   if (!images || images.length === 0) {
-    throw new Error('Image data is required');
+    setResponseStatus(event, 400);
+    return error(event as any, 400, 'Images array is required');
+  }
+
+  if (images.length > MAX_BATCH_SIZE) {
+    setResponseStatus(event, 400);
+    return error(event as any, 400, `Maximum ${MAX_BATCH_SIZE} images per request`);
+  }
+
+  for (const img of images) {
+    if (!isBase64Image(img)) {
+      setResponseStatus(event, 400);
+      return error(event as any, 400, 'Invalid image format detected in batch');
+    }
+    if (getBase64Size(img) > MAX_FILE_SIZE) {
+      setResponseStatus(event, 400);
+      return error(event as any, 400, 'One or more images exceed maximum size of 10MB');
+    }
   }
 
   const results = await Promise.all(
@@ -76,19 +110,20 @@ export const uploadMultiple = eventHandler(async (event) => {
 });
 
 export const deleteImage = eventHandler(async (event) => {
+  await requireAuth(event);
   const publicId = event.context.params?.publicId;
 
   if (!publicId) {
-    throw new Error('Public ID is required');
+    setResponseStatus(event, 400);
+    return error(event as any, 400, 'Public ID is required');
   }
 
   const result = await cloudinary.uploader.destroy(publicId);
   return { result: result.result };
 });
 
-// ── Generate Upload Signature (for client-side direct upload) ─────────────────
-
 export const generateSignature = eventHandler(async (event) => {
+  await requireAuth(event);
   const body = await readBody(event);
   const { folder, timestamp } = body as { folder?: string; timestamp?: number };
 

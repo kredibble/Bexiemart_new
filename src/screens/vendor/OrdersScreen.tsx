@@ -23,6 +23,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { Ionicons } from '@expo/vector-icons';
 import { OrderStatusBadge } from '@/components/vendor/OrderStatusBadge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useVendorOrders } from '@/hooks/useVendor';
@@ -50,7 +51,7 @@ export default function OrdersScreen() {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus | 'all'>('all');
 
   const queryStatus = selectedStatus === 'all' ? undefined : selectedStatus;
-  const { data: orders, isLoading, refetch, isRefetching } = useVendorOrders(queryStatus);
+  const { data: orders, isLoading, isError, error, refetch, isRefetching } = useVendorOrders(queryStatus);
 
   const handleRefresh = useCallback(() => {
     refetch();
@@ -64,6 +65,8 @@ export default function OrdersScreen() {
           (navigation as any).navigate('OrderDetails', { orderId: item.id })
         }
         activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Order ${item.orderNumber ?? item.id.slice(0, 8)}, ${item.status}, ${formatCurrency(item.total)}`}
       >
         <View style={styles.orderLeft}>
           <Text style={styles.orderId}>
@@ -92,37 +95,51 @@ export default function OrdersScreen() {
         <Text style={styles.headerTitle}>Orders</Text>
       </View>
 
-      {/* Status Filter Tabs */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.tabsContainer}
-        contentContainerStyle={styles.tabsContent}
-      >
-        {STATUS_TABS.map((tab) => (
-          <TouchableOpacity
-            key={tab.value}
-            style={[
-              styles.tab,
-              selectedStatus === tab.value && styles.tabSelected,
-            ]}
-            onPress={() => setSelectedStatus(tab.value)}
-          >
-            <Text
-              style={[
-                styles.tabLabel,
-                selectedStatus === tab.value && styles.tabLabelSelected,
-              ]}
-            >
-              {tab.label}
-            </Text>
+      {isError ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message || 'Failed to load orders'}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={handleRefresh} accessibilityRole="button" accessibilityLabel="Retry loading orders">
+            <Text style={{ fontFamily: 'NunitoSans_700Bold', color: colors.white, fontSize: 14 }}>Retry</Text>
           </TouchableOpacity>
-        ))}
-      </ScrollView>
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          {/* Status Filter Tabs */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.tabsContainer}
+            contentContainerStyle={styles.tabsContent}
+          >
+            {STATUS_TABS.map((tab) => (
+              <TouchableOpacity
+                key={tab.value}
+                style={[
+                  styles.tab,
+                  selectedStatus === tab.value && styles.tabSelected,
+                ]}
+                onPress={() => setSelectedStatus(tab.value)}
+                accessibilityRole="tab"
+                accessibilityLabel={`Filter by ${tab.label} orders`}
+                accessibilityState={{ selected: selectedStatus === tab.value }}
+              >
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    selectedStatus === tab.value && styles.tabLabelSelected,
+                  ]}
+                >
+                  {tab.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
 
-      {/* Orders List */}
-      <FlatList
-        data={orders ?? []}
+          {/* Orders List */}
+          <FlatList
+        data={Array.isArray(orders) ? orders : []}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 32 }]}
@@ -156,6 +173,8 @@ export default function OrdersScreen() {
           ) : null
         }
       />
+          </View>
+          )}
     </View>
   );
 }
@@ -176,7 +195,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h2,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   tabsContainer: {
@@ -200,7 +219,7 @@ const styles = StyleSheet.create({
   },
   tabLabel: {
     ...typePresets.bodySm,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.textSecondary,
   },
   tabLabelSelected: {
@@ -226,7 +245,7 @@ const styles = StyleSheet.create({
   },
   orderId: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
   },
   orderDate: {
@@ -243,11 +262,37 @@ const styles = StyleSheet.create({
   },
   orderTotal: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   loaderContainer: {
     paddingVertical: 40,
     alignItems: 'center',
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  errorTitle: {
+    ...typePresets.h4,
+    fontFamily: 'Rubik_700Bold',
+    color: colors.text,
+    textAlign: 'center',
+  },
+  errorMessage: {
+    ...typePresets.bodySm,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  retryBtn: {
+    marginTop: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: radii.full,
   },
 });

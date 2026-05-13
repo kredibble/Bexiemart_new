@@ -113,6 +113,16 @@ export function useWithdraw() {
   });
 }
 
+/* ── Dashboard Analytics ──────────────────────────────────────────────── */
+
+export function useVendorDashboardAnalytics() {
+  return useQuery({
+    queryKey: ['vendor-dashboard-analytics'],
+    queryFn: vendorApi.getDashboardAnalytics,
+    staleTime: 60_000,
+  });
+}
+
 /* ── Shop Profile ──────────────────────────────────────────────────────── */
 
 export function useUpdateShopProfile() {

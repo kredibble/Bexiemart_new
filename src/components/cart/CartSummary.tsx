@@ -142,7 +142,7 @@ function SummaryRow({
           isDiscount && summaryStyles.discount,
         ]}
       >
-        {isDiscount ? '-₦' : '₦'}{Math.abs(value).toLocaleString()}
+        {isDiscount ? '-GH₵ ' : 'GH₵ '}{Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
       </Text>
     </View>
   );
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typePresets.h5,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
     marginBottom: 12,
   },
@@ -185,12 +185,12 @@ const styles = StyleSheet.create({
   },
   couponText: {
     ...typePresets.caption,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.success,
   },
   couponRemove: {
     ...typePresets.caption,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.error,
   },
   couponInputRow: {
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
   },
   couponApplyText: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.white,
   },
   couponError: {
@@ -245,12 +245,12 @@ const summaryStyles = StyleSheet.create({
   },
   value: {
     ...typePresets.body,
-    fontFamily: 'Nunito_500Medium',
+    fontFamily: 'NunitoSans_500Medium',
     color: colors.text,
   },
   bold: {
     ...typePresets.h5,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   discount: {

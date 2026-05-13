@@ -1,70 +1,128 @@
-/**
- * Cart Routes — Shopping cart management for BexieMart.
- *
- * GET    /api/cart               — Get current user's cart
- * POST   /api/cart/items         — Add item to cart
- * PUT    /api/cart/items/:id     — Update cart item quantity
- * DELETE /api/cart/items/:id     — Remove item from cart
- * DELETE /api/cart               — Clear cart
- */
 import { eventHandler, readBody, getRouterParam, setResponseStatus } from 'h3';
-import crypto from 'crypto';
-
-// ─── Get Cart ───────────────────────────────────────────────────────────────────
+import { prisma } from '../db';
+import { requireAuth } from '../middleware/auth';
+import { addToCartSchema, updateCartItemSchema } from '../validators';
+import { success, error } from '../utils/response';
 
 export const getCart = eventHandler(async (event) => {
-  return {
-    id: 'temp-cart-id',
-    items: [],
-    subtotal: 0,
-    itemCount: 0,
-  };
-});
+  await requireAuth(event);
+  const user = event.context.user as { id: string };
 
-// ─── Add to Cart ────────────────────────────────────────────────────────────────
+  const cart = await prisma.cart.findUnique({
+    where: { userId: user.id },
+    include: {
+      items: {
+        include: {
+          product: {
+            include: { images: { take: 1, orderBy: { order: 'asc' } } },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+    },
+  });
+
+  if (!cart) {
+    return success({ id: null, items: [], subtotal: 0, itemCount: 0 });
+  }
+
+  const subtotal = cart.items.reduce((sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity, 0);
+  const itemCount = cart.items.reduce((sum: number, item: { quantity: number }) => sum + item.quantity, 0);
+
+  return success({
+    id: cart.id,
+    items: cart.items,
+    subtotal,
+    itemCount,
+  });
+});
 
 export const addToCart = eventHandler(async (event) => {
+  await requireAuth(event);
+  const user = event.context.user as { id: string };
   const body = await readBody(event);
-  const { productId, quantity = 1 } = body;
 
-  if (!productId) {
+  const parsed = addToCartSchema.safeParse(body);
+  if (!parsed.success) {
     setResponseStatus(event, 400);
-    return { success: false, error: 'productId is required' };
+    return { success: false, error: parsed.error.issues.map(i => i.message).join(', ') };
   }
 
-  return {
-    success: true,
-    item: {
-      id: crypto.randomUUID(),
-      productId,
-      quantity,
-    },
-  };
-});
+  const { productId, quantity } = parsed.data;
 
-// ─── Update Cart Item ───────────────────────────────────────────────────────────
+  const product = await prisma.product.findUnique({ where: { id: productId, isDeleted: false } });
+  if (!product) {
+    setResponseStatus(event, 404);
+    return { success: false, error: 'Product not found' };
+  }
+
+  let cart = await prisma.cart.findUnique({ where: { userId: user.id } });
+  if (!cart) {
+    cart = await prisma.cart.create({ data: { userId: user.id } });
+  }
+
+  const existing = await prisma.cartItem.findUnique({
+    where: { cartId_productId: { cartId: cart.id, productId } },
+  });
+
+  if (existing) {
+    await prisma.cartItem.update({
+      where: { id: existing.id },
+      data: { quantity: existing.quantity + quantity, price: product.price },
+    });
+  } else {
+    await prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        productId,
+        productName: product.name,
+        price: product.price,
+        quantity,
+      },
+    });
+  }
+
+  return success({ message: 'Item added to cart' });
+});
 
 export const updateCartItem = eventHandler(async (event) => {
+  await requireAuth(event);
+  const user = event.context.user as { id: string };
   const id = getRouterParam(event, 'id');
   const body = await readBody(event);
-  const { quantity } = body;
 
-  if (!id) {
+  const parsed = updateCartItemSchema.safeParse(body);
+  if (!parsed.success) {
     setResponseStatus(event, 400);
-    return { success: false, error: 'Item ID is required' };
+    return { success: false, error: parsed.error.issues.map(i => i.message).join(', ') };
   }
 
-  if (quantity === undefined) {
-    setResponseStatus(event, 400);
-    return { success: false, error: 'quantity is required' };
+  const item = await prisma.cartItem.findUnique({
+    where: { id },
+    include: { cart: true },
+  });
+  if (!item) {
+    setResponseStatus(event, 404);
+    return { success: false, error: 'Cart item not found' };
   }
 
-  return { success: true, itemId: id, quantity };
+  // Ownership check: item must belong to the current user's cart
+  if (item.cart.userId !== user.id) {
+    setResponseStatus(event, 403);
+    return error(event as any, 403, 'Forbidden: not your cart item');
+  }
+
+  await prisma.cartItem.update({
+    where: { id },
+    data: { quantity: parsed.data.quantity },
+  });
+
+  return success({ message: 'Cart item updated' });
 });
 
-// ─── Remove from Cart ───────────────────────────────────────────────────────────
-
 export const removeFromCart = eventHandler(async (event) => {
+  await requireAuth(event);
+  const user = event.context.user as { id: string };
   const id = getRouterParam(event, 'id');
 
   if (!id) {
@@ -72,11 +130,32 @@ export const removeFromCart = eventHandler(async (event) => {
     return { success: false, error: 'Item ID is required' };
   }
 
-  return { success: true, itemId: id };
+  const item = await prisma.cartItem.findUnique({
+    where: { id },
+    include: { cart: true },
+  });
+  if (!item) {
+    setResponseStatus(event, 404);
+    return { success: false, error: 'Cart item not found' };
+  }
+
+  // Ownership check
+  if (item.cart.userId !== user.id) {
+    setResponseStatus(event, 403);
+    return error(event as any, 403, 'Forbidden: not your cart item');
+  }
+
+  await prisma.cartItem.delete({ where: { id } });
+  return success({ message: 'Item removed from cart' });
 });
 
-// ─── Clear Cart ──────────────────────────────────────────────────────────────────
-
 export const clearCart = eventHandler(async (event) => {
-  return { success: true, message: 'Cart cleared' };
+  await requireAuth(event);
+  const user = event.context.user as { id: string };
+
+  await prisma.cartItem.deleteMany({
+    where: { cart: { userId: user.id } },
+  });
+
+  return success({ message: 'Cart cleared' });
 });

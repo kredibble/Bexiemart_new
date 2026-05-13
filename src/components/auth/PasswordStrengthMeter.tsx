@@ -4,17 +4,18 @@
  */
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '@/theme/colors';
 
 interface PasswordStrengthMeterProps {
   password: string;
 }
 
 const strengthConfig = [
-  { label: '', color: '#E4E7EC' },
-  { label: 'Weak', color: '#B3261E' },
-  { label: 'Fair', color: '#F59E0B' },
-  { label: 'Good', color: '#004CFF' },
-  { label: 'Strong', color: '#08A81D' },
+  { label: '', color: colors.border },
+  { label: 'Weak', color: colors.error },
+  { label: 'Fair', color: colors.warning },
+  { label: 'Good', color: colors.primary },
+  { label: 'Strong', color: colors.success },
 ] as const;
 
 function evaluateStrength(password: string): number {
@@ -77,10 +78,10 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#E4E7EC',
+    backgroundColor: colors.border,
   },
   label: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 12,
     minWidth: 46,
     textAlign: 'right',

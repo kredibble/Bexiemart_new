@@ -4,17 +4,30 @@
  * Stripe (semantic depth), Material 3 (soft tonal backgrounds)
  *
  * Principles:
- * - One accent (#004CFF), used sparingly (≤2 per screen)
+ * - One accent (#7C3AED), used sparingly (≤2 per screen)
  * - Semantic colors have soft background variants for badges/chips
- * - Neutrals are blue-gray for warmth, not cold gray
+ * - Neutrals are balanced for warmth and readability
  */
 
 export const colors = {
   /* ─── Brand ───────────────────────────────────── */
-  primary: '#004CFF',
-  primaryHover: '#0040E0',
-  primarySoft: '#EEF2FF',    // 8% tint for chips, active states
-  primarySoftDark: '#D4DCFF', // 16% tint for selected rows
+  primary: '#06406B',
+  primaryHover: '#06365E',
+  primarySoft: '#E1EDF5',
+  primarySoftDark: '#D6E4EC',
+  primaryLight: '#06406B00',
+  primaryLight33: '#06406B33',
+  primaryLight66: '#06406B66',
+  primaryLight99: '#06406B99',
+
+  accent: '#22C55E',
+  accentSoft: '#D1FAE5',
+  accentDark: '#065F46',
+  accentGreen: '#06C760',
+  accentGreen2: '#17BE5A',
+  accentGreen3: '#12B76A',
+  accentGreen4: '#0DD14B',
+  accentGreen5: '#08C514',
 
   /* ─── Neutrals (blue-gray scale, not cold gray) ─ */
   text: '#111322',           // Near-black for headings
@@ -40,9 +53,9 @@ export const colors = {
   warningSoft: '#FEF3C7',
   warningDark: '#78350F',
 
-  info: '#004CFF',
-  infoSoft: '#DBEAFE',
-  infoDark: '#1E3A5F',
+  info: '#7C3AED',
+  infoSoft: '#F3E8FF',
+  infoDark: '#4C1D95',
 
   /* ─── Status (for badges, order states) ──────── */
   pending: '#FEF3C7',
@@ -146,9 +159,9 @@ export const shadows = {
       },
 
   focus: isWeb
-    ? { boxShadow: '0px 0px 4px rgba(0, 76, 255, 0.20)' }
+    ? { boxShadow: '0px 0px 4px rgba(124, 58, 237, 0.20)' }
     : {
-        shadowColor: '#004CFF',
+        shadowColor: '#7C3AED',
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.2,
         shadowRadius: 4,

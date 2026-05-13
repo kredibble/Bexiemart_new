@@ -10,14 +10,15 @@ datasource db {
 // ─── Better Auth Models ────────────────────────────────────────────────────────
 
 model User {
-  id            String    @id
-  name          String
-  email         String    @unique
-  emailVerified Boolean   @default(false)
-  image         String?
-  role          String    @default("customer")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                  String    @id
+  name                String
+  email               String    @unique
+  emailVerified       Boolean   @default(false)
+  image               String?
+  role                String    @default("customer")
+  onboardingCompleted Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   sessions      Session[]
   accounts      Account[]
@@ -29,6 +30,11 @@ model User {
   payments      Payment[]
   notifications Notification[]
   shippingAddresses ShippingAddress[]
+  reviews           Review[]
+  conversations     ConversationParticipant[]
+  messages          Message[]
+  stories           Story[]
+  storyViews        StoryView[]
 }
 
 model Session {
@@ -98,6 +104,7 @@ model VendorProfile {
   updatedAt   DateTime @updatedAt
 
   products    Product[]
+  coupons     Coupon[]
 }
 
 // ─── Product Models ─────────────────────────────────────────────────────────────
@@ -136,10 +143,12 @@ model Product {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  images      ProductImage[]
-  wishlist    Wishlist[]
-  orderItems  OrderItem[]
-  cartItems   CartItem[]
+  images          ProductImage[]
+  wishlist        Wishlist[]
+  orderItems      OrderItem[]
+  cartItems       CartItem[]
+  reviews         Review[]
+  deliveryOptions Json          @default("[]")
 
   @@index([categoryId])
   @@index([vendorId])
@@ -288,6 +297,25 @@ model Payment {
   @@index([paystackRef])
 }
 
+// ─── Coupon Model ────────────────────────────────────────────────────────────────
+
+model Coupon {
+  id              String          @id @default(cuid())
+  code            String          @unique
+  vendorId        String?
+  vendor          VendorProfile?  @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  discountPercent Float
+  minOrderAmount  Float           @default(0)
+  maxUses         Int             @default(100)
+  currentUses     Int             @default(0)
+  isActive        Boolean         @default(true)
+  expiresAt       DateTime
+  createdAt       DateTime        @default(now())
+
+  @@index([code])
+  @@index([vendorId])
+}
+
 // ─── Notification Model ──────────────────────────────────────────────────────────
 
 model Notification {
@@ -303,6 +331,93 @@ model Notification {
 
   @@index([userId])
   @@index([isRead])
+}
+
+// ─── Review Model ────────────────────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
+}
+
+// ─── Chat Models ────────────────────────────────────────────────────────
+
+model Conversation {
+  id        String    @id @default(cuid())
+  orderId   String?   // Optional link to an order
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([updatedAt])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadAt     DateTime?    // When the user last read the conversation
+  joinedAt       DateTime     @default(now())
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String
+  sender         User         @relation(fields: [senderId], references: [id])
+  content        String
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId, createdAt])
+}
+
+// ─── Story Models ────────────────────────────────────────────────────────
+
+model Story {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mediaUrl  String   // Image or video URL
+  caption   String?
+  expiresAt DateTime // 24h from creation
+  createdAt DateTime @default(now())
+
+  views StoryView[]
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model StoryView {
+  id       String   @id @default(cuid())
+  storyId  String
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  viewerId String
+  viewer   User     @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+  viewedAt DateTime @default(now())
+
+  @@unique([storyId, viewerId])
+  @@index([storyId])
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────────
@@ -330,4 +445,5 @@ enum NotificationType {
   shipping
   promotion
   system
+  review
 }

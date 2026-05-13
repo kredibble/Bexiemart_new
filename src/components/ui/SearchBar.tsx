@@ -189,7 +189,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 15,
     color: colors.text,
     padding: 0,
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   cancelText: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 15,
     color: colors.primary,
   },

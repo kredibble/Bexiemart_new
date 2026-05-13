@@ -94,7 +94,7 @@ export default function NewPasswordScreen() {
         {/* Illustration */}
         <View style={styles.illustrationContainer}>
           <View style={styles.illustrationCircle}>
-            <Ionicons name="shield-checkmark-outline" size={40} color="#004CFF" />
+            <Ionicons name="shield-checkmark-outline" size={40} color="#7C3AED" />
           </View>
         </View>
 
@@ -192,7 +192,7 @@ export default function NewPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  accentBar: { height: 4, backgroundColor: '#7C3AED' },
   headerRow: { paddingHorizontal: 24, paddingBottom: 8 },
   backButton: {
     width: 44, height: 44, borderRadius: 22,
@@ -201,11 +201,11 @@ const styles = StyleSheet.create({
   illustrationContainer: { alignItems: 'center', marginTop: 16, marginBottom: 20 },
   illustrationCircle: {
     width: 80, height: 80, borderRadius: 40,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3E8FF',
     alignItems: 'center', justifyContent: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#004CFF',
+        shadowColor: '#7C3AED',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1, shadowRadius: 16,
       },
@@ -214,12 +214,12 @@ const styles = StyleSheet.create({
     }),
   },
   title: {
-    fontFamily: 'Raleway_700Bold', fontSize: 28,
+    fontFamily: 'Rubik_700Bold', fontSize: 28,
     color: '#111322', textAlign: 'center',
     letterSpacing: -0.5, marginBottom: 6,
   },
   subtitle: {
-    fontFamily: 'Nunito_400Regular', fontSize: 15,
+    fontFamily: 'NunitoSans_400Regular', fontSize: 15,
     color: '#5F6C7B', textAlign: 'center',
     lineHeight: 22, marginBottom: 24,
   },
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     padding: 14, marginBottom: 20,
   },
   errorText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 14,
+    fontFamily: 'NunitoSans_400Regular', fontSize: 14,
     color: '#7F1D1D', flex: 1, lineHeight: 20,
   },
   formCard: {
@@ -250,14 +250,14 @@ const styles = StyleSheet.create({
   },
   reqDotMet: { backgroundColor: '#08A81D' },
   reqText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#9BA5B0',
+    fontFamily: 'NunitoSans_400Regular', fontSize: 13, color: '#9BA5B0',
   },
   reqTextMet: { color: '#111322' },
   buttonWrapper: {
     marginBottom: 20,
     ...Platform.select({
       ios: {
-        shadowColor: '#004CFF',
+        shadowColor: '#7C3AED',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3, shadowRadius: 12,
       },
@@ -270,6 +270,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center', paddingVertical: 8,
   },
   trustNoteText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#5F6C7B',
+    fontFamily: 'NunitoSans_400Regular', fontSize: 13, color: '#5F6C7B',
   },
 });

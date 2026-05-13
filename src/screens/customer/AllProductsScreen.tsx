@@ -25,7 +25,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ProductCard } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useProducts, useWishlist } from '@/hooks/useProducts';
-import { colors, shadows } from '@/theme/colors';
+import { colors, radii, shadows } from '@/theme/colors';
 import type { HomeStackParamList } from '@/navigation/CustomerTabs';
 import type { Product } from '@/types';
 
@@ -46,6 +46,8 @@ export default function AllProductsScreen() {
   const {
     data: productsData,
     isLoading,
+    isError,
+    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -56,11 +58,11 @@ export default function AllProductsScreen() {
   const { data: wishlistItems } = useWishlist();
 
   const products = useMemo(() => {
-    return productsData?.pages?.flatMap((page) => page.data) ?? [];
+    return (productsData?.pages?.flatMap((page) => page.data) ?? []).filter(Boolean);
   }, [productsData]);
 
   const wishlistProductIds = useMemo(() => {
-    return new Set(wishlistItems?.map((item) => item.productId) ?? []);
+    return new Set((Array.isArray(wishlistItems) ? wishlistItems : []).map((item) => item.productId));
   }, [wishlistItems]);
 
   const handleProductPress = useCallback((product: Product) => {
@@ -132,7 +134,16 @@ export default function AllProductsScreen() {
         <View style={styles.backButton} />
       </View>
 
-      {isLoading ? (
+      {isError ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message ?? 'Unable to load products. Please try again.'}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()} accessibilityRole="button" accessibilityLabel="Retry loading products">
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : isLoading ? (
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
         </View>
@@ -192,7 +203,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   headerTitle: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 20,
     color: colors.text,
     flex: 1,
@@ -217,5 +228,36 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  errorTitle: {
+    fontFamily: 'Rubik_700Bold',
+    fontSize: 20,
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: radii.full,
+    backgroundColor: colors.primary,
+  },
+  retryBtnText: {
+    fontFamily: 'NunitoSans_600SemiBold',
+    fontSize: 14,
+    color: colors.white,
   },
 });

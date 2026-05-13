@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   text: {
     ...typePresets.bodySm,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.white,
   },
 });

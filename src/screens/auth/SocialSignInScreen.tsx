@@ -96,8 +96,8 @@ export default function SocialSignInScreen() {
       }
 
       if (data?.user) {
-        // Read role from store (set during registration) or default to customer
-        const userRole = storedUser?.role ?? 'customer';
+        // Read role from server response first, then fall back to stored registration data
+        const userRole = (data.user as any)?.role ?? storedUser?.role ?? 'customer';
         // Update store — RootNavigator will detect the change and show the correct tabs
         setUser({
           id: data.user.id ?? storedUser?.id ?? '',
@@ -139,11 +139,13 @@ export default function SocialSignInScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back" size={20} color="#111322" />
         </TouchableOpacity>
         <View style={styles.pill}>
-          <Ionicons name="log-in-outline" size={12} color="#004CFF" />
+          <Ionicons name="log-in-outline" size={12} color="#7C3AED" />
           <Text style={styles.stepText}>Sign in</Text>
         </View>
       </View>
@@ -180,6 +182,8 @@ export default function SocialSignInScreen() {
               onPress={() => handleSocialPress('google')}
               disabled={isLoading}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in with Google"
             >
               {isLoading ? (
                 <View style={styles.socialIconPlaceholder}>
@@ -196,6 +200,8 @@ export default function SocialSignInScreen() {
               onPress={() => handleSocialPress('apple')}
               disabled={isLoading}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Sign in with Apple"
             >
               <Ionicons name="logo-apple" size={22} color="#111322" />
               <Text style={styles.socialText}>Apple</Text>
@@ -260,6 +266,8 @@ export default function SocialSignInScreen() {
             <TouchableOpacity
               onPress={() => navigation.navigate('ForgotPassword' as any)}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Forgot password"
             >
               <Text style={styles.forgotLink}>Forgot Password?</Text>
             </TouchableOpacity>
@@ -300,8 +308,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: SCREEN_WIDTH * 1.2,
     height: SCREEN_WIDTH * 1.2,
-    borderRadius: SCREEN_WIDTH * 0.6,
-    backgroundColor: '#004CFF',
+    borderRadius: 9999,
+    backgroundColor: '#7C3AED',
     top: -SCREEN_WIDTH * 0.55,
     right: -SCREEN_WIDTH * 0.4,
     opacity: 0.06,
@@ -310,7 +318,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 140,
     height: 140,
-    borderRadius: 70,
+    borderRadius: 9999,
     backgroundColor: '#FFD60A',
     top: '45%',
     right: -30,
@@ -329,7 +337,7 @@ const styles = StyleSheet.create({
   backButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 9999,
     backgroundColor: '#F5F7FA',
     alignItems: 'center',
     justifyContent: 'center',
@@ -340,15 +348,15 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 9999,
     backgroundColor: '#F0F4FF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
   stepText: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 12,
-    color: '#004CFF',
+    color: '#7C3AED',
     letterSpacing: 0.3,
   },
   scrollContent: {
@@ -359,7 +367,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   heroPretitle: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 14,
     color: '#8E96A6',
     letterSpacing: 1.5,
@@ -367,7 +375,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   heroTitle: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 42,
     color: '#111322',
     lineHeight: 46,
@@ -382,7 +390,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   errorText: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 14,
     color: '#7F1D1D',
     flex: 1,
@@ -396,7 +404,7 @@ const styles = StyleSheet.create({
     borderColor: '#E8EBF0',
     gap: 20,
     ...Platform.select({
-      ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 16 },
+      ios: { shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 16 },
       android: { elevation: 2 },
       web: { boxShadow: '0px 2px 16px rgba(0, 76, 255, 0.06)' },
     }),
@@ -410,12 +418,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: 12,
     height: 50,
-    borderRadius: 14,
+    borderRadius: 9999,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
     borderColor: '#E4E7EC',
+    paddingHorizontal: 20,
     ...Platform.select({
       ios: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.03, shadowRadius: 4 },
       android: { elevation: 1 },
@@ -426,9 +435,10 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   socialText: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 14,
+    fontFamily: 'NunitoSans_700Bold',
+    fontSize: 16,
     color: '#111322',
+    letterSpacing: 0.2,
   },
   socialIconPlaceholder: {
     width: 20,
@@ -439,10 +449,10 @@ const styles = StyleSheet.create({
   loadingSpinner: {
     width: 16,
     height: 16,
-    borderRadius: 8,
+    borderRadius: 9999,
     borderWidth: 2,
     borderColor: '#E4E7EC',
-    borderTopColor: '#004CFF',
+    borderTopColor: '#7C3AED',
   },
   dividerRow: {
     flexDirection: 'row',
@@ -455,7 +465,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#E8EBF0',
   },
   dividerText: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 12,
     color: '#9BA5B0',
   },
@@ -479,22 +489,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: '#004CFF',
-    borderColor: '#004CFF',
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
   },
   checkboxLabel: {
-    fontFamily: 'Nunito_500Medium',
+    fontFamily: 'NunitoSans_500Medium',
     fontSize: 14,
     color: '#111322',
   },
   forgotLink: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 14,
-    color: '#004CFF',
+    color: '#7C3AED',
   },
   buttonWrapper: {
     ...Platform.select({
-      ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
+      ios: { shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12 },
       android: { elevation: 4 },
       web: { boxShadow: '0px 4px 12px rgba(0, 76, 255, 0.3)' },
     }),
@@ -506,13 +516,13 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   footerText: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 14,
     color: '#8E96A6',
   },
   footerLink: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     fontSize: 14,
-    color: '#004CFF',
+    color: '#7C3AED',
   },
 });

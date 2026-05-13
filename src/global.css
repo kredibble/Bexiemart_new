@@ -14,13 +14,13 @@
     --color-card-foreground:  #202020;
     --color-muted:            #F5F5F5;
     --color-muted-foreground: #5F6C7B;
-    --color-primary:          #004CFF;
+    --color-primary:          #7C3AED;
     --color-primary-foreground: #FFFFFF;
-    --color-secondary:        #ADD8E6;
-    --color-accent:           #CD853F;
+    --color-secondary:        #A78BFA;
+    --color-accent:           #22C55E;
     --color-border:           #E4E7EC;
     --color-input:            #FFFFFF;
-    --color-ring:             #004CFF;
+    --color-ring:             #7C3AED;
     --color-success:          #08A81D;
     --color-warning:          #F59E0B;
     --color-destructive:      #B3261E;
@@ -31,14 +31,14 @@
 
     /* order status */
     --color-status-pending:    #F59E0B;
-    --color-status-confirmed:  #004CFF;
+    --color-status-confirmed:  #7C3AED;
     --color-status-processing: #FF9800;
     --color-status-shipped:    #9C27B0;
     --color-status-delivered:  #08A81D;
     --color-status-cancelled:  #B3261E;
 
     /* tab bar */
-    --color-tab-active:        #004CFF;
+    --color-tab-active:        #7C3AED;
     --color-tab-inactive:      #686262;
 
     /* skeleton */
@@ -69,22 +69,22 @@
     --spacing-30: 120px;
 
     /* ================================================================
-       TYPOGRAPHY — Raleway (headings) + Nunito (body)
+       TYPOGRAPHY — Rubik (headings) + Nunito Sans (body)
        ================================================================ */
-    --font-heading:            'Raleway';
-    --font-heading-light:      'Raleway-Light';
-    --font-heading-regular:    'Raleway-Regular';
-    --font-heading-medium:     'Raleway-Medium';
-    --font-heading-semibold:   'Raleway-SemiBold';
-    --font-heading-bold:       'Raleway-Bold';
-    --font-heading-extrabold:  'Raleway-ExtraBold';
+    --font-heading:            'Rubik';
+    --font-heading-light:      'Rubik-Light';
+    --font-heading-regular:    'Rubik-Regular';
+    --font-heading-medium:     'Rubik-Medium';
+    --font-heading-semibold:   'Rubik-SemiBold';
+    --font-heading-bold:       'Rubik-Bold';
+    --font-heading-extrabold:  'Rubik-ExtraBold';
 
-    --font-body:               'Nunito';
-    --font-body-light:         'Nunito-Light';
-    --font-body-regular:       'Nunito-Regular';
-    --font-body-medium:        'Nunito-Medium';
-    --font-body-semibold:      'Nunito-SemiBold';
-    --font-body-bold:          'Nunito-Bold';
+    --font-body:               'Nunito Sans';
+    --font-body-light:         'Nunito Sans-Light';
+    --font-body-regular:       'Nunito Sans-Regular';
+    --font-body-medium:        'Nunito Sans-Medium';
+    --font-body-semibold:      'Nunito Sans-SemiBold';
+    --font-body-bold:          'Nunito Sans-Bold';
 }
 
 /* =========================================================================

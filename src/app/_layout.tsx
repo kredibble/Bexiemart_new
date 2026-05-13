@@ -4,20 +4,21 @@ import { View, ActivityIndicator } from "react-native";
 import { useFonts } from "expo-font";
 import * as SplashScreen from "expo-splash-screen";
 import {
-  Raleway_400Regular,
-  Raleway_600SemiBold,
-  Raleway_700Bold,
-} from "@expo-google-fonts/raleway";
+  Rubik_400Regular,
+  Rubik_600SemiBold,
+  Rubik_700Bold,
+} from "@expo-google-fonts/rubik";
 import {
-  Nunito_300Light,
-  Nunito_400Regular,
-  Nunito_500Medium,
-  Nunito_600SemiBold,
-  Nunito_700Bold,
-} from "@expo-google-fonts/nunito";
+  NunitoSans_300Light,
+  NunitoSans_400Regular,
+  NunitoSans_500Medium,
+  NunitoSans_600SemiBold,
+  NunitoSans_700Bold,
+} from "@expo-google-fonts/nunito-sans";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ToastProvider } from "@/components/ui/Toast";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,14 +26,14 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
-    Raleway_400Regular,
-    Raleway_600SemiBold,
-    Raleway_700Bold,
-    Nunito_300Light,
-    Nunito_400Regular,
-    Nunito_500Medium,
-    Nunito_600SemiBold,
-    Nunito_700Bold,
+    Rubik_400Regular,
+    Rubik_600SemiBold,
+    Rubik_700Bold,
+    NunitoSans_300Light,
+    NunitoSans_400Regular,
+    NunitoSans_500Medium,
+    NunitoSans_600SemiBold,
+    NunitoSans_700Bold,
   });
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" }}>
-        <ActivityIndicator size="large" color="#004CFF" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -52,7 +53,9 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
-        <Slot />
+        <ToastProvider>
+          <Slot />
+        </ToastProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

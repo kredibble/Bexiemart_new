@@ -1,6 +1,7 @@
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import type { Product } from "@/types";
 import { formatCurrency } from "@/utils/format";
+import { colors } from "@/theme/colors";
 
 type ProductGridProps = {
   products: Product[];
@@ -23,9 +24,9 @@ export default function ProductGrid({
       >
         <Text
           style={{
-            fontFamily: "Nunito_400Regular",
+            fontFamily: "NunitoSans_400Regular",
             fontSize: 15,
-            color: "#5F6C7B",
+            color: colors.textSecondary,
             textAlign: "center",
           }}
         >
@@ -50,16 +51,16 @@ export default function ProductGrid({
             minHeight: 140,
             borderRadius: 16,
             padding: 16,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: colors.white,
             borderWidth: 1,
-            borderColor: "#E4E7EC",
+            borderColor: colors.border,
           }}
         >
           <Text
             style={{
-              fontFamily: "Nunito_700Bold",
+              fontFamily: "NunitoSans_700Bold",
               fontSize: 16,
-              color: "#111322",
+              color: colors.text,
               marginBottom: 6,
             }}
           >
@@ -67,9 +68,9 @@ export default function ProductGrid({
           </Text>
           <Text
             style={{
-              fontFamily: "Nunito_400Regular",
+              fontFamily: "NunitoSans_400Regular",
               fontSize: 14,
-              color: "#5F6C7B",
+              color: colors.textSecondary,
             }}
           >
             {formatCurrency(item.price)}

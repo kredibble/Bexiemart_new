@@ -51,11 +51,25 @@ async function getSessionCookie(): Promise<string | null> {
   }
 }
 
+/** Callback to invoke when a 401 is received — used to trigger logout + redirect */
+let onUnauthorized: (() => void) | null = null;
+
+export function setOnUnauthorized(callback: () => void) {
+  onUnauthorized = callback;
+}
+
 async function clearSessionToken(): Promise<void> {
   try {
     await SecureStore.deleteItemAsync('bexiemart_session_token');
   } catch {
     // Already cleared
+  }
+}
+
+function triggerUnauthorized(): void {
+  clearSessionToken();
+  if (onUnauthorized) {
+    onUnauthorized();
   }
 }
 
@@ -92,7 +106,7 @@ async function rawRequest<T>(
     }
 
     if (response.status === 401) {
-      await clearSessionToken();
+      triggerUnauthorized();
     }
 
     throw new ApiError(
@@ -107,7 +121,18 @@ async function rawRequest<T>(
     return undefined as T;
   }
 
-  return response.json() as Promise<T>;
+  const json = await response.json() as any;
+
+  // Unwrap standard envelope { success, data, meta? } returned by server/utils/response.ts
+  if (json && typeof json === 'object' && 'success' in json && 'data' in json) {
+    // Paginated responses: reconstruct { data, page, pageSize, ... } shape
+    if (json.meta) {
+      return { data: json.data, ...json.meta } as T;
+    }
+    return json.data as T;
+  }
+
+  return json as T;
 }
 
 // ── Retry Wrapper ──────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ import {
   StyleSheet,
   Dimensions,
   RefreshControl,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -30,10 +31,13 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { Carousel, type CarouselItem } from '@/components/ui/Carousel';
 import { ProductCard } from '@/components/product/ProductCard';
+import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { Badge } from '@/components/ui/Badge';
+import { Skeleton, SkeletonCard } from '@/components/ui/Skeleton';
+import { Chip } from '@/components/ui/Chip';
 import { useProducts, useCategories, useWishlist } from '@/hooks/useProducts';
+import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { colors, shadows, radii } from '@/theme/colors';
 import type { HomeStackParamList } from '@/navigation/CustomerTabs';
@@ -57,22 +61,37 @@ export default function HomeScreen() {
     isLoading: productsLoading,
     refetch: refetchProducts,
     isRefetching,
+    isError: productsError,
+    error: productsErrorObj,
   } = useProducts({ });
 
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const {
+    data: categories,
+    isLoading: categoriesLoading,
+    isError: categoriesError,
+    error: categoriesErrorObj,
+    refetch: refetchCategories,
+  } = useCategories();
   const { data: wishlistItems } = useWishlist();
 
   // Flatten paginated products
   const products = useMemo(() => {
-    return productsData?.pages?.flatMap((page) => page.data) ?? [];
+    return (productsData?.pages?.flatMap((page) => page.data) ?? []).filter(Boolean);
   }, [productsData]);
 
   // Featured products (first 6)
   const featuredProducts = useMemo(() => products.slice(0, 6), [products]);
 
+  // Flash sale: products with discount
+  const flashSaleProducts = useMemo(() => products.filter((p) => p.compareAtPrice && p.compareAtPrice > p.price).slice(0, 8), [products]);
+
+  // New items: first 4 (already sorted by newest)
+  const newItems = useMemo(() => products.slice(0, 4), [products]);
+
   // Wishlist lookup set for fast checks
   const wishlistProductIds = useMemo(() => {
-    return new Set(wishlistItems?.map((item) => item.productId) ?? []);
+    const items = Array.isArray(wishlistItems) ? wishlistItems : [];
+    return new Set(items.map((item) => item.productId));
   }, [wishlistItems]);
 
   // Promotional banners (placeholder data for now — will come from API)
@@ -111,6 +130,22 @@ export default function HomeScreen() {
     navigation.navigate('AllProducts', { title: `"${query}"` });
   }, [navigation]);
 
+  const handleFavoritesPress = useCallback(() => {
+    navigation.navigate('FavoritesMain');
+  }, [navigation]);
+
+  const handleWalletPress = useCallback(() => {
+    navigation.navigate('WalletMain');
+  }, [navigation]);
+
+  const handleNotificationsPress = useCallback(() => {
+    navigation.navigate('Notifications');
+  }, [navigation]);
+
+  const handleSettingsPress = useCallback(() => {
+    navigation.navigate('Settings');
+  }, [navigation]);
+
   const handleRefresh = useCallback(() => {
     refetchProducts();
   }, [refetchProducts]);
@@ -124,6 +159,25 @@ export default function HomeScreen() {
   }, []);
 
   const firstName = user?.name?.split(' ')[0] ?? 'there';
+
+  if (productsError || categoriesError) {
+    return (
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <StatusBar style="dark" />
+        <View style={styles.centerContainer}>
+          <Ionicons name="cloud-offline-outline" size={48} color={colors.textLight} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>
+            {(productsErrorObj ?? categoriesErrorObj)?.message || 'Failed to load data'}
+          </Text>
+          <Button variant="default" style={styles.retryBtn} onPress={() => { refetchProducts(); refetchCategories(); }}>
+            <Ionicons name="refresh" size={16} color={colors.white} />
+            <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 14, color: colors.white }}>Try Again</Text>
+          </Button>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -150,15 +204,48 @@ export default function HomeScreen() {
               <Ionicons name="hand-left-outline" size={20} color={colors.text} />
             </View>
           </View>
-          <TouchableOpacity
-            style={styles.notifButton}
-            accessibilityRole="button"
-            accessibilityLabel="Notifications"
-            activeOpacity={0.7}
-          >
-            <Ionicons name="notifications-outline" size={24} color={colors.text} />
-            <Badge count={1} />
-          </TouchableOpacity>
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleWalletPress}
+              accessibilityRole="button"
+              accessibilityLabel="Wallet"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="wallet-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleFavoritesPress}
+              accessibilityRole="button"
+              accessibilityLabel="Favorites"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="heart-outline" size={24} color={colors.text} />
+              {Array.isArray(wishlistItems) && wishlistItems.length > 0 && (
+                <Badge count={wishlistItems.length} />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleNotificationsPress}
+              accessibilityRole="button"
+              accessibilityLabel="Notifications"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="notifications-outline" size={24} color={colors.text} />
+              <Badge count={1} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleSettingsPress}
+              accessibilityRole="button"
+              accessibilityLabel="Settings"
+              activeOpacity={0.7}
+            >
+              <Ionicons name="settings-outline" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Search ──────────────────────────────────────────────────── */}
@@ -184,7 +271,11 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Categories</Text>
         </View>
         {categoriesLoading ? (
-          <LoadingSpinner size="small" />
+          <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 20 }}>
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} width={80} height={36} borderRadius={18} />
+            ))}
+          </View>
         ) : (
           <FlatList
             data={categories ?? []}
@@ -201,21 +292,67 @@ export default function HomeScreen() {
           />
         )}
 
-        {/* ── Featured Products ────────────────────────────────────────── */}
+        {/* ── Flash Sale ────────────────────────────────────────────── */}
+        {flashSaleProducts.length > 0 && (
+          <>
+            <View style={styles.sectionHeader}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Ionicons name="flash" size={20} color={colors.error} />
+                <Text style={styles.sectionTitle}>Flash Sale</Text>
+                <View style={styles.flashBadge}>
+                  <Text style={styles.flashBadgeText}>Ends in 02:34:15</Text>
+                </View>
+              </View>
+              <TouchableOpacity onPress={handleSeeAll} accessibilityRole="button" accessibilityLabel="View all flash sale">
+                <Text style={styles.seeAllText}>See All</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={flashSaleProducts}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.flashList}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.flashCard}
+                  onPress={() => handleProductPress(item)}
+                  activeOpacity={0.7}
+                  accessibilityRole="button"
+                >
+                  <Image source={{ uri: item.images?.[0]?.url }} style={styles.flashImage} />
+                  <Text style={styles.flashName} numberOfLines={1}>{item.name}</Text>
+                  <View style={styles.flashPriceRow}>
+                    <Text style={styles.flashPrice}>GH₵ {item.price}</Text>
+                    {item.compareAtPrice && (
+                      <Text style={styles.flashOldPrice}>GH₵ {item.compareAtPrice}</Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          </>
+        )}
+
+        {/* ── Categories ──────────────────────────────────────────────── */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Featured Products</Text>
-          <TouchableOpacity
-            onPress={handleSeeAll}
-            accessibilityRole="button"
-            accessibilityLabel="See all products"
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={styles.seeAllText}>See All</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Categories</Text>
         </View>
 
         {productsLoading ? (
-          <LoadingSpinner />
+          <View style={styles.productGrid}>
+            {[1, 2, 3, 4].map((i) => (
+              <View
+                key={i}
+                style={[
+                  styles.productCardWrapper,
+                  i % 2 === 0 ? { marginRight: GRID_GAP / 2 } : { marginLeft: GRID_GAP / 2 },
+                ]}
+              >
+                <SkeletonCard />
+              </View>
+            ))}
+          </View>
         ) : featuredProducts.length === 0 ? (
           <EmptyState
             icon="bag-outline"
@@ -259,18 +396,12 @@ interface CategoryChipProps {
 
 function CategoryChip({ category, onPress }: CategoryChipProps) {
   return (
-    <TouchableOpacity
-      style={chipStyles.container}
+    <Chip
+      label={category.name}
+      leftIcon={category.icon ? <Text style={{ fontSize: 16 }}>{category.icon}</Text> : undefined}
       onPress={() => onPress(category)}
-      activeOpacity={0.7}
-      accessibilityRole="button"
       accessibilityLabel={`Browse ${category.name}`}
-    >
-      {category.icon && (
-        <Text style={chipStyles.icon}>{category.icon}</Text>
-      )}
-      <Text style={chipStyles.label}>{category.name}</Text>
-    </TouchableOpacity>
+    />
   );
 }
 
@@ -299,18 +430,22 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   greeting: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
   },
   userName: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 24,
     color: colors.text,
     letterSpacing: -0.5,
   },
-  notifButton: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  iconButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
@@ -343,15 +478,68 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   sectionTitle: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 18,
     color: colors.text,
     letterSpacing: -0.3,
   },
   seeAllText: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 14,
     color: colors.primary,
+  },
+
+  // Flash Sale
+  flashBadge: {
+    backgroundColor: colors.error + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  flashBadgeText: {
+    fontFamily: 'NunitoSans_600SemiBold',
+    fontSize: 11,
+    color: colors.error,
+  },
+  flashList: {
+    paddingHorizontal: GRID_PADDING,
+    gap: 10,
+  },
+  flashCard: {
+    width: 140,
+    backgroundColor: colors.white,
+    borderRadius: radii.md,
+    padding: 8,
+    ...shadows.sm,
+  },
+  flashImage: {
+    width: 124,
+    height: 124,
+    borderRadius: radii.sm,
+    resizeMode: 'cover',
+  },
+  flashName: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 13,
+    color: colors.text,
+    marginTop: 6,
+  },
+  flashPriceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+  },
+  flashPrice: {
+    fontFamily: 'Rubik_700Bold',
+    fontSize: 15,
+    color: colors.text,
+  },
+  flashOldPrice: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 12,
+    color: colors.textSecondary,
+    textDecorationLine: 'line-through',
   },
 
   // Categories
@@ -371,27 +559,32 @@ const styles = StyleSheet.create({
     marginBottom: GRID_GAP,
   },
 
-
-});
-
-const chipStyles = StyleSheet.create({
-  container: {
+  // Error state
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  errorTitle: {
+    fontFamily: 'Rubik_700Bold',
+    fontSize: 16,
+    color: colors.text,
+    marginTop: 8,
+  },
+  errorMessage: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  retryBtn: {
+    marginTop: 8,
+    paddingHorizontal: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.white,
-    borderRadius: radii.full,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
     gap: 6,
-    borderWidth: 1,
-    borderColor: colors.border,
   },
-  icon: {
-    fontSize: 16,
-  },
-  label: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: colors.text,
-  },
+
 });

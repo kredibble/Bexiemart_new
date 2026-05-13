@@ -260,7 +260,7 @@ function OTPBox({ index, value, isFilled, isComplete, inputRef, onChange, onKeyP
 }
 
 const styles = StyleSheet.create({
-  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  accentBar: { height: 4, backgroundColor: '#7C3AED' },
   headerRow: { paddingHorizontal: 24, paddingBottom: 8 },
   backButton: {
     width: 44, height: 44, borderRadius: 22,
@@ -272,17 +272,17 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   title: {
-    fontFamily: 'Raleway_700Bold', fontSize: 28,
+    fontFamily: 'Rubik_700Bold', fontSize: 28,
     color: '#111322', textAlign: 'center',
     letterSpacing: -0.5, marginBottom: 6,
   },
   subtitle: {
-    fontFamily: 'Nunito_400Regular', fontSize: 15,
+    fontFamily: 'NunitoSans_400Regular', fontSize: 15,
     color: '#5F6C7B', textAlign: 'center',
     lineHeight: 22, marginBottom: 4,
   },
   emailText: {
-    fontFamily: 'Nunito_700Bold', fontSize: 15,
+    fontFamily: 'NunitoSans_700Bold', fontSize: 15,
     color: '#111322', textAlign: 'center',
     marginBottom: 24,
   },
@@ -296,10 +296,10 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%', borderRadius: 2,
-    backgroundColor: '#004CFF',
+    backgroundColor: '#7C3AED',
   },
   progressText: {
-    fontFamily: 'Nunito_600SemiBold', fontSize: 12,
+    fontFamily: 'NunitoSans_600SemiBold', fontSize: 12,
     color: '#5F6C7B', minWidth: 50, textAlign: 'right',
   },
   otpCard: {
@@ -322,14 +322,14 @@ const styles = StyleSheet.create({
     width: 48, height: 60,
     borderWidth: 2, borderColor: '#E4E7EC',
     borderRadius: 14, textAlign: 'center',
-    fontFamily: 'Raleway_700Bold', fontSize: 24,
+    fontFamily: 'Rubik_700Bold', fontSize: 24,
     color: '#111322', backgroundColor: '#FFFFFF',
   },
   otpBoxFilled: {
-    borderColor: '#004CFF', backgroundColor: '#EEF2FF',
+    borderColor: '#7C3AED', backgroundColor: '#F3E8FF',
   },
   otpBoxComplete: {
-    borderColor: '#004CFF', backgroundColor: '#EEF2FF',
+    borderColor: '#7C3AED', backgroundColor: '#F3E8FF',
   },
   errorBanner: {
     flexDirection: 'row', alignItems: 'center',
@@ -337,14 +337,14 @@ const styles = StyleSheet.create({
     padding: 14, marginBottom: 20,
   },
   errorText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 14,
+    fontFamily: 'NunitoSans_400Regular', fontSize: 14,
     color: '#7F1D1D', flex: 1, lineHeight: 20,
   },
   buttonWrapper: {
     marginBottom: 20,
     ...Platform.select({
       ios: {
-        shadowColor: '#004CFF',
+        shadowColor: '#7C3AED',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3, shadowRadius: 12,
       },
@@ -356,12 +356,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', paddingVertical: 8,
   },
   resendLink: {
-    fontFamily: 'Nunito_700Bold', fontSize: 15, color: '#004CFF',
+    fontFamily: 'NunitoSans_700Bold', fontSize: 15, color: '#7C3AED',
   },
   resendCountdown: {
-    fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E8E93',
+    fontFamily: 'NunitoSans_400Regular', fontSize: 14, color: '#8E8E93',
   },
   resendCountdownBold: {
-    fontFamily: 'Nunito_700Bold', color: '#111322',
+    fontFamily: 'NunitoSans_700Bold', color: '#111322',
   },
 });

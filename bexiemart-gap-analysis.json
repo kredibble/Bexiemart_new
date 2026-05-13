@@ -1,0 +1,114 @@
+{
+  "report": "Bexiemart Pencil Design vs Codebase Gap Analysis",
+  "date": "2026-05-13",
+  "design_source": "bexie.pen (Pencil cloud project, backup file 901e183d1...)",
+  "codebase": "C:\\Users\\Jerry\\Desktop\\PROJECT 2026\\Bexiemart_new\\Bexiemart_new",
+  "summary": {
+    "total_screens_in_design": 142,
+    "matched": 54,
+    "partial_match": 23,
+    "missing_from_codebase": 65,
+    "admin_screens": 13
+  },
+  "design_tokens": {
+    "brand_primary": "#06406B",
+    "brand_accent_greens": ["#06C760", "#17BE5A", "#12B76A", "#0DD14B", "#08C514"],
+    "codebase_accent": "#22C55E",
+    "fonts": {
+      "design_heading_primary": "Nunito Sans",
+      "codebase_heading": "Rubik",
+      "design_body": "Nunito Sans",
+      "codebase_body": "Nunito Sans",
+      "mismatch": "Design uses Nunito Sans for headings; codebase uses Rubik"
+    },
+    "critical_mismatches": [
+      "Heading font family (Nunito Sans vs Rubik)",
+      "Accent green color (#06C760 etc vs #22C55E)",
+      "212 design colors vs 47 codebase tokens",
+      "11 font families used vs 2 in codebase"
+    ]
+  },
+  "key_missing_screens": {
+    "admin_dashboard": [
+      "Dashboard / Login",
+      "Dashboard / Sign Up",
+      "Dashboard / Overview",
+      "Dashboard /Vendors",
+      "Dashboard /Users",
+      "Dashboard /Rider",
+      "Dashboard /Orders",
+      "Dashboard /Products",
+      "Dashboard /Categories",
+      "Dashboard /Settings",
+      "Dashboard /Delivery History",
+      "Dashboard / Reports",
+      "Log Out Popup"
+    ],
+    "image_search": [
+      "5.0 Search",
+      "5.1 Search Results",
+      "5.2 Image Search",
+      "5.3 Recognizing Image",
+      "5.4 Image Recognized",
+      "5.5 Image Search Results"
+    ],
+    "vendor_features": [
+      "Coupons Empty State",
+      "Coupons",
+      "Create Coupon",
+      "Edit Coupon",
+      "Shop Information",
+      "Discount Type Overlay",
+      "Popular Dishes Category",
+      "Food Full",
+      "Add Food",
+      "Categories Overlya",
+      "In Stock Overlay"
+    ],
+    "customer_features": [
+      "Hamburger Menu First Page",
+      "Hamburger Menu messages tap",
+      "Hamburger Menu Coupon Remainder",
+      "Terms and Conditions",
+      "Privacy Policy",
+      "About",
+      "Rate Our Service",
+      "Verification",
+      "Live Delivery Map",
+      "Restaurant View",
+      "Featured Restaurants all",
+      "Restaurant Homepage",
+      "Choose Region",
+      "History of Payment Method",
+      "Add card",
+      "Add Momo",
+      "Edit card",
+      "Edit Momo",
+      "Wallet Transfer",
+      "Recently Viewed Date",
+      "Recently Viewed Date Chosen",
+      "Overview",
+      "To review",
+      "Review",
+      "Review done",
+      "Review option",
+      "59 To Receive Progress",
+      "To receive",
+      "Deliverd",
+      "Coupon is Gonna Expire",
+      "Coupon ",
+      "Filter: Recent & Withdrawal",
+      "Button Shop",
+      "Reels/Products View",
+      "Reels/Food View View",
+      "Reels/Services View View",
+      "Services Page",
+      "Shop View"
+    ],
+    "auth_screens": [
+      "3.1 A Wrong Password",
+      "3.1 E Login sucessful",
+      "Sign Up"
+    ]
+  }
+}

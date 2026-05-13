@@ -17,18 +17,23 @@ import {
   StyleSheet,
   Dimensions,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { Ionicons } from '@expo/vector-icons';
 import { SearchBar } from '@/components/ui/SearchBar';
 import { ProductCard } from '@/components/product/ProductCard';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useProducts, useCategories, useWishlist } from '@/hooks/useProducts';
+import { useCartStore } from '@/stores/cartStore';
+import { Badge } from '@/components/ui/Badge';
+import { Chip } from '@/components/ui/Chip';
 import { colors, radii } from '@/theme/colors';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 import type { ShopStackParamList } from '@/navigation/CustomerTabs';
 import type { Product, Category } from '@/types';
 
@@ -46,10 +51,18 @@ export default function ShopScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const cartItemCount = useCartStore((state) => state.itemCount);
+
+  const handleCartPress = useCallback(() => {
+    (navigation as any).navigate('HomeTab', { screen: 'CartMain' });
+  }, [navigation]);
+
   // Data hooks
   const {
     data: productsData,
     isLoading,
+    isError,
+    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -65,12 +78,12 @@ export default function ShopScreen() {
 
   // Flatten paginated products
   const products = useMemo(() => {
-    return productsData?.pages?.flatMap((page) => page.data) ?? [];
+    return (productsData?.pages?.flatMap((page) => page.data) ?? []).filter(Boolean);
   }, [productsData]);
 
   // Wishlist lookup
   const wishlistProductIds = useMemo(() => {
-    return new Set(wishlistItems?.map((item) => item.productId) ?? []);
+    return new Set((Array.isArray(wishlistItems) ? wishlistItems : []).map((item) => item.productId));
   }, [wishlistItems]);
 
   // Handlers
@@ -151,6 +164,18 @@ export default function ShopScreen() {
       {/* ── Header ──────────────────────────────────────────────────── */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Shop</Text>
+        <TouchableOpacity
+          style={styles.cartButton}
+          onPress={handleCartPress}
+          accessibilityRole="button"
+          accessibilityLabel="View cart"
+          activeOpacity={0.7}
+        >
+          <Ionicons name="cart-outline" size={24} color={colors.text} />
+          {cartItemCount > 0 && (
+            <Badge count={cartItemCount} />
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* ── Search ──────────────────────────────────────────────────── */}
@@ -172,33 +197,39 @@ export default function ShopScreen() {
         renderItem={({ item }) => {
           const isActive = item.id === selectedCategory;
           return (
-            <TouchableOpacity
-              style={[
-                styles.chip,
-                isActive && styles.chipActive,
-              ]}
+            <Chip
+              label={item.name}
+              isActive={isActive}
               onPress={() => handleCategoryFilter(item.id)}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityState={{ selected: isActive }}
-            >
-              <Text
-                style={[
-                  styles.chipText,
-                  isActive && styles.chipTextActive,
-                ]}
-              >
-                {item.name}
-              </Text>
-            </TouchableOpacity>
+            />
           );
         }}
         style={styles.chipsContainer}
       />
 
       {/* ── Product grid ────────────────────────────────────────────── */}
-      {isLoading ? (
-        <LoadingSpinner />
+      {isError ? (
+        <View style={styles.centerContainer}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message ?? 'Unable to load products. Please try again.'}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => refetch()} accessibilityRole="button" accessibilityLabel="Retry loading products">
+            <Text style={styles.retryBtnText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : isLoading ? (
+        <View style={styles.gridContent}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <View key={i} style={styles.row}>
+              <View style={styles.cardWrapper}>
+                <SkeletonCard />
+              </View>
+              <View style={styles.cardWrapper}>
+                <SkeletonCard />
+              </View>
+            </View>
+          ))}
+        </View>
       ) : products.length === 0 ? (
         <EmptyState
           icon="search-outline"
@@ -229,7 +260,7 @@ export default function ShopScreen() {
           }
           ListFooterComponent={
             isFetchingNextPage ? (
-              <LoadingSpinner size="small" />
+              <ActivityIndicator size="small" color={colors.primary} />
             ) : null
           }
         />
@@ -246,15 +277,26 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: GRID_PADDING,
     paddingTop: 16,
     paddingBottom: 4,
   },
   headerTitle: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
     color: colors.text,
     letterSpacing: -0.5,
+  },
+  cartButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   searchSection: {
     paddingHorizontal: GRID_PADDING,
@@ -266,26 +308,6 @@ const styles = StyleSheet.create({
   chipsList: {
     paddingHorizontal: GRID_PADDING,
     gap: 8,
-  },
-  chip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: radii.full,
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    fontFamily: 'Nunito_600SemiBold',
-    fontSize: 13,
-    color: colors.text,
-  },
-  chipTextActive: {
-    color: colors.white,
   },
   gridContent: {
     paddingHorizontal: GRID_PADDING,
@@ -307,5 +329,36 @@ const styles = StyleSheet.create({
   },
   footerLoader: {
     paddingVertical: 20,
+  },
+  centerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 40,
+  },
+  errorTitle: {
+    fontFamily: 'Rubik_700Bold',
+    fontSize: 20,
+    color: colors.text,
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  errorMessage: {
+    fontFamily: 'NunitoSans_400Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  retryBtn: {
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: radii.full,
+    backgroundColor: colors.primary,
+  },
+  retryBtnText: {
+    fontFamily: 'NunitoSans_600SemiBold',
+    fontSize: 14,
+    color: colors.white,
   },
 });

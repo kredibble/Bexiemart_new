@@ -1,12 +1,16 @@
-import React from "react";
+import React, { useRef, useCallback, type ReactNode } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Pressable,
   Text,
+  Vibration,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
+  type TextStyle,
 } from "react-native";
+import { colors, shadows, radii } from "@/theme/colors";
 
 type ButtonVariant = "default" | "secondary" | "outline" | "ghost" | "danger";
 type ButtonSize = "default" | "sm" | "lg";
@@ -17,28 +21,38 @@ export type ButtonProps = PressableProps & {
   fullWidth?: boolean;
   variant?: ButtonVariant;
   size?: ButtonSize;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
+  haptic?: boolean;
+  textStyle?: StyleProp<TextStyle>;
 };
 
-const variantStyles: Record<ButtonVariant, StyleProp<ViewStyle>> = {
-  default: { backgroundColor: "#004CFF" },
-  secondary: { backgroundColor: "#F0F2F5" },
-  outline: { backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#E4E7EC" },
+const variantStyles: Record<ButtonVariant, ViewStyle> = {
+  default: { backgroundColor: colors.primary },
+  secondary: { backgroundColor: colors.surfaceDark },
+  outline: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   ghost: { backgroundColor: "transparent" },
-  danger: { backgroundColor: "#B3261E" },
+  danger: { backgroundColor: colors.error },
 };
 
 const textColors: Record<ButtonVariant, string> = {
-  default: "#FFFFFF",
-  secondary: "#111322",
-  outline: "#111322",
-  ghost: "#004CFF",
-  danger: "#FFFFFF",
+  default: colors.white,
+  secondary: colors.text,
+  outline: colors.text,
+  ghost: colors.primary,
+  danger: colors.white,
 };
 
-const sizeStyles: Record<ButtonSize, StyleProp<ViewStyle>> = {
-  sm: { minHeight: 44, paddingHorizontal: 16 },
-  default: { minHeight: 52, paddingHorizontal: 24 },
-  lg: { minHeight: 56, paddingHorizontal: 28 },
+const sizeStyles: Record<ButtonSize, ViewStyle> = {
+  sm: { height: 40, paddingHorizontal: 20 },
+  default: { height: 50, paddingHorizontal: 32 },
+  lg: { height: 56, paddingHorizontal: 40 },
+};
+
+const sizeText: Record<ButtonSize, { fontSize: number }> = {
+  sm: { fontSize: 14 },
+  default: { fontSize: 16 },
+  lg: { fontSize: 18 },
 };
 
 export function Button({
@@ -49,47 +63,114 @@ export function Button({
   size = "default",
   disabled,
   style,
+  leftIcon,
+  rightIcon,
+  haptic = true,
+  textStyle,
   children,
+  onPressIn,
+  onPressOut,
   ...props
 }: ButtonProps) {
   const isDisabled = disabled || loading;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = useCallback(
+    (e: any) => {
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 0.96,
+          useNativeDriver: true,
+          speed: 20,
+          bounciness: 4,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0.85,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      if (haptic) Vibration.vibrate(6);
+      if (onPressIn) onPressIn(e);
+    },
+    [scaleAnim, opacityAnim, haptic, onPressIn]
+  );
+
+  const handlePressOut = useCallback(
+    (e: any) => {
+      Animated.parallel([
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          speed: 20,
+          bounciness: 4,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+      if (onPressOut) onPressOut(e);
+    },
+    [scaleAnim, opacityAnim, onPressOut]
+  );
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      disabled={isDisabled}
-      style={({ pressed }) => ([
-        {
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: 16,
-          opacity: isDisabled ? 0.6 : pressed ? 0.9 : 1,
-        },
+    <Animated.View
+      style={[
+        { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
         fullWidth ? { width: "100%" } : null,
-        sizeStyles[size],
-        variantStyles[variant],
-        style as StyleProp<ViewStyle>,
-      ] as StyleProp<ViewStyle>)}
-      {...props}
+      ]}
     >
-      {loading ? (
-        <ActivityIndicator
-          color={textColors[variant]}
-          size="small"
-        />
-      ) : title ? (
-        <Text
-          style={{
-            fontFamily: "Nunito_600SemiBold",
-            fontSize: size === "lg" ? 17 : 15,
-            color: textColors[variant],
-          }}
-        >
-          {title}
-        </Text>
-      ) : (
-        children
-      )}
-    </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        disabled={isDisabled}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={({ pressed }) =>
+          [
+            {
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: radii.full,
+              opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1,
+              flexDirection: "row",
+              gap: 8,
+              ...shadows.md,
+            },
+            sizeStyles[size],
+            variantStyles[variant],
+            style as StyleProp<ViewStyle>,
+          ] as StyleProp<ViewStyle>
+        }
+        {...props}
+      >
+        {loading ? (
+          <ActivityIndicator color={textColors[variant]} size="small" />
+        ) : leftIcon ? (
+          leftIcon
+        ) : null}
+        {title ? (
+          <Text
+            style={[
+              {
+                fontFamily: "NunitoSans_700Bold",
+                color: textColors[variant],
+                letterSpacing: 0.2,
+              },
+              sizeText[size],
+              textStyle,
+            ]}
+          >
+            {title}
+          </Text>
+        ) : (
+          children as ReactNode
+        )}
+        {!loading && rightIcon ? rightIcon : null}
+      </Pressable>
+    </Animated.View>
   );
 }

@@ -1,9 +1,10 @@
 /**
- * CustomerTabs — Premium bottom tab navigator for customer flow.
+ * CustomerTabs — 5-tab bottom navigator for customer flow.
  *
- * Features: custom styled tab bar with floating pill effect,
- * cart badge for item count, and proper navigation stacks
- * for screens that need push/pop (Home → ProductDetails, etc.)
+ * Tabs: Home | Shop | Reels | Food | Services
+ *
+ * Cart, Checkout, Payment, and Favorites live inside HomeStack
+ * (accessed via header icons), not as separate tabs.
  */
 import React from 'react';
 import { View, Text, StyleSheet, Platform } from 'react-native';
@@ -11,20 +12,37 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useCartStore } from '@/stores/cartStore';
 import { colors } from '@/theme/colors';
 
 // Screens
 import HomeScreen from '@/screens/customer/HomeScreen';
 import ShopScreen from '@/screens/customer/ShopScreen';
-import CartScreen from '@/screens/customer/CartScreen';
-import FavoritesScreen from '@/screens/customer/FavoritesScreen';
+import ReelsScreen from '@/screens/customer/ReelsScreen';
+import FoodScreen from '@/screens/customer/FoodScreen';
+import ServicesScreen from '@/screens/customer/ServicesScreen';
 import ProductDetailsScreen from '@/screens/customer/ProductDetailsScreen';
 import AllProductsScreen from '@/screens/customer/AllProductsScreen';
+import FavoritesScreen from '@/screens/customer/FavoritesScreen';
+import CartScreen from '@/screens/customer/CartScreen';
+import WalletScreen from '@/screens/customer/WalletScreen';
 import CheckoutScreen from '@/screens/customer/CheckoutScreen';
 import PaymentScreen from '@/screens/customer/PaymentScreen';
 import PaymentSuccessScreen from '@/screens/customer/PaymentSuccessScreen';
 import PaymentFailureScreen from '@/screens/customer/PaymentFailureScreen';
+import NotificationsScreen from '@/screens/shared/NotificationsScreen';
+import SettingsScreen from '@/screens/customer/SettingsScreen';
+import ChatListScreen from '@/screens/customer/ChatListScreen';
+import ChatScreen from '@/screens/customer/ChatScreen';
+import OrderTrackingScreen from '@/screens/customer/OrderTrackingScreen';
+import TermsScreen from '@/screens/customer/TermsScreen';
+import PrivacyScreen from '@/screens/customer/PrivacyScreen';
+import AboutScreen from '@/screens/customer/AboutScreen';
+import RestaurantHomeScreen from '@/screens/customer/RestaurantHomeScreen';
+import AddressManagementScreen from '@/screens/customer/AddressManagementScreen';
+import WalletTransferScreen from '@/screens/customer/WalletTransferScreen';
+import CustomerCouponsScreen from '@/screens/customer/CustomerCouponsScreen';
+import VerificationScreen from '@/screens/customer/VerificationScreen';
+import OrderReviewScreen from '@/screens/customer/OrderReviewScreen';
 
 // ── Type definitions ────────────────────────────────────────────────────────────
 
@@ -32,6 +50,27 @@ export type HomeStackParamList = {
   HomeMain: undefined;
   ProductDetails: { productId: string };
   AllProducts: { category?: string; title?: string };
+  FavoritesMain: undefined;
+  CartMain: undefined;
+  WalletMain: undefined;
+  Checkout: { couponCode?: string; discountAmount?: number } | undefined;
+  Payment: { orderId: string; totalAmount: number; email: string };
+  PaymentSuccess: { orderId: string; amount: number; reference: string };
+  PaymentFailure: { orderId?: string; error?: string };
+  Notifications: undefined;
+  Settings: undefined;
+  ChatList: undefined;
+  Chat: { conversationId: string; otherUserName: string };
+  OrderTracking: { orderId: string };
+  Terms: undefined;
+  Privacy: undefined;
+  About: undefined;
+  RestaurantHome: { restaurantId: string; restaurantName: string };
+  AddressManagement: undefined;
+  WalletTransfer: undefined;
+  CustomerCoupons: undefined;
+  Verification: undefined;
+  OrderReview: { orderId: string };
 };
 
 export type ShopStackParamList = {
@@ -39,27 +78,18 @@ export type ShopStackParamList = {
   ProductDetails: { productId: string };
 };
 
-export type CartStackParamList = {
-  CartMain: undefined;
-  Checkout: undefined;
-  Payment: { orderId: string; totalAmount: number; email: string };
-  PaymentSuccess: { orderId: string; amount: number; reference: string };
-  PaymentFailure: { orderId?: string; error?: string };
-};
-
 export type CustomerTabParamList = {
   HomeTab: undefined;
   ShopTab: undefined;
-  CartTab: undefined;
-  FavoritesTab: undefined;
-  ProfileTab: undefined;
+  ReelsTab: undefined;
+  FoodTab: undefined;
+  ServicesTab: undefined;
 };
 
 // ── Nested Stacks ───────────────────────────────────────────────────────────────
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();
 const ShopStack = createNativeStackNavigator<ShopStackParamList>();
-const CartStack = createNativeStackNavigator<CartStackParamList>();
 
 function HomeStackScreen() {
   return (
@@ -67,6 +97,27 @@ function HomeStackScreen() {
       <HomeStack.Screen name="HomeMain" component={HomeScreen} />
       <HomeStack.Screen name="ProductDetails" component={ProductDetailsScreen} />
       <HomeStack.Screen name="AllProducts" component={AllProductsScreen} />
+      <HomeStack.Screen name="FavoritesMain" component={FavoritesScreen} />
+      <HomeStack.Screen name="CartMain" component={CartScreen} />
+      <HomeStack.Screen name="WalletMain" component={WalletScreen} />
+      <HomeStack.Screen name="Checkout" component={CheckoutScreen} />
+      <HomeStack.Screen name="Payment" component={PaymentScreen} />
+      <HomeStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
+      <HomeStack.Screen name="PaymentFailure" component={PaymentFailureScreen} />
+      <HomeStack.Screen name="Notifications" component={NotificationsScreen} />
+      <HomeStack.Screen name="Settings" component={SettingsScreen} />
+      <HomeStack.Screen name="ChatList" component={ChatListScreen} />
+      <HomeStack.Screen name="Chat" component={ChatScreen} />
+      <HomeStack.Screen name="OrderTracking" component={OrderTrackingScreen} />
+      <HomeStack.Screen name="Terms" component={TermsScreen} />
+      <HomeStack.Screen name="Privacy" component={PrivacyScreen} />
+      <HomeStack.Screen name="About" component={AboutScreen} />
+      <HomeStack.Screen name="RestaurantHome" component={RestaurantHomeScreen} />
+      <HomeStack.Screen name="AddressManagement" component={AddressManagementScreen} />
+      <HomeStack.Screen name="WalletTransfer" component={WalletTransferScreen} />
+      <HomeStack.Screen name="CustomerCoupons" component={CustomerCouponsScreen} />
+      <HomeStack.Screen name="Verification" component={VerificationScreen} />
+      <HomeStack.Screen name="OrderReview" component={OrderReviewScreen} />
     </HomeStack.Navigator>
   );
 }
@@ -80,30 +131,6 @@ function ShopStackScreen() {
   );
 }
 
-function CartStackScreen() {
-  return (
-    <CartStack.Navigator screenOptions={{ headerShown: false }}>
-      <CartStack.Screen name="CartMain" component={CartScreen} />
-      <CartStack.Screen name="Checkout" component={CheckoutScreen} />
-      <CartStack.Screen name="Payment" component={PaymentScreen} />
-      <CartStack.Screen name="PaymentSuccess" component={PaymentSuccessScreen} />
-      <CartStack.Screen name="PaymentFailure" component={PaymentFailureScreen} />
-    </CartStack.Navigator>
-  );
-}
-
-// ── Placeholder screens ─────────────────────────────────────────────────────────
-
-function ProfilePlaceholder() {
-  return (
-    <View style={placeholderStyles.container}>
-      <Ionicons name="person-circle-outline" size={52} color={colors.textLight} />
-      <Text style={placeholderStyles.title}>Profile</Text>
-      <Text style={placeholderStyles.subtitle}>Coming Soon</Text>
-    </View>
-  );
-}
-
 // ── Tab Navigator ───────────────────────────────────────────────────────────────
 
 const Tab = createBottomTabNavigator<CustomerTabParamList>();
@@ -113,42 +140,32 @@ type TabIconName = keyof typeof Ionicons.glyphMap;
 const TAB_ICONS: Record<keyof CustomerTabParamList, { active: TabIconName; inactive: TabIconName }> = {
   HomeTab: { active: 'home', inactive: 'home-outline' },
   ShopTab: { active: 'bag', inactive: 'bag-outline' },
-  CartTab: { active: 'cart', inactive: 'cart-outline' },
-  FavoritesTab: { active: 'heart', inactive: 'heart-outline' },
-  ProfileTab: { active: 'person', inactive: 'person-outline' },
+  ReelsTab: { active: 'play-circle', inactive: 'play-circle-outline' },
+  FoodTab: { active: 'fast-food', inactive: 'fast-food-outline' },
+  ServicesTab: { active: 'grid', inactive: 'grid-outline' },
 };
 
 const TAB_LABELS: Record<keyof CustomerTabParamList, string> = {
   HomeTab: 'Home',
   ShopTab: 'Shop',
-  CartTab: 'Cart',
-  FavoritesTab: 'Saved',
-  ProfileTab: 'Profile',
+  ReelsTab: 'Reels',
+  FoodTab: 'Food',
+  ServicesTab: 'Services',
 };
 
 export default function CustomerTabs() {
   const insets = useSafeAreaInsets();
-  const cartItemCount = useCartStore((state) => state.itemCount);
 
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, color }) => {
           const iconSet = TAB_ICONS[route.name as keyof CustomerTabParamList];
           const iconName = focused ? iconSet.active : iconSet.inactive;
-
           return (
             <View style={tabStyles.iconContainer}>
               <Ionicons name={iconName} size={22} color={color} />
-              {/* Cart badge */}
-              {route.name === 'CartTab' && cartItemCount > 0 && (
-                <View style={tabStyles.badge}>
-                  <Text style={tabStyles.badgeText}>
-                    {cartItemCount > 9 ? '9+' : cartItemCount}
-                  </Text>
-                </View>
-              )}
             </View>
           );
         },
@@ -185,9 +202,9 @@ export default function CustomerTabs() {
     >
       <Tab.Screen name="HomeTab" component={HomeStackScreen} />
       <Tab.Screen name="ShopTab" component={ShopStackScreen} />
-      <Tab.Screen name="CartTab" component={CartStackScreen} />
-      <Tab.Screen name="FavoritesTab" component={FavoritesScreen} />
-      <Tab.Screen name="ProfileTab" component={ProfilePlaceholder} />
+      <Tab.Screen name="ReelsTab" component={ReelsScreen} />
+      <Tab.Screen name="FoodTab" component={FoodScreen} />
+      <Tab.Screen name="ServicesTab" component={ServicesScreen} />
     </Tab.Navigator>
   );
 }
@@ -202,49 +219,9 @@ const tabStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -10,
-    backgroundColor: colors.error,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    borderWidth: 1.5,
-    borderColor: colors.white,
-  },
-  badgeText: {
-    fontFamily: 'Nunito_700Bold',
-    fontSize: 9,
-    color: colors.white,
-    lineHeight: 12,
-  },
   label: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 11,
     marginTop: 2,
-  },
-});
-
-const placeholderStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.white,
-    gap: 8,
-  },
-  title: {
-    fontFamily: 'Raleway_700Bold',
-    fontSize: 20,
-    color: colors.text,
-  },
-  subtitle: {
-    fontFamily: 'Nunito_400Regular',
-    fontSize: 14,
-    color: colors.textSecondary,
   },
 });

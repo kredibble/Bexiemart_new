@@ -2,6 +2,7 @@ import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
+  TouchableOpacity,
   Platform,
   StyleSheet,
   Dimensions,
@@ -42,9 +43,9 @@ interface SlideData {
 
 const slides: SlideData[] = [
   {
-    accentColor: '#004CFF',
-    accentSoft: '#EEF2FF',
-    orbPrimary: '#EEF2FF',
+    accentColor: '#7C3AED',
+    accentSoft: '#F3E8FF',
+    orbPrimary: '#F3E8FF',
     orbSecondary: '#DBEAFE',
     orbAccent: '#BFDBFE',
     title: 'Discover Everything',
@@ -145,6 +146,7 @@ export default function LaunchScreen() {
             size="sm"
             style={{ borderRadius: 20 }}
             onPress={() => navigation.navigate('SocialRoleSelect', {})}
+            accessibilityLabel="Skip onboarding"
           />
       </View>
 
@@ -186,6 +188,7 @@ export default function LaunchScreen() {
             fullWidth
             style={{ backgroundColor: slide.accentColor }}
             onPress={currentIndex < slides.length - 1 ? handleNext : () => navigation.navigate('SocialRoleSelect', {})}
+            accessibilityLabel="Get started"
           />
         </View>
 
@@ -195,6 +198,8 @@ export default function LaunchScreen() {
           <TouchableOpacity
             onPress={() => navigation.navigate('Login')}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel="I already have an account, sign in"
           >
             <Text style={styles.loginLink}>Sign In</Text>
           </TouchableOpacity>
@@ -235,7 +240,7 @@ function ProgressDot({ scrollX, index, color }: ProgressDotProps) {
   });
 
   return (
-    <Animated.View style={[styles.progressDot, rStyle]} />
+    <Animated.View style={[styles.progressDot, rStyle]} accessible accessibilityLabel={`Page ${index + 1} of ${slides.length}`} />
   );
 }
 
@@ -401,13 +406,13 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   brandWatermarkText: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 18,
     color: '#111322',
     letterSpacing: -0.3,
   },
   brandWatermarkAccent: {
-    color: '#004CFF',
+    color: '#7C3AED',
   },
   carousel: {
     flex: 1,
@@ -454,7 +459,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
     color: '#111322',
     textAlign: 'center',
@@ -462,13 +467,13 @@ const styles = StyleSheet.create({
     lineHeight: 36,
   },
   titleHighlight: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
     letterSpacing: -0.6,
     lineHeight: 36,
   },
   subtitle: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 14,
     color: '#5F6C7B',
     textAlign: 'center',
@@ -491,7 +496,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
   featureChipText: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 12,
     letterSpacing: 0.2,
   },
@@ -522,13 +527,13 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   loginLinkText: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 14,
     color: '#5F6C7B',
   },
   loginLink: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     fontSize: 14,
-    color: '#004CFF',
+    color: '#7C3AED',
   },
 });

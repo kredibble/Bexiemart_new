@@ -255,7 +255,7 @@ export default function OrderDetailsScreen() {
                 onPress={handleAdvanceStatus}
                 loading={updateStatusMutation.isPending}
               >
-                <Text style={{ fontFamily: 'Nunito_700Bold', fontSize: 16, color: colors.white }}>
+                <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 16, color: colors.white }}>
                   Mark as {nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}
                 </Text>
               </Button>
@@ -268,7 +268,7 @@ export default function OrderDetailsScreen() {
                 onPress={handleCancel}
                 disabled={updateStatusMutation.isPending}
               >
-                <Text style={{ fontFamily: 'Nunito_700Bold', color: colors.error }}>Cancel Order</Text>
+                <Text style={{ fontFamily: 'NunitoSans_700Bold', color: colors.error }}>Cancel Order</Text>
               </Button>
             )}
           </View>
@@ -308,7 +308,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h3,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   scrollContent: {
@@ -325,7 +325,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     ...typePresets.h4,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   orderHeader: {
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   },
   orderId: {
     ...typePresets.h3,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   orderDate: {
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
   },
   orderTotal: {
     ...typePresets.price,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.primary,
   },
   customerRow: {
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
   },
   customerName: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
   },
   customerDetail: {
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   },
   itemName: {
     ...typePresets.bodySm,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
   },
   itemQty: {
@@ -405,7 +405,7 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   timelineRow: {
@@ -449,11 +449,11 @@ const styles = StyleSheet.create({
   },
   timelineLabelActive: {
     color: colors.text,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
   },
   timelineLabelCurrent: {
     color: colors.primary,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
   },
   actionsRow: {
     gap: 12,

@@ -20,10 +20,10 @@ import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated';
 import { Button } from '@/components/ui/Button';
 import { colors, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
-import { CartStackParamList } from '@/navigation/CustomerTabs';
+import { HomeStackParamList } from '@/navigation/CustomerTabs';
 
-type NavProp = NativeStackNavigationProp<CartStackParamList>;
-type RouteType = RouteProp<CartStackParamList, 'PaymentFailure'>;
+type NavProp = NativeStackNavigationProp<HomeStackParamList>;
+type RouteType = RouteProp<HomeStackParamList, 'PaymentFailure'>;
 
 export default function PaymentFailureScreen() {
   const insets = useSafeAreaInsets();
@@ -42,7 +42,7 @@ export default function PaymentFailureScreen() {
   };
 
   const handleGoHome = () => {
-    navigation.getParent()?.navigate('HomeTab');
+    navigation.navigate('HomeMain');
   };
 
   return (
@@ -89,6 +89,7 @@ export default function PaymentFailureScreen() {
             onPress={handleRetry}
             fullWidth
             size="lg"
+            accessibilityLabel="Try payment again"
           />
           <Button
             title="Choose Another Method"
@@ -101,6 +102,8 @@ export default function PaymentFailureScreen() {
             style={styles.cancelButton}
             onPress={handleGoHome}
             activeOpacity={0.7}
+            accessibilityLabel="Cancel and go to home screen"
+            accessibilityRole="button"
           >
             <Text style={styles.cancelButtonText}>Cancel & Go Home</Text>
           </TouchableOpacity>
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typePresets.h1,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
     textAlign: 'center',
     marginBottom: 6,

@@ -118,7 +118,7 @@ export default function SocialRoleSelectScreen() {
   };
 
   const isReady = !!selectedRole;
-  const activeColor = '#004CFF';
+  const activeColor = '#7C3AED';
 
   return (
     <View style={styles.container}>
@@ -135,11 +135,13 @@ export default function SocialRoleSelectScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
         >
           <Ionicons name="arrow-back" size={20} color="#111322" />
         </TouchableOpacity>
         <View style={styles.pill}>
-          <Ionicons name="sparkles" size={12} color="#004CFF" />
+          <Ionicons name="sparkles" size={12} color="#7C3AED" />
           <Text style={styles.stepText}>Choose your path</Text>
         </View>
       </View>
@@ -167,8 +169,8 @@ export default function SocialRoleSelectScreen() {
             tagline="Find what you need"
             isSelected={selectedRole === 'customer'}
             onPress={() => handleSelectRole('customer')}
-            color="#004CFF"
-            activeBg="#EEF2FF"
+            color="#7C3AED"
+            activeBg="#F3E8FF"
           />
           <RoleTile
             role="vendor"
@@ -177,8 +179,8 @@ export default function SocialRoleSelectScreen() {
             tagline="Grow your business"
             isSelected={selectedRole === 'vendor'}
             onPress={() => handleSelectRole('vendor')}
-            color="#004CFF"
-            activeBg="#EEF2FF"
+            color="#7C3AED"
+            activeBg="#F3E8FF"
           />
         </View>
 
@@ -186,7 +188,7 @@ export default function SocialRoleSelectScreen() {
           <View style={styles.confirmationBar}>
             <View style={[
               styles.confirmationPill,
-              { backgroundColor: '#EEF2FF' },
+              { backgroundColor: '#F3E8FF' },
             ]}>
               <View style={[
                 styles.confirmDot,
@@ -274,6 +276,8 @@ export default function SocialRoleSelectScreen() {
             <TouchableOpacity
               onPress={() => navigation.navigate('Login')}
               activeOpacity={0.7}
+              accessibilityRole="button"
+              accessibilityLabel="Already have an account, sign in"
             >
               <Text style={styles.footerLink}>Sign In</Text>
             </TouchableOpacity>
@@ -295,7 +299,7 @@ interface RoleTileProps {
   activeBg: string;
 }
 
-function RoleTile({ icon, label, tagline, isSelected, onPress, color, activeBg }: RoleTileProps) {
+function RoleTile({ role, icon, label, tagline, isSelected, onPress, color, activeBg }: RoleTileProps) {
   return (
     <TouchableOpacity
       style={[
@@ -312,6 +316,8 @@ function RoleTile({ icon, label, tagline, isSelected, onPress, color, activeBg }
       ]}
       onPress={onPress}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={role === 'customer' ? 'I want to shop' : 'I want to sell'}
     >
       <View style={[
         styles.roleIconWrap,
@@ -339,12 +345,12 @@ const styles = StyleSheet.create({
   bgLayer: { ...StyleSheet.absoluteFillObject, overflow: 'hidden' },
   orbPrimary: {
     position: 'absolute', width: SCREEN_WIDTH * 1.2, height: SCREEN_WIDTH * 1.2,
-    borderRadius: SCREEN_WIDTH * 0.6, backgroundColor: '#004CFF',
+    borderRadius: SCREEN_WIDTH * 0.6, backgroundColor: '#7C3AED',
     top: -SCREEN_WIDTH * 0.55, right: -SCREEN_WIDTH * 0.4, opacity: 0.06,
   },
   orbSecondary: {
     position: 'absolute', width: SCREEN_WIDTH * 0.7, height: SCREEN_WIDTH * 0.7,
-    borderRadius: SCREEN_WIDTH * 0.35, backgroundColor: '#004CFF',
+    borderRadius: SCREEN_WIDTH * 0.35, backgroundColor: '#7C3AED',
     bottom: SCREEN_WIDTH * 0.2, left: -SCREEN_WIDTH * 0.25, opacity: 0.04,
   },
   orbAccent: {
@@ -361,18 +367,18 @@ const styles = StyleSheet.create({
   },
   pill: {
     flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14,
-    paddingVertical: 8, borderRadius: 20, backgroundColor: '#F0F4FF',
+    paddingVertical: 8, borderRadius: 9999, backgroundColor: '#F0F4FF',
     borderWidth: 1, borderColor: '#E2E8F0',
   },
-  stepText: { fontFamily: 'Nunito_600SemiBold', fontSize: 12, color: '#004CFF', letterSpacing: 0.3 },
+  stepText: { fontFamily: 'NunitoSans_600SemiBold', fontSize: 12, color: '#7C3AED', letterSpacing: 0.3 },
   scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
   heroSection: { marginBottom: 28 },
   heroPretitle: {
-    fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E96A6',
+    fontFamily: 'NunitoSans_400Regular', fontSize: 14, color: '#8E96A6',
     letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8,
   },
   heroTitle: {
-    fontFamily: 'Raleway_700Bold', fontSize: 42, color: '#111322',
+    fontFamily: 'Rubik_700Bold', fontSize: 42, color: '#111322',
     lineHeight: 46, letterSpacing: -1,
   },
   roleSelector: { flexDirection: 'row', gap: 12, marginBottom: 16 },
@@ -389,39 +395,39 @@ const styles = StyleSheet.create({
     width: 56, height: 56, borderRadius: 28, backgroundColor: '#EEF0F4',
     alignItems: 'center', justifyContent: 'center', marginBottom: 16,
   },
-  roleTileLabel: { fontFamily: 'Nunito_700Bold', fontSize: 20, color: '#111322', marginBottom: 4 },
-  roleTileTagline: { fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#8E96A6', textAlign: 'center' },
+  roleTileLabel: { fontFamily: 'NunitoSans_700Bold', fontSize: 20, color: '#111322', marginBottom: 4 },
+  roleTileTagline: { fontFamily: 'NunitoSans_400Regular', fontSize: 13, color: '#8E96A6', textAlign: 'center' },
   selectedIndicator: { position: 'absolute', bottom: 12 },
   selectedRing: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   selectedInner: { width: 6, height: 6, borderRadius: 3 },
   confirmationBar: { marginBottom: 20, alignItems: 'center' },
-  confirmationPill: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20 },
+  confirmationPill: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 9999 },
   confirmDot: { width: 8, height: 8, borderRadius: 4 },
-  confirmText: { fontFamily: 'Nunito_500Medium', fontSize: 13 },
-  confirmBold: { fontFamily: 'Nunito_700Bold' },
+  confirmText: { fontFamily: 'NunitoSans_500Medium', fontSize: 13 },
+  confirmBold: { fontFamily: 'NunitoSans_700Bold' },
   errorBanner: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#FEE2E2',
     borderRadius: 14, padding: 14, marginBottom: 16,
   },
-  errorText: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#7F1D1D', flex: 1 },
+  errorText: { fontFamily: 'NunitoSans_400Regular', fontSize: 14, color: '#7F1D1D', flex: 1 },
   authSection: { gap: 16 },
   authCard: {
     borderRadius: 28, padding: 24, backgroundColor: '#FFFFFF',
     borderWidth: 1, borderColor: '#E8EBF0', gap: 20,
     ...Platform.select({
-      ios: { shadowColor: '#004CFF', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 16 },
+      ios: { shadowColor: '#7C3AED', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.06, shadowRadius: 16 },
       android: { elevation: 2 },
       web: { boxShadow: '0px 2px 16px rgba(0, 76, 255, 0.06)' },
     }),
   },
-  authTitle: { fontFamily: 'Nunito_700Bold', fontSize: 18, color: '#111322' },
-  authSubtitle: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E96A6', marginTop: -12 },
+  authTitle: { fontFamily: 'NunitoSans_700Bold', fontSize: 18, color: '#111322' },
+  authSubtitle: { fontFamily: 'NunitoSans_400Regular', fontSize: 14, color: '#8E96A6', marginTop: -12 },
   socialRow: { flexDirection: 'row', gap: 12 },
-  socialText: { fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#111322' },
+  socialText: { fontFamily: 'NunitoSans_700Bold', fontSize: 16, color: '#111322', letterSpacing: 0.2 },
   dividerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   dividerLine: { flex: 1, height: 1, backgroundColor: '#E8EBF0' },
-  dividerText: { fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#9BA5B0' },
+  dividerText: { fontFamily: 'NunitoSans_400Regular', fontSize: 12, color: '#9BA5B0' },
   footer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingTop: 8 },
-  footerText: { fontFamily: 'Nunito_400Regular', fontSize: 14, color: '#8E96A6' },
-  footerLink: { fontFamily: 'Nunito_700Bold', fontSize: 14, color: '#004CFF' },
+  footerText: { fontFamily: 'NunitoSans_400Regular', fontSize: 14, color: '#8E96A6' },
+  footerLink: { fontFamily: 'NunitoSans_700Bold', fontSize: 14, color: '#7C3AED' },
 });

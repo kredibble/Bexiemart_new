@@ -17,6 +17,7 @@ import {
   StyleSheet,
   Image,
   Alert,
+  Modal,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -27,6 +28,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 
 import { useCreateProduct, useUpdateProduct } from '@/hooks/useVendor';
+import { useCategories } from '@/hooks/useProducts';
 import { uploadImage } from '@/utils/cloudinary';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
@@ -34,6 +36,19 @@ import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import type { Product } from '@/types';
+import { z } from 'zod';
+
+const productSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional().default(''),
+  price: z.number().positive('Price must be greater than 0'),
+  quantity: z.number().int().nonnegative('Quantity must be 0 or more'),
+  categoryId: z.string().min(1, 'Category is required'),
+  images: z.array(z.string()).min(1, 'At least one image is required'),
+  deliveryOptions: z
+    .array(z.object({ type: z.string(), fee: z.number(), duration: z.number(), unit: z.string() }))
+    .min(1, 'At least one delivery option is required'),
+});
 
 type RouteParams =
   | { mode: 'add' }
@@ -65,6 +80,16 @@ export default function AddEditProductScreen() {
   const [pendingImages, setPendingImages] = useState<PendingImage[]>(
     product?.images?.map((img) => ({ uri: img.url, uploadedUrl: img.url, uploading: false, error: false })) ?? []
   );
+
+  // Category
+  const { data: categories } = useCategories();
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(product?.categoryId ?? '');
+  const [categoryPickerVisible, setCategoryPickerVisible] = useState(false);
+
+  const selectedCategory = categories?.find((c) => c.id === selectedCategoryId);
+
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const clearError = (field: string) => setFieldErrors((prev) => ({ ...prev, [field]: '' }));
 
   // Delivery options
   const [deliveryOptions, setDeliveryOptions] = useState<
@@ -152,25 +177,10 @@ export default function AddEditProductScreen() {
   };
 
   const handleSubmit = async () => {
-    const errors: string[] = [];
-    if (!name.trim()) errors.push('Name is required');
-    if (!description.trim()) errors.push('Description is required');
-    if (!price || parseFloat(price) <= 0) errors.push('Valid price is required');
-    if (!quantity || parseInt(quantity) < 0) errors.push('Valid quantity is required');
-    if (pendingImages.length === 0) errors.push('At least one image is required');
-    if (deliveryOptions.length === 0) errors.push('At least one delivery option is required');
+    setFieldErrors({});
 
     if (isUploading) {
       Alert.alert('Uploading', 'Please wait for images to finish uploading.');
-      return;
-    }
-
-    if (!allUploaded) {
-      errors.push('Some images failed to upload. Remove or retry them.');
-    }
-
-    if (errors.length > 0) {
-      Alert.alert('Validation Error', errors.join('\n'));
       return;
     }
 
@@ -178,15 +188,34 @@ export default function AddEditProductScreen() {
       .map((img) => img.uploadedUrl)
       .filter((url): url is string => !!url);
 
-    const payload = {
+    if (!allUploaded) {
+      Alert.alert('Upload Error', 'Some images failed to upload. Remove or retry them.');
+      return;
+    }
+
+    const result = productSchema.safeParse({
       name: name.trim(),
-      description: description.trim(),
-      price: parseFloat(price),
-      categoryId: product?.categoryId ?? 'default',
-      quantity: parseInt(quantity),
+      description: description.trim() || '',
+      price: price ? parseFloat(price) : undefined,
+      quantity: quantity ? parseInt(quantity, 10) : undefined,
+      categoryId: selectedCategoryId || undefined,
       images: imageUrls,
       deliveryOptions,
-    };
+    });
+
+    if (!result.success) {
+      const flatErrors = result.error.flatten().fieldErrors;
+      const errorMap: Record<string, string> = {};
+      for (const [key, msgs] of Object.entries(flatErrors)) {
+        if (msgs && msgs.length > 0) {
+          errorMap[key] = msgs[0];
+        }
+      }
+      setFieldErrors(errorMap);
+      return;
+    }
+
+    const payload = result.data;
 
     if (mode === 'add') {
       createMutation.mutate(payload, {
@@ -228,6 +257,8 @@ export default function AddEditProductScreen() {
         <TouchableOpacity
           style={styles.backButton}
           onPress={() => (navigation as any).goBack()}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
         >
           <Ionicons name="chevron-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -271,13 +302,13 @@ export default function AddEditProductScreen() {
                 </View>
               )}
               {!img.uploading && (
-                <TouchableOpacity style={styles.removeImage} onPress={() => removeImage(i)}>
+                <TouchableOpacity style={styles.removeImage} onPress={() => removeImage(i)} accessibilityLabel="Remove image" accessibilityRole="button">
                   <Ionicons name="close-circle" size={20} color={colors.error} />
                 </TouchableOpacity>
               )}
             </View>
           ))}
-          <TouchableOpacity style={styles.addImageBtn} onPress={pickImage}>
+          <TouchableOpacity style={styles.addImageBtn} onPress={pickImage} accessibilityLabel="Add product image" accessibilityHint="Opens photo gallery" accessibilityRole="button">
             <Ionicons name="camera-outline" size={28} color={colors.textLight} />
             <Text style={styles.addImageText}>Add</Text>
           </TouchableOpacity>
@@ -286,47 +317,115 @@ export default function AddEditProductScreen() {
         <FormInput
           label="Product Name"
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => { setName(text); clearError('name'); }}
           placeholder="e.g. Fresh Tomatoes (1kg)"
+          error={fieldErrors.name}
         />
 
         <FormInput
           label="Description"
           value={description}
-          onChangeText={setDescription}
+          onChangeText={(text) => { setDescription(text); clearError('description'); }}
           placeholder="Describe your product..."
           multiline
+          error={fieldErrors.description}
         />
 
         <View style={styles.row}>
           <View style={{ flex: 1 }}>
             <FormInput
-              label="Price (₦)"
+              label="Price (GH₵)"
               value={price}
-              onChangeText={setPrice}
+              onChangeText={(text) => { setPrice(text); clearError('price'); }}
               placeholder="0.00"
               keyboardType="decimal-pad"
+              error={fieldErrors.price}
             />
           </View>
           <View style={{ flex: 1, marginLeft: 12 }}>
             <FormInput
               label="Quantity"
               value={quantity}
-              onChangeText={setQuantity}
+              onChangeText={(text) => { setQuantity(text); clearError('quantity'); }}
               placeholder="0"
               keyboardType="number-pad"
+              error={fieldErrors.quantity}
             />
           </View>
         </View>
+
+        {/* Category Picker */}
+        <Text style={styles.label}>Category</Text>
+        <TouchableOpacity
+          style={[styles.categoryPicker, fieldErrors.categoryId && styles.categoryPickerError]}
+          onPress={() => setCategoryPickerVisible(true)}
+          accessibilityRole="button"
+          accessibilityHint="Selects a product category"
+        >
+          <Text style={[styles.categoryPickerText, !selectedCategory && { color: colors.textLight }]}>
+            {selectedCategory?.name ?? 'Select Category'}
+          </Text>
+          <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
+        </TouchableOpacity>
+        {fieldErrors.categoryId && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, marginBottom: 12 }}>
+            <Ionicons name="alert-circle" size={14} color={colors.error} style={{ marginRight: 4 }} />
+            <Text style={{ fontFamily: 'NunitoSans_400Regular', fontSize: 12, color: colors.error }}>
+              {fieldErrors.categoryId}
+            </Text>
+          </View>
+        )}
+
+        {/* Category Picker Modal */}
+        <Modal visible={categoryPickerVisible} transparent animationType="fade" statusBarTranslucent>
+          <TouchableOpacity
+            style={styles.modalOverlay}
+            activeOpacity={1}
+            onPress={() => setCategoryPickerVisible(false)}
+          >
+            <View style={styles.categoryModalContent}>
+              <Text style={styles.categoryModalTitle}>Select Category</Text>
+              <ScrollView style={{ maxHeight: 300 }}>
+                {categories?.map((cat) => (
+                  <TouchableOpacity
+                    key={cat.id}
+                    style={[
+                      styles.categoryOption,
+                      selectedCategoryId === cat.id && styles.categoryOptionSelected,
+                    ]}
+                    onPress={() => {
+                      setSelectedCategoryId(cat.id);
+                      setCategoryPickerVisible(false);
+                    }}
+                    accessibilityRole="button"
+                    accessibilityLabel={cat.name}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryOptionText,
+                        selectedCategoryId === cat.id && styles.categoryOptionTextSelected,
+                      ]}
+                    >
+                      {cat.icon ? `${cat.icon} ` : ''}{cat.name}
+                    </Text>
+                    {selectedCategoryId === cat.id && (
+                      <Ionicons name="checkmark" size={20} color={colors.primary} />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
+        </Modal>
 
         {/* Delivery Options */}
         <Text style={styles.label}>Delivery Options</Text>
         {deliveryOptions.map((opt, i) => (
           <View key={i} style={styles.deliveryRow}>
             <Text style={styles.deliveryText}>
-              {opt.type} — ₦{opt.fee} ({opt.duration}{opt.unit})
+              {opt.type} — GH₵ {opt.fee} ({opt.duration}{opt.unit})
             </Text>
-            <TouchableOpacity onPress={() => removeDeliveryOption(i)}>
+            <TouchableOpacity onPress={() => removeDeliveryOption(i)} accessibilityLabel="Remove delivery option" accessibilityRole="button">
               <Ionicons name="trash-outline" size={18} color={colors.error} />
             </TouchableOpacity>
           </View>
@@ -355,7 +454,7 @@ export default function AddEditProductScreen() {
             placeholderTextColor={colors.textLight}
             keyboardType="number-pad"
           />
-          <TouchableOpacity style={styles.addDelBtn} onPress={addDeliveryOption}>
+          <TouchableOpacity style={styles.addDelBtn} onPress={addDeliveryOption} accessibilityLabel="Add delivery option" accessibilityRole="button">
             <Ionicons name="add" size={20} color={colors.white} />
           </TouchableOpacity>
         </View>
@@ -398,7 +497,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h3,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   scrollContent: {
@@ -486,6 +585,23 @@ const styles = StyleSheet.create({
     ...typePresets.bodySm,
     color: colors.text,
   },
+  label: {
+    ...typePresets.bodySm,
+    fontFamily: 'NunitoSans_600SemiBold',
+    color: colors.text,
+    marginBottom: 6,
+  },
+  input: {
+    ...typePresets.bodySm,
+    fontFamily: 'NunitoSans_400Regular',
+    color: colors.text,
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
   deliveryForm: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -499,6 +615,73 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+
+  // Category Picker
+  categoryPicker: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.white,
+    borderRadius: radii.lg,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    marginBottom: 16,
+  },
+  categoryPickerError: {
+    borderColor: colors.error,
+    backgroundColor: '#FEF2F2',
+    marginBottom: 0,
+  },
+  categoryPickerText: {
+    ...typePresets.bodySm,
+    fontFamily: 'NunitoSans_400Regular',
+    color: colors.text,
+    flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
+  },
+  categoryModalContent: {
+    backgroundColor: colors.white,
+    borderRadius: radii.xl,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+  },
+  categoryModalTitle: {
+    ...typePresets.h4,
+    fontFamily: 'Rubik_700Bold',
+    color: colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  categoryOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: radii.lg,
+    marginBottom: 4,
+  },
+  categoryOptionSelected: {
+    backgroundColor: colors.primarySoft,
+  },
+  categoryOptionText: {
+    ...typePresets.body,
+    fontFamily: 'NunitoSans_400Regular',
+    color: colors.text,
+  },
+  categoryOptionTextSelected: {
+    fontFamily: 'NunitoSans_700Bold',
+    color: colors.primary,
   },
 
 });

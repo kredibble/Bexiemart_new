@@ -22,8 +22,9 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RouteProp } from '@react-navigation/native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -36,9 +37,10 @@ import { useCartStore } from '@/stores/cartStore';
 import { useCreateOrder } from '@/hooks/useOrders';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
-import { CartStackParamList } from '@/navigation/CustomerTabs';
+import { HomeStackParamList } from '@/navigation/CustomerTabs';
 
-type NavProp = NativeStackNavigationProp<CartStackParamList>;
+type NavProp = NativeStackNavigationProp<HomeStackParamList>;
+type ScreenRouteProp = RouteProp<HomeStackParamList, 'Checkout'>;
 
 /* ── Validation Schema ─────────────────────────────────────────────────── */
 
@@ -70,11 +72,13 @@ const DELIVERY_OPTIONS: DeliveryOption[] = [
 export default function CheckoutScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
+  const route = useRoute<ScreenRouteProp>();
 
   const cart = useCartStore((state) => state.cart);
   const { mutate: createOrder, isPending } = useCreateOrder();
 
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryOption>(DELIVERY_OPTIONS[0]);
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'mobile_money'>('card');
 
   const {
     control,
@@ -90,7 +94,8 @@ export default function CheckoutScreen() {
 
   const cartItems = cart?.items ?? [];
   const subtotal = cart?.subtotal ?? 0;
-  const discount = cart?.discount ?? 0;
+  const routeDiscount = route.params?.discountAmount ?? 0;
+  const discount = routeDiscount > 0 ? routeDiscount : (cart?.discount ?? 0);
   const deliveryFee = selectedDelivery.fee;
   const total = subtotal + deliveryFee - discount;
 
@@ -109,7 +114,8 @@ export default function CheckoutScreen() {
         address: values.address,
         contact: values.contact,
         deliveryOptionId: selectedDelivery.id,
-        paymentMethod: 'card',
+        paymentMethod,
+        couponCode: route.params?.couponCode,
       },
       {
         onSuccess: (order) => {
@@ -142,6 +148,8 @@ export default function CheckoutScreen() {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          accessibilityLabel="Go back"
+          accessibilityRole="button"
         >
           <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
@@ -207,6 +215,8 @@ export default function CheckoutScreen() {
               ]}
               onPress={() => setSelectedDelivery(option)}
               activeOpacity={0.7}
+              accessibilityLabel={`Select delivery option: ${option.label}`}
+              accessibilityRole="button"
             >
               <View style={styles.deliveryOptionLeft}>
                 <View
@@ -241,10 +251,98 @@ export default function CheckoutScreen() {
                   selectedDelivery.id === option.id && styles.deliveryFeeSelected,
                 ]}
               >
-                {option.fee === 0 ? 'Free' : `₦${option.fee.toLocaleString()}`}
+                {option.fee === 0 ? 'Free' : `GH₵ ${option.fee.toLocaleString()}`}
               </Text>
             </TouchableOpacity>
           ))}
+        </View>
+
+        {/* Payment Method */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <TouchableOpacity
+            style={[
+              styles.deliveryOption,
+              paymentMethod === 'card' && styles.deliveryOptionSelected,
+            ]}
+            onPress={() => setPaymentMethod('card')}
+            activeOpacity={0.7}
+            accessibilityLabel="Pay with card"
+            accessibilityRole="button"
+          >
+            <View style={styles.deliveryOptionLeft}>
+              <View
+                style={[
+                  styles.deliveryIcon,
+                  paymentMethod === 'card' && styles.deliveryIconSelected,
+                ]}
+              >
+                <Ionicons
+                  name="card-outline"
+                  size={20}
+                  color={paymentMethod === 'card' ? colors.white : colors.textSecondary}
+                />
+              </View>
+              <View>
+                <Text
+                  style={[
+                    styles.deliveryLabel,
+                    paymentMethod === 'card' && styles.deliveryLabelSelected,
+                  ]}
+                >
+                  Card Payment
+                </Text>
+                <Text style={styles.deliveryDuration}>Debit / Credit Card</Text>
+              </View>
+            </View>
+            <Ionicons
+              name={paymentMethod === 'card' ? 'radio-button-on' : 'radio-button-off'}
+              size={20}
+              color={paymentMethod === 'card' ? colors.primary : colors.textLight}
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.deliveryOption,
+              paymentMethod === 'mobile_money' && styles.deliveryOptionSelected,
+            ]}
+            onPress={() => setPaymentMethod('mobile_money')}
+            activeOpacity={0.7}
+            accessibilityLabel="Pay with mobile money"
+            accessibilityRole="button"
+          >
+            <View style={styles.deliveryOptionLeft}>
+              <View
+                style={[
+                  styles.deliveryIcon,
+                  paymentMethod === 'mobile_money' && styles.deliveryIconSelected,
+                ]}
+              >
+                <Ionicons
+                  name="phone-portrait-outline"
+                  size={20}
+                  color={paymentMethod === 'mobile_money' ? colors.white : colors.textSecondary}
+                />
+              </View>
+              <View>
+                <Text
+                  style={[
+                    styles.deliveryLabel,
+                    paymentMethod === 'mobile_money' && styles.deliveryLabelSelected,
+                  ]}
+                >
+                  Mobile Money
+                </Text>
+                <Text style={styles.deliveryDuration}>MTN / Vodafone / AirtelTigo</Text>
+              </View>
+            </View>
+            <Ionicons
+              name={paymentMethod === 'mobile_money' ? 'radio-button-on' : 'radio-button-off'}
+              size={20}
+              color={paymentMethod === 'mobile_money' ? colors.primary : colors.textLight}
+            />
+          </TouchableOpacity>
         </View>
 
         {/* Order Summary */}
@@ -260,7 +358,7 @@ export default function CheckoutScreen() {
       <View style={[styles.bottomBar, { paddingBottom: insets.bottom + 12 }]}>
         <View style={styles.bottomTotal}>
           <Text style={styles.bottomTotalLabel}>Total</Text>
-          <Text style={styles.bottomTotalValue}>₦{total.toLocaleString()}</Text>
+          <Text style={styles.bottomTotalValue}>GH₵ {total.toLocaleString()}</Text>
         </View>
         <View style={styles.checkoutWrapper}>
           <Button
@@ -270,6 +368,7 @@ export default function CheckoutScreen() {
             disabled={isPending || cartItems.length === 0}
             fullWidth
             size="lg"
+            accessibilityLabel="Place order"
           />
         </View>
       </View>
@@ -299,7 +398,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h2,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   scrollContent: {
@@ -315,7 +414,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     ...typePresets.h5,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
     marginBottom: 14,
   },
@@ -352,7 +451,7 @@ const styles = StyleSheet.create({
   },
   deliveryLabel: {
     ...typePresets.body,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.text,
   },
   deliveryLabelSelected: {
@@ -364,7 +463,7 @@ const styles = StyleSheet.create({
   },
   deliveryFee: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   deliveryFeeSelected: {
@@ -399,7 +498,7 @@ const styles = StyleSheet.create({
   },
   bottomTotalValue: {
     ...typePresets.priceLg,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   checkoutWrapper: {

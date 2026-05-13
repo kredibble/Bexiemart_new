@@ -17,6 +17,8 @@ import EarningsScreen from '@/screens/vendor/EarningsScreen';
 import SettingsScreen from '@/screens/vendor/SettingsScreen';
 import OrderDetailsScreen from '@/screens/vendor/OrderDetailsScreen';
 import AddEditProductScreen from '@/screens/vendor/AddEditProductScreen';
+import NotificationsScreen from '@/screens/shared/NotificationsScreen';
+import CouponsScreen from '@/screens/vendor/CouponsScreen';
 
 export type VendorTabsParamList = {
   Dashboard: undefined;
@@ -30,6 +32,8 @@ export type VendorStackParamList = {
   VendorTabsHome: undefined;
   OrderDetails: { orderId: string };
   AddEditProduct: { mode: 'add' } | { mode: 'edit'; product: any };
+  Notifications: undefined;
+  Coupons: undefined;
 };
 
 const Tab = createBottomTabNavigator<VendorTabsParamList>();
@@ -53,7 +57,7 @@ function DashboardTab() {
             iconName = focused ? 'settings' : 'settings-outline';
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
-        tabBarActiveTintColor: '#004CFF',
+        tabBarActiveTintColor: '#7C3AED',
         tabBarInactiveTintColor: '#686262',
         headerShown: false,
         tabBarStyle: {
@@ -80,6 +84,8 @@ export default function VendorTabs() {
       <Stack.Screen name="VendorTabsHome" component={DashboardTab} />
       <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
       <Stack.Screen name="AddEditProduct" component={AddEditProductScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="Coupons" component={CouponsScreen} />
     </Stack.Navigator>
   );
 }

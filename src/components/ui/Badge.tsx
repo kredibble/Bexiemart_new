@@ -7,6 +7,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { colors } from '@/theme/colors';
 
 interface BadgeProps {
   /** Number to display inside the badge */
@@ -21,8 +22,8 @@ interface BadgeProps {
 
 export function Badge({
   count,
-  color = '#B3261E',
-  textColor = '#FFFFFF',
+  color = colors.error,
+  textColor = colors.white,
   size = 'sm',
 }: BadgeProps) {
   if (count <= 0) return null;
@@ -66,11 +67,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: '#FFFFFF',
+    borderColor: colors.white,
     zIndex: 10,
   },
   text: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     textAlign: 'center',
     lineHeight: 14,
   },

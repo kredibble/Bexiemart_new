@@ -1,45 +1,83 @@
-import React from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
+import React, { useEffect, useRef } from "react";
+import { View, ActivityIndicator, Text, Animated } from "react-native";
+import { colors } from "@/theme/colors";
+import { fonts, fontSizes } from "@/theme/typography";
 
 interface LoadingSpinnerProps {
-  size?: 'small' | 'large';
+  size?: "small" | "large";
   color?: string;
   label?: string;
   fullScreen?: boolean;
-  variant?: 'default' | 'light';
+  variant?: "default" | "light";
+  overlay?: boolean;
 }
 
 export function LoadingSpinner({
-  size = 'large',
-  color = '#004CFF',
+  size = "large",
+  color = colors.primary,
   label,
   fullScreen = false,
-  variant = 'default',
+  variant = "default",
+  overlay = false,
 }: LoadingSpinnerProps) {
-  if (fullScreen) {
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 200,
+      useNativeDriver: true,
+    }).start();
+  }, [fadeAnim]);
+
+  const bgColor = overlay
+    ? colors.overlay
+    : variant === "light"
+    ? colors.surface
+    : colors.white;
+
+  const content = (
+    <Animated.View
+      style={{
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: fadeAnim,
+        gap: 12,
+        paddingVertical: fullScreen ? 0 : 32,
+      }}
+      accessibilityLabel={label || "Loading"}
+      accessibilityRole="progressbar"
+    >
+      <ActivityIndicator size={size} color={color} />
+      {label && (
+        <Text
+          style={{
+            fontFamily: fonts.bodyMedium,
+            fontSize: fontSizes.base,
+            color: overlay ? colors.white : colors.textSecondary,
+            textAlign: "center",
+          }}
+        >
+          {label}
+        </Text>
+      )}
+    </Animated.View>
+  );
+
+  if (fullScreen || overlay) {
     return (
       <View
-        className="flex-1 items-center justify-center gap-4"
-        style={{ backgroundColor: variant === 'light' ? '#F8F9FA' : '#FFFFFF' }}
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: bgColor,
+        }}
       >
-        <ActivityIndicator size={size} color={color} />
-        {label && (
-          <Text style={{ fontFamily: 'Nunito_500Medium', fontSize: 14, color: '#5F6C7B' }}>
-            {label}
-          </Text>
-        )}
+        {content}
       </View>
     );
   }
 
-  return (
-    <View className="items-center justify-center py-8 gap-2">
-      <ActivityIndicator size={size} color={color} />
-      {label && (
-        <Text style={{ fontFamily: 'Nunito_400Regular', fontSize: 13, color: '#5F6C7B' }}>
-          {label}
-        </Text>
-      )}
-    </View>
-  );
+  return content;
 }

@@ -17,16 +17,21 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { ActivityIndicator, View, AppState } from "react-native";
 import { authClient } from "@/config/auth";
+import { apiClient, setOnUnauthorized } from "@/lib/api-client";
 import { useAuthStore } from "@/stores/authStore";
 import AuthNavigator from "./AuthNavigator";
 import CustomerTabs from "./CustomerTabs";
 import VendorTabs from "./VendorTabs";
+import AdminTabs from "./AdminTabs";
+import OnboardingScreen from "@/screens/customer/OnboardingScreen";
 import type { User, Role } from "@/types";
 
 export type RootStackParamList = {
   Auth: undefined;
   CustomerApp: undefined;
   VendorApp: undefined;
+  AdminApp: undefined;
+  Onboarding: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -38,7 +43,7 @@ function mapBetterAuthUser(baUser: Record<string, unknown>, storedUser: User | n
     name: (baUser.name as string) ?? storedUser?.name ?? "",
     email: (baUser.email as string) ?? storedUser?.email ?? "",
     phone: (baUser.phone as string) ?? storedUser?.phone,
-    role: (storedUser?.role as Role) ?? "customer",
+    role: (baUser.role as Role) ?? (storedUser?.role as Role) ?? "customer",
     avatar: (baUser.image as string) ?? storedUser?.avatar,
     isVerified: (baUser.emailVerified as boolean) ?? storedUser?.isVerified ?? false,
     createdAt: (baUser.createdAt as string) ?? storedUser?.createdAt ?? new Date().toISOString(),
@@ -50,6 +55,7 @@ export default function RootNavigator() {
   const { user, isAuthenticated, setUser, clearAuth, hydrate } = useAuthStore();
   const [isReady, setIsReady] = useState(false);
   const [sessionValid, setSessionValid] = useState<boolean | null>(null);
+  const [needsOnboarding, setNeedsOnboarding] = useState(false);
   const hasVerified = useRef(false);
 
   /**
@@ -82,6 +88,13 @@ export default function RootNavigator() {
     }
   }, [isAuthenticated, setUser, clearAuth]);
 
+  // Register 401 handler: clears auth and sends user to login
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      clearAuth();
+    });
+  }, [clearAuth]);
+
   // Initial mount: hydrate + verify session
   useEffect(() => {
     const init = async () => {
@@ -98,6 +111,21 @@ export default function RootNavigator() {
     init();
   }, []);
 
+  // Wire up 401 → auto-logout handler
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      useAuthStore.getState().clearAuth();
+    });
+  }, []);
+
+  // Check onboarding status for customer users
+  useEffect(() => {
+    if (isAuthenticated && user?.role === 'customer' && isReady) {
+      apiClient.get<{ completed: boolean }>('/onboarding')
+        .then((res) => setNeedsOnboarding(!res.completed))
+        .catch(() => setNeedsOnboarding(false));
+    }
+  }, [isAuthenticated, user?.role, isReady]);
   // AppState listener: re-verify when app comes to foreground
   // (handles OAuth browser callback where cookies were set externally)
   useEffect(() => {
@@ -115,7 +143,7 @@ export default function RootNavigator() {
   if (!isReady) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#FFFFFF" }}>
-        <ActivityIndicator size="large" color="#004CFF" />
+        <ActivityIndicator size="large" color="#7C3AED" />
       </View>
     );
   }
@@ -131,14 +159,19 @@ export default function RootNavigator() {
   // Read role from store (set during registration/social role select)
   const userRole = user?.role ?? "customer";
   const isVendor = userRole === "vendor";
+  const isAdmin = userRole === "admin";
 
   return (
     <Stack.Navigator
-      key={`app-${userRole}`}
+      key={`app-${userRole}-${needsOnboarding}`}
       screenOptions={{ headerShown: false, animation: "fade" }}
     >
-      {isVendor ? (
+      {isAdmin ? (
+        <Stack.Screen name="AdminApp" component={AdminTabs} />
+      ) : isVendor ? (
         <Stack.Screen name="VendorApp" component={VendorTabs} />
+      ) : needsOnboarding ? (
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       ) : (
         <Stack.Screen name="CustomerApp" component={CustomerTabs} />
       )}

@@ -78,7 +78,7 @@ export default function ForgotPasswordScreen() {
         {/* Illustration */}
         <View style={styles.illustrationContainer}>
           <View style={styles.illustrationCircle}>
-            <Ionicons name="lock-closed-outline" size={44} color="#004CFF" />
+            <Ionicons name="lock-closed-outline" size={44} color="#7C3AED" />
           </View>
         </View>
 
@@ -150,7 +150,7 @@ export default function ForgotPasswordScreen() {
             accessibilityLabel="Back to login"
           >
             <Text style={styles.footerLink}>
-              <Ionicons name="arrow-back" size={14} color="#004CFF" />{' '}
+              <Ionicons name="arrow-back" size={14} color="#7C3AED" />{' '}
               Back to Sign In
             </Text>
           </TouchableOpacity>
@@ -161,7 +161,7 @@ export default function ForgotPasswordScreen() {
 }
 
 const styles = StyleSheet.create({
-  accentBar: { height: 4, backgroundColor: '#004CFF' },
+  accentBar: { height: 4, backgroundColor: '#7C3AED' },
   headerRow: { paddingHorizontal: 24, paddingBottom: 8 },
   backButton: {
     width: 44, height: 44, borderRadius: 22,
@@ -170,11 +170,11 @@ const styles = StyleSheet.create({
   illustrationContainer: { alignItems: 'center', marginTop: 16, marginBottom: 24 },
   illustrationCircle: {
     width: 96, height: 96, borderRadius: 48,
-    backgroundColor: '#EEF2FF',
+    backgroundColor: '#F3E8FF',
     alignItems: 'center', justifyContent: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#004CFF',
+        shadowColor: '#7C3AED',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 16,
@@ -184,7 +184,7 @@ const styles = StyleSheet.create({
     }),
   },
   title: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
     color: '#111322',
     textAlign: 'center',
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   subtitle: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 15,
     color: '#5F6C7B',
     textAlign: 'center',
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
     padding: 14, marginBottom: 20,
   },
   errorText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 14,
+    fontFamily: 'NunitoSans_400Regular', fontSize: 14,
     color: '#7F1D1D', flex: 1, lineHeight: 20,
   },
   formCard: {
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     ...Platform.select({
       ios: {
-        shadowColor: '#004CFF',
+        shadowColor: '#7C3AED',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.3, shadowRadius: 12,
       },
@@ -233,13 +233,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 6,
   },
   trustText: {
-    fontFamily: 'Nunito_400Regular', fontSize: 12, color: '#5F6C7B',
+    fontFamily: 'NunitoSans_400Regular', fontSize: 12, color: '#5F6C7B',
   },
   footerRow: {
     flexDirection: 'row', justifyContent: 'center',
     paddingVertical: 8,
   },
   footerLink: {
-    fontFamily: 'Nunito_600SemiBold', fontSize: 14, color: '#004CFF',
+    fontFamily: 'NunitoSans_600SemiBold', fontSize: 14, color: '#7C3AED',
   },
 });

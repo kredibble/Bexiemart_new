@@ -121,7 +121,7 @@ export function ProductCard({
         {/* Rating row */}
         {product.rating > 0 && (
           <View style={styles.ratingRow}>
-            <Ionicons name="star" size={12} color="#F59E0B" />
+            <Ionicons name="star" size={12} color={colors.warning} />
             <Text style={styles.ratingText}>{product.rating.toFixed(1)}</Text>
             <Text style={styles.reviewCount}>({product.reviewCount})</Text>
           </View>
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
   },
   discountText: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     fontSize: 11,
     color: colors.white,
   },
@@ -200,7 +200,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   outOfStockText: {
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     fontSize: 13,
     color: colors.error,
     letterSpacing: 0.5,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   name: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 13,
     color: colors.text,
     lineHeight: 18,
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   ratingText: {
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 12,
     color: colors.text,
   },
   reviewCount: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 11,
     color: colors.textLight,
   },
@@ -238,12 +238,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   price: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 15,
     color: colors.text,
   },
   originalPrice: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 12,
     color: colors.textLight,
     textDecorationLine: 'line-through',

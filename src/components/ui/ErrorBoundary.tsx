@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typePresets.h3,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   message: {
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
   },
   retryText: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.white,
   },
 });

@@ -6,6 +6,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { colors } from '@/theme/colors';
 
 interface AuthHeaderProps {
   title: string;
@@ -27,8 +28,8 @@ export function AuthHeader({
   step,
   totalSteps,
   icon,
-  iconBgColor = '#EEF2FF',
-  iconColor = '#004CFF',
+  iconBgColor = colors.infoSoft,
+  iconColor = colors.primary,
 }: AuthHeaderProps) {
   const insets = useSafeAreaInsets();
 
@@ -47,7 +48,7 @@ export function AuthHeader({
             accessibilityRole="button"
             accessibilityLabel="Go back"
           >
-            <Ionicons name="arrow-back" size={22} color="#111322" />
+            <Ionicons name="arrow-back" size={22} color={colors.text} />
           </TouchableOpacity>
         )}
 
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   accentBar: {
     height: 4,
     width: '100%',
-    backgroundColor: '#004CFF',
+    backgroundColor: colors.primary,
   },
   headerRow: {
     flexDirection: 'row',
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   backButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 9999,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -113,11 +114,11 @@ const styles = StyleSheet.create({
   stepDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
-    backgroundColor: '#E4E7EC',
+    borderRadius: 9999,
+    backgroundColor: colors.border,
   },
   stepDotActive: {
-    backgroundColor: '#004CFF',
+    backgroundColor: colors.primary,
   },
   stepDotCurrent: {
     width: 24,
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
   iconCircle: {
     width: 72,
     height: 72,
-    borderRadius: 36,
+    borderRadius: 9999,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
@@ -133,18 +134,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   title: {
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     fontSize: 28,
-    color: '#111322',
+    color: colors.text,
     textAlign: 'center',
     letterSpacing: -0.5,
     paddingHorizontal: 24,
     marginTop: 8,
   },
   subtitle: {
-    fontFamily: 'Nunito_400Regular',
+    fontFamily: 'NunitoSans_400Regular',
     fontSize: 15,
-    color: '#5F6C7B',
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
     paddingHorizontal: 32,

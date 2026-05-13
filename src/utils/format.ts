@@ -6,6 +6,10 @@
  * Format a number as Ghanaian Cedis (GH₵).
  * e.g. formatCurrency(1299.5) → "GH₵ 1,299.50"
  */
+export function formatRelativeTime(isoString: string): string {
+  return formatDate(isoString, 'relative');
+}
+
 export function formatCurrency(amount: number, currency = 'GHS'): string {
   return new Intl.NumberFormat('en-GH', {
     style: 'currency',

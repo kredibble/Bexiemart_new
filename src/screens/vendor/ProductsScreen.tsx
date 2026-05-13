@@ -30,6 +30,7 @@ import { typePresets } from '@/theme/typography';
 import { formatCurrency } from '@/utils/format';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { SkeletonCard } from '@/components/ui/Skeleton';
 import type { Product } from '@/types';
 
 type NavProp = NativeStackNavigationProp<any>;
@@ -38,7 +39,7 @@ export default function ProductsScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
 
-  const { data: products, isLoading, refetch, isRefetching } = useVendorProducts();
+  const { data: products, isLoading, isError, error, refetch, isRefetching } = useVendorProducts();
   const deleteMutation = useDeleteProduct();
 
   useFocusEffect(
@@ -101,7 +102,7 @@ export default function ProductsScreen() {
               onPress={() => handleEdit(item)}
             >
               <Ionicons name="pencil" size={16} color={colors.primary} />
-              <Text style={{ fontFamily: 'Nunito_700Bold', fontSize: 12, color: colors.primary }}>Edit</Text>
+              <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 12, color: colors.primary }}>Edit</Text>
             </Button>
             <Button
               variant="danger"
@@ -111,7 +112,7 @@ export default function ProductsScreen() {
               disabled={deleteMutation.isPending}
             >
               <Ionicons name="trash-outline" size={16} color={colors.white} />
-              <Text style={{ fontFamily: 'Nunito_700Bold', fontSize: 12, color: colors.white }}>Delete</Text>
+              <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 12, color: colors.white }}>Delete</Text>
             </Button>
           </View>
         </View>
@@ -136,25 +137,51 @@ export default function ProductsScreen() {
         </Button>
       </View>
 
-      {/* Product List */}
-      <FlatList
-        data={products ?? []}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={refetch}
-            tintColor={colors.primary}
-            colors={[colors.primary]}
-          />
-        }
-        ListEmptyComponent={
-          !isLoading ? (
+      {/* Loading State */}
+      {isLoading ? (
+        <FlatList
+          data={[1, 2, 3, 4]}
+          renderItem={() => (
+            <View style={styles.productCard}>
+              <SkeletonCard />
+            </View>
+          )}
+          keyExtractor={(i) => String(i)}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
+          scrollEnabled={false}
+        />
+      ) : isError ? (
+        /* Error State */
+        <View style={styles.centerContainer}>
+          <Ionicons name="cloud-offline-outline" size={48} color={colors.textLight} />
+          <Text style={styles.errorTitle}>Something went wrong</Text>
+          <Text style={styles.errorMessage}>{error?.message || 'Failed to load products'}</Text>
+          <Button variant="default" style={styles.retryBtn} onPress={() => refetch()}>
+            <Ionicons name="refresh" size={16} color={colors.white} />
+            <Text style={{ fontFamily: 'NunitoSans_700Bold', fontSize: 14, color: colors.white }}>Try Again</Text>
+          </Button>
+        </View>
+      ) : (
+        /* Product List */
+        <FlatList
+          data={products ?? []}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + 80 }]}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={refetch}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
+            />
+          }
+          ListEmptyComponent={
             <EmptyState
               icon="cube-outline"
               title="No products yet"
@@ -162,9 +189,9 @@ export default function ProductsScreen() {
               actionLabel="Add Product"
               onAction={handleAdd}
             />
-          ) : null
-        }
-      />
+          }
+        />
+      )}
     </View>
   );
 }
@@ -188,7 +215,7 @@ const styles = StyleSheet.create({
   },
   headerTitle: {
     ...typePresets.h2,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   row: {
@@ -232,7 +259,7 @@ const styles = StyleSheet.create({
   },
   outOfStockText: {
     ...typePresets.caption,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.white,
   },
   productInfo: {
@@ -241,12 +268,12 @@ const styles = StyleSheet.create({
   },
   productName: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
   },
   productPrice: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.primary,
   },
   productMeta: {
@@ -260,7 +287,7 @@ const styles = StyleSheet.create({
   },
   stockText: {
     ...typePresets.caption,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
   },
   actions: {
     flexDirection: 'row',
@@ -277,14 +304,32 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     borderWidth: 1,
   },
-  actionBtn: {
+  centerContainer: {
     flex: 1,
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 4,
-    paddingVertical: 8,
-    borderRadius: radii.md,
-    borderWidth: 1,
+    paddingHorizontal: 32,
+    gap: 12,
+  },
+  loadingText: {
+    ...typePresets.body,
+    color: colors.textSecondary,
+  },
+  errorTitle: {
+    ...typePresets.h4,
+    color: colors.text,
+    marginTop: 8,
+  },
+  errorMessage: {
+    ...typePresets.body,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  retryBtn: {
+    marginTop: 8,
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
 });

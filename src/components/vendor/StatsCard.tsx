@@ -52,6 +52,6 @@ const styles = StyleSheet.create({
   },
   value: {
     ...typePresets.stat,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
   },
 });

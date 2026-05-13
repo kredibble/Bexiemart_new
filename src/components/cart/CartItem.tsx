@@ -59,7 +59,7 @@ export function CartItem({
           {item.product?.name ?? 'Product'}
         </Text>
         <Text style={styles.price}>
-          ₦{item.unitPrice.toLocaleString()}
+          GH₵ {item.unitPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
 
         {/* Quantity controls */}
@@ -144,13 +144,13 @@ const styles = StyleSheet.create({
   },
   name: {
     ...typePresets.body,
-    fontFamily: 'Nunito_600SemiBold',
+    fontFamily: 'NunitoSans_600SemiBold',
     color: colors.text,
     lineHeight: 20,
   },
   price: {
     ...typePresets.priceSm,
-    fontFamily: 'Raleway_700Bold',
+    fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   quantityRow: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   quantity: {
     ...typePresets.body,
-    fontFamily: 'Nunito_700Bold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
     minWidth: 24,
     textAlign: 'center',
