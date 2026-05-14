@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Switch,
   Image,
 } from 'react-native';
@@ -20,6 +19,8 @@ import { FormInput } from '@/components/ui/FormInput';
 import { useAuthStore } from '@/stores/authStore';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { uploadImage } from '@/utils/cloudinary';
 import { apiClient } from '@/lib/api-client';
 
@@ -44,11 +45,12 @@ export default function SettingsScreen() {
   const [promoNotifs, setPromoNotifs] = useState(false);
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const handlePickAvatar = useCallback(async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission needed', 'Allow access to your photo library to change your profile picture.');
+      ToastEmitter.error('Allow access to your photo library to change your profile picture.');
       return;
     }
 
@@ -65,7 +67,7 @@ export default function SettingsScreen() {
         const uploaded = await uploadImage(result.assets[0].uri, 'avatars');
         setAvatar(uploaded.url);
       } catch {
-        Alert.alert('Upload failed', 'Could not upload image. Please try again.');
+        ToastEmitter.error('Could not upload image. Please try again.');
       } finally {
         setUploadingAvatar(false);
       }
@@ -74,7 +76,7 @@ export default function SettingsScreen() {
 
   const handleSaveProfile = async () => {
     if (!name.trim()) {
-      Alert.alert('Error', 'Name is required');
+      ToastEmitter.error('Name is required');
       return;
     }
     setSaving(true);
@@ -87,11 +89,11 @@ export default function SettingsScreen() {
       const res = await apiClient.patch('/user/profile', payload);
       if (res) {
         setUser({ ...user!, name: name.trim(), email: email.trim(), phone: phone.trim(), avatar });
-        Alert.alert('Profile Updated', 'Your profile has been saved.');
+        ToastEmitter.success('Your profile has been saved.');
         setActiveSection(null);
       }
     } catch {
-      Alert.alert('Error', 'Failed to save profile. Please try again.');
+      ToastEmitter.error('Failed to save profile. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -99,21 +101,19 @@ export default function SettingsScreen() {
 
   const handleChangePassword = () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match');
+      ToastEmitter.error('Passwords do not match');
       return;
     }
-    Alert.alert('Password Changed', 'Your password has been updated.');
+    ToastEmitter.success('Your password has been updated.');
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
     setActiveSection(null);
   };
 
-  const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
-    ]);
+  const handleSignOut = async () => {
+    const ok = await confirm({ title: 'Sign Out', message: 'Are you sure you want to sign out?', destructive: true, confirmLabel: 'Sign Out' });
+    if (ok) signOut();
   };
 
   return (

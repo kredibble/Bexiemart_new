@@ -33,7 +33,7 @@ export default function OrderTrackingScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
-  const { orderId } = route.params;
+  const { orderId } = route.params ?? {};
   const { data: tracking, isLoading, error } = useOrderTracking(orderId);
 
   if (isLoading) {

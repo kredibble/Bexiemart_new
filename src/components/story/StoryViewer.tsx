@@ -12,7 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useViewStory } from '@/hooks/useStories';
 import { colors } from '@/theme/colors';
-import { typePresets } from '@/theme/typography';
+import { fonts } from '@/theme/typography';
 import type { StoryGroup, StoryItem } from '@/types';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -39,7 +39,6 @@ export default function StoryViewer({ group, onClose }: StoryViewerProps) {
       useNativeDriver: false,
     });
     animation.start();
-
     timerRef.current = setTimeout(() => {
       if (currentIndex < stories.length - 1) {
         goNext();
@@ -47,7 +46,6 @@ export default function StoryViewer({ group, onClose }: StoryViewerProps) {
         onClose();
       }
     }, STORY_DURATION);
-
     return animation;
   }, [currentIndex, stories.length]);
 
@@ -90,8 +88,6 @@ export default function StoryViewer({ group, onClose }: StoryViewerProps) {
       <TouchableOpacity style={styles.closeButton} onPress={onClose}>
         <Ionicons name="close" size={28} color={colors.white} />
       </TouchableOpacity>
-
-      {/* Progress Bars */}
       <View style={styles.progressContainer}>
         {stories.map((_, idx) => (
           <View key={idx} style={styles.progressBar}>
@@ -106,8 +102,6 @@ export default function StoryViewer({ group, onClose }: StoryViewerProps) {
           </View>
         ))}
       </View>
-
-      {/* Header */}
       <View style={styles.storyHeader}>
         <View style={styles.storyUser}>
           <View style={styles.storyAvatar}>
@@ -123,8 +117,6 @@ export default function StoryViewer({ group, onClose }: StoryViewerProps) {
           </View>
         </View>
       </View>
-
-      {/* Story Content */}
       <TouchableOpacity style={styles.storyContent} onPress={handleTap} activeOpacity={1}>
         {currentStory?.mediaUrl ? (
           <Image
@@ -137,7 +129,6 @@ export default function StoryViewer({ group, onClose }: StoryViewerProps) {
             <Ionicons name="image-outline" size={64} color={colors.white} />
           </View>
         )}
-
         {currentStory?.caption && (
           <View style={styles.captionContainer}>
             <Text style={styles.caption}>{currentStory.caption}</Text>
@@ -191,9 +182,9 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
   },
   storyAvatarImg: { width: '100%', height: '100%' },
-  storyAvatarText: { fontFamily: 'Rubik_700Bold', fontSize: 16, color: colors.white },
-  storyUserName: { ...typePresets.body, fontFamily: 'NunitoSans_700Bold', color: colors.white },
-  storyTime: { ...typePresets.caption, color: 'rgba(255,255,255,0.7)' },
+  storyAvatarText: { fontFamily: fonts.heading, fontSize: 16, color: colors.white },
+  storyUserName: { fontFamily: fonts.bodyBold, fontSize: 15, color: colors.white },
+  storyTime: { fontFamily: fonts.body, fontSize: 12, color: 'rgba(255,255,255,0.7)' },
   storyContent: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   storyImage: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.7 },
   storyPlaceholder: {
@@ -205,5 +196,5 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 100, left: 20, right: 20,
     padding: 12, backgroundColor: 'rgba(0,0,0,0.4)', borderRadius: 8,
   },
-  caption: { ...typePresets.body, color: colors.white, textAlign: 'center' },
+  caption: { fontFamily: fonts.body, fontSize: 15, color: colors.white, textAlign: 'center' },
 });

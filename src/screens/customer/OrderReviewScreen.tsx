@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Input } from '@/components/ui/Input';
+import { ToastEmitter } from '@/utils/toastEmitter';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,7 +20,7 @@ export default function OrderReviewScreen() {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = () => {
-    if (rating === 0) return Alert.alert('Error', 'Please select a rating');
+    if (rating === 0) return ToastEmitter.error('Please select a rating');
     setSubmitted(true);
   };
 
@@ -83,10 +85,9 @@ export default function OrderReviewScreen() {
         </View>
 
         <Text style={styles.sectionTitle}>Write a Review (optional)</Text>
-        <TextInput
+        <Input
           style={styles.reviewInput}
           placeholder="Share your experience with this order..."
-          placeholderTextColor={colors.textLighter}
           value={review}
           onChangeText={setReview}
           multiline

@@ -1,20 +1,8 @@
-/**
- * ErrorBoundary — React error boundary for graceful error handling.
- *
- * Catches render errors in component trees and displays a fallback UI
- * instead of crashing the entire app.
- *
- * Usage:
- *  <ErrorBoundary fallback={<CustomFallback />}>
- *    <MyComponent />
- *  </ErrorBoundary>
- */
 import React, { Component, type ErrorInfo, type ReactNode } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
 import { colors, radii } from '@/theme/colors';
-import { typePresets } from '@/theme/typography';
+import { fonts } from '@/theme/typography';
 
 interface Props {
   children: ReactNode;
@@ -38,7 +26,6 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error for monitoring (e.g., Sentry, LogRocket)
     console.error('[ErrorBoundary]', error, errorInfo);
     this.props.onError?.(error, errorInfo);
   }
@@ -55,7 +42,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
       return (
         <View style={styles.container}>
-          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Ionicons name="alert-circle-outline" size={52} color={colors.error} />
           <Text style={styles.title}>Something went wrong</Text>
           <Text style={styles.message}>
             {this.state.error?.message ?? 'An unexpected error occurred'}
@@ -67,45 +54,44 @@ export class ErrorBoundary extends Component<Props, State> {
         </View>
       );
     }
-
     return this.props.children;
   }
 }
-
-/* ── Styles ────────────────────────────────────────────────────────────── */
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: 28,
     backgroundColor: colors.surface,
     gap: 12,
   },
   title: {
-    ...typePresets.h3,
-    fontFamily: 'Rubik_700Bold',
+    fontFamily: fonts.headingSemi,
+    fontSize: 20,
     color: colors.text,
   },
   message: {
-    ...typePresets.body,
+    fontFamily: fonts.body,
+    fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
   retryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingHorizontal: 28,
+    paddingVertical: 14,
     borderRadius: radii.lg,
     marginTop: 8,
   },
   retryText: {
-    ...typePresets.body,
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
     color: colors.white,
   },
 });

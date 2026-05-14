@@ -1,11 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { ToastEmitter } from '@/utils/toastEmitter';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
+import { Input } from '@/components/ui/Input';
 
 export default function VerificationScreen() {
   const insets = useSafeAreaInsets();
@@ -13,10 +15,10 @@ export default function VerificationScreen() {
   const [step, setStep] = useState<'email' | 'code' | 'success'>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState(['', '', '', '', '', '']);
-  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const inputRefs = useRef<any[]>([]);
 
   const handleSendCode = () => {
-    if (!email.trim()) return Alert.alert('Error', 'Enter your email');
+    if (!email.trim()) return ToastEmitter.error('Enter your email');
     setStep('code');
   };
 
@@ -28,7 +30,7 @@ export default function VerificationScreen() {
   };
 
   const handleVerify = () => {
-    if (code.some((c) => !c)) return Alert.alert('Error', 'Enter the full verification code');
+    if (code.some((c) => !c)) return ToastEmitter.error('Enter the full verification code');
     setStep('success');
   };
 
@@ -68,8 +70,7 @@ export default function VerificationScreen() {
             </View>
             <Text style={styles.title}>Verify Your Email</Text>
             <Text style={styles.subtitle}>Enter your email address to receive a verification code.</Text>
-            <Text style={styles.inputLabel}>Email Address</Text>
-            <TextInput style={styles.input} placeholder="you@example.com" placeholderTextColor={colors.textLighter} value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+            <Input label="Email Address" placeholder="you@example.com" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
             <TouchableOpacity style={styles.primaryBtn} onPress={handleSendCode}>
               <Text style={styles.primaryBtnText}>Send Verification Code</Text>
             </TouchableOpacity>
@@ -83,15 +84,16 @@ export default function VerificationScreen() {
             <Text style={styles.subtitle}>We sent a 6-digit code to {email}</Text>
             <View style={styles.codeRow}>
               {code.map((digit, idx) => (
-                <TextInput
+                <Input
                   key={idx}
-                  ref={(ref) => { inputRefs.current[idx] = ref; }}
-                  style={[styles.codeInput, digit ? styles.codeInputFilled : null]}
+                  containerStyle={styles.codeInput}
+                  style={styles.codeInputText}
                   value={digit}
                   onChangeText={(t) => handleCodeChange(t, idx)}
                   keyboardType="number-pad"
                   maxLength={1}
                   onKeyPress={({ nativeEvent }) => nativeEvent.key === 'Backspace' && !digit && idx > 0 && inputRefs.current[idx - 1]?.focus()}
+                  clearable={false}
                 />
               ))}
             </View>
@@ -117,13 +119,12 @@ const styles = StyleSheet.create({
   illustration: { alignItems: 'center', paddingVertical: 24 },
   title: { ...typePresets.h2, fontFamily: 'Rubik_700Bold', color: colors.text, textAlign: 'center' },
   subtitle: { ...typePresets.body, color: colors.textSecondary, textAlign: 'center', marginBottom: 16 },
-  inputLabel: { ...typePresets.label, color: colors.textSecondary, marginBottom: 4 },
-  input: { ...typePresets.body, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 14, color: colors.text },
+
   primaryBtn: { backgroundColor: colors.primary, borderRadius: radii.lg, paddingVertical: 16, alignItems: 'center', marginTop: 16 },
   primaryBtnText: { ...typePresets.body, fontFamily: 'NunitoSans_700Bold', color: colors.white, fontSize: 16 },
   codeRow: { flexDirection: 'row', justifyContent: 'center', gap: 8, marginVertical: 20 },
-  codeInput: { width: 48, height: 56, borderRadius: radii.lg, borderWidth: 1.5, borderColor: colors.border, textAlign: 'center', fontSize: 22, fontFamily: 'Rubik_700Bold', color: colors.text },
-  codeInputFilled: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  codeInput: { width: 56, marginBottom: 0 },
+  codeInputText: { textAlign: 'center', fontSize: 22, fontFamily: 'Rubik_700Bold', color: colors.text },
   resendBtn: { alignItems: 'center', paddingVertical: 12 },
   resendText: { ...typePresets.body, fontFamily: 'NunitoSans_700Bold', color: colors.primary },
   successIcon: { width: 96, height: 96, borderRadius: 48, backgroundColor: colors.accentGreen, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },

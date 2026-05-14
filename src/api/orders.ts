@@ -27,12 +27,12 @@ export const getOrders = async (params?: {
   page?: number;
   pageSize?: number;
 }) => {
-  const query = new URLSearchParams({
-    status: params?.status ?? '',
-    page: String(params?.page ?? 1),
-    pageSize: String(params?.pageSize ?? 20),
-  }).toString();
-  return apiClient.get<PaginatedResponse<Order>>(`/orders?${query}`);
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  query.append('page', String(params?.page ?? 1));
+  query.append('pageSize', String(params?.pageSize ?? 20));
+  
+  return apiClient.get<PaginatedResponse<Order>>(`/orders?${query.toString()}`);
 };
 
 export const getOrder = async (orderId: string) => {
@@ -48,12 +48,12 @@ export const getCustomerOrders = async (params?: {
   page?: number;
   pageSize?: number;
 }) => {
-  const query = new URLSearchParams({
-    status: params?.status ?? '',
-    page: String(params?.page ?? 1),
-    pageSize: String(params?.pageSize ?? 20),
-  }).toString();
-  return apiClient.get<PaginatedResponse<Order>>(`/orders/customer?${query}`);
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  query.append('page', String(params?.page ?? 1));
+  query.append('pageSize', String(params?.pageSize ?? 20));
+
+  return apiClient.get<PaginatedResponse<Order>>(`/orders/customer?${query.toString()}`);
 };
 
 export const getVendorOrders = async (params?: {
@@ -61,10 +61,10 @@ export const getVendorOrders = async (params?: {
   page?: number;
   pageSize?: number;
 }) => {
-  const query = new URLSearchParams({
-    status: params?.status ?? '',
-    page: String(params?.page ?? 1),
-    pageSize: String(params?.pageSize ?? 20),
-  }).toString();
-  return apiClient.get<PaginatedResponse<Order>>(`/orders/vendor?${query}`);
+  const query = new URLSearchParams();
+  if (params?.status) query.append('status', params.status);
+  query.append('page', String(params?.page ?? 1));
+  query.append('pageSize', String(params?.pageSize ?? 20));
+
+  return apiClient.get<PaginatedResponse<Order>>(`/orders/vendor?${query.toString()}`);
 };

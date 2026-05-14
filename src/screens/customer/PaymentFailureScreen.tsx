@@ -29,7 +29,7 @@ export default function PaymentFailureScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteType>();
-  const { orderId, error } = route.params;
+  const { orderId, error } = route.params ?? {};
 
   const handleRetry = () => {
     if (orderId) {

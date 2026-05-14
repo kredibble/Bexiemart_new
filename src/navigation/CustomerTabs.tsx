@@ -43,6 +43,14 @@ import WalletTransferScreen from '@/screens/customer/WalletTransferScreen';
 import CustomerCouponsScreen from '@/screens/customer/CustomerCouponsScreen';
 import VerificationScreen from '@/screens/customer/VerificationScreen';
 import OrderReviewScreen from '@/screens/customer/OrderReviewScreen';
+import WalletHomeScreen from '@/screens/customer/wallet/WalletHomeScreen';
+import WalletTopUpScreen from '@/screens/customer/wallet/WalletTopUpScreen';
+import WalletWithdrawScreen from '@/screens/customer/wallet/WalletWithdrawScreen';
+import WalletSettingsScreen from '@/screens/customer/wallet/WalletSettingsScreen';
+import AccountSetupScreen from '@/screens/shared/wallet/AccountSetupScreen';
+import PinSetupScreen from '@/screens/shared/wallet/PinSetupScreen';
+import TransactionDetailScreen from '@/screens/shared/wallet/TransactionDetailScreen';
+import type { WalletTransaction } from '@/api/wallet';
 
 // ── Type definitions ────────────────────────────────────────────────────────────
 
@@ -71,6 +79,13 @@ export type HomeStackParamList = {
   CustomerCoupons: undefined;
   Verification: undefined;
   OrderReview: { orderId: string };
+  WalletHome: undefined;
+  WalletTopUp: undefined;
+  WalletWithdraw: undefined;
+  WalletSettings: undefined;
+  AccountSetup: undefined;
+  PinSetup: { mode?: 'setup' | 'change' | 'verify' } | undefined;
+  TransactionDetail: { transaction: WalletTransaction };
 };
 
 export type ShopStackParamList = {
@@ -115,6 +130,13 @@ function HomeStackScreen() {
       <HomeStack.Screen name="RestaurantHome" component={RestaurantHomeScreen} />
       <HomeStack.Screen name="AddressManagement" component={AddressManagementScreen} />
       <HomeStack.Screen name="WalletTransfer" component={WalletTransferScreen} />
+      <HomeStack.Screen name="WalletHome" component={WalletHomeScreen} />
+      <HomeStack.Screen name="WalletTopUp" component={WalletTopUpScreen} />
+      <HomeStack.Screen name="WalletWithdraw" component={WalletWithdrawScreen} />
+      <HomeStack.Screen name="WalletSettings" component={WalletSettingsScreen} />
+      <HomeStack.Screen name="AccountSetup" component={AccountSetupScreen} />
+      <HomeStack.Screen name="PinSetup" component={PinSetupScreen} />
+      <HomeStack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
       <HomeStack.Screen name="CustomerCoupons" component={CustomerCouponsScreen} />
       <HomeStack.Screen name="Verification" component={VerificationScreen} />
       <HomeStack.Screen name="OrderReview" component={OrderReviewScreen} />

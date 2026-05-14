@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,7 @@ export default function AdminProductsScreen() {
   const insets = useSafeAreaInsets();
   const { data: products, isLoading, refetch } = useAdminProducts();
   const toggleStatus = useToggleProductStatus();
+  const confirm = useConfirm();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
@@ -29,16 +31,10 @@ export default function AdminProductsScreen() {
     return productList.filter((p) => p.isActive === (filter === 'active'));
   }, [productList, filter]);
 
-  const handleToggle = (product: AdminProduct) => {
+  const handleToggle = async (product: AdminProduct) => {
     const newStatus = !product.isActive;
-    Alert.alert(
-      newStatus ? 'Activate Product' : 'Deactivate Product',
-      `Set "${product.name}" to ${newStatus ? 'active' : 'inactive'}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: () => toggleStatus.mutate({ id: product.id, isActive: newStatus }) },
-      ],
-    );
+    const ok = await confirm({ title: newStatus ? 'Activate Product' : 'Deactivate Product', message: `Set "${product.name}" to ${newStatus ? 'active' : 'inactive'}?`, confirmLabel: 'Confirm' });
+    if (ok) toggleStatus.mutate({ id: product.id, isActive: newStatus });
   };
 
   const renderProduct = ({ item }: { item: AdminProduct }) => (

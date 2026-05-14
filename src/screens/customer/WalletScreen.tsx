@@ -21,7 +21,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useWallet, useWalletTransactions } from '@/hooks/useWallet';
+import { useWallet, useTransactions } from '@/hooks/useWallet';
 import { colors, shadows, radii } from '@/theme/colors';
 import type { WalletTransaction } from '@/api/wallet';
 
@@ -40,6 +40,7 @@ const TRANSACTION_META: Record<WalletTransaction['type'], { icon: keyof typeof I
   topup: { icon: 'add-circle-outline', color: colors.success, label: 'Top Up' },
   withdrawal: { icon: 'arrow-up-circle-outline', color: colors.error, label: 'Withdrawal' },
   refund: { icon: 'refresh-circle-outline', color: colors.warning, label: 'Refund' },
+  transfer: { icon: 'send-outline', color: colors.info, label: 'Transfer' },
 };
 
 function TransactionRow({ item }: { item: WalletTransaction }) {
@@ -53,7 +54,7 @@ function TransactionRow({ item }: { item: WalletTransaction }) {
       </View>
       <View style={txStyles.details}>
         <Text style={txStyles.description} numberOfLines={1}>{item.description}</Text>
-        <Text style={txStyles.date}>{formatDate(item.date)}</Text>
+        <Text style={txStyles.date}>{formatDate(item.createdAt)}</Text>
       </View>
       <View style={txStyles.amountColumn}>
         <Text style={[txStyles.amount, isCredit ? txStyles.credit : txStyles.debit]}>
@@ -76,7 +77,7 @@ export default function WalletScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const { data: wallet, isLoading: walletLoading, isError: walletError, refetch: refetchWallet } = useWallet();
-  const { data: transactions, isLoading: txLoading, isError: txError, refetch: refetchTx } = useWalletTransactions();
+  const { data: transactions, isLoading: txLoading, isError: txError, refetch: refetchTx } = useTransactions();
 
   const spentPercent = useMemo(
     () => (wallet && wallet.totalIncome > 0 ? (wallet.totalSpent / wallet.totalIncome) * 100 : 0),
@@ -143,7 +144,7 @@ export default function WalletScreen() {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Transaction History</Text>
-          {transactions && <Text style={styles.transactionCount}>{transactions.length} entries</Text>}
+          {transactions && <Text style={styles.transactionCount}>{transactions.data.length} entries</Text>}
         </View>
       </View>
     ),
@@ -181,7 +182,7 @@ export default function WalletScreen() {
         <Text style={styles.headerTitle}>Wallet</Text>
       </View>
       <FlatList
-        data={transactions ?? []}
+        data={transactions?.data ?? []}
         renderItem={({ item }) => <TransactionRow item={item} />}
         keyExtractor={(item) => item.id}
         ListHeaderComponent={renderHeader}

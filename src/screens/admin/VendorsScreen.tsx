@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +14,7 @@ export default function AdminVendorsScreen() {
   const insets = useSafeAreaInsets();
   const { data: vendors, isLoading, refetch } = useAdminVendors();
   const toggleStatus = useToggleVendorStatus();
+  const confirm = useConfirm();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
@@ -29,16 +31,10 @@ export default function AdminVendorsScreen() {
     return vendorList.filter((v) => v.isActive === (filter === 'active'));
   }, [vendorList, filter]);
 
-  const handleToggle = (vendor: AdminVendor) => {
+  const handleToggle = async (vendor: AdminVendor) => {
     const newStatus = !vendor.isActive;
-    Alert.alert(
-      newStatus ? 'Activate Vendor' : 'Deactivate Vendor',
-      `Set ${vendor.shopName} to ${newStatus ? 'active' : 'inactive'}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Confirm', onPress: () => toggleStatus.mutate({ id: vendor.id, isActive: newStatus }) },
-      ],
-    );
+    const ok = await confirm({ title: newStatus ? 'Activate Vendor' : 'Deactivate Vendor', message: `Set ${vendor.shopName} to ${newStatus ? 'active' : 'inactive'}?`, confirmLabel: 'Confirm' });
+    if (ok) toggleStatus.mutate({ id: vendor.id, isActive: newStatus });
   };
 
   const renderVendor = ({ item }: { item: AdminVendor }) => (

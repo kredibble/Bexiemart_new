@@ -77,7 +77,7 @@ const ServiceCard = ({ item, onPress }: { item: ServiceItem; onPress: (item: Ser
       >
         <View style={styles.imageWrapper}>
           <Image
-            source={{ uri: item.image }}
+            source={{ uri: item.image ?? '' }}
             style={styles.cardImage}
             contentFit="cover"
             transition={300}

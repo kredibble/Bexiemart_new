@@ -3,13 +3,13 @@ import {
   View,
   Text,
   FlatList,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { Input } from '@/components/ui/Input';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -29,7 +29,7 @@ export default function ChatScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<Nav>();
   const route = useRoute<Route>();
-  const { conversationId } = route.params;
+  const { conversationId } = route.params ?? {};
   const { data: messagesData, isLoading, refetch, isRefetching } = useMessages(conversationId);
   const sendMessage = useSendMessage(conversationId);
   const markRead = useMarkConversationRead();
@@ -73,7 +73,7 @@ export default function ChatScreen() {
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{route.params.otherUserName}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{(route.params as any)?.otherUserName ?? 'Chat'}</Text>
         <View style={{ width: 24 }} />
       </View>
 
@@ -100,14 +100,15 @@ export default function ChatScreen() {
       )}
 
       <View style={[styles.inputContainer, { paddingBottom: insets.bottom + 8 }]}>
-        <TextInput
+        <Input
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
           placeholder="Type a message..."
-          placeholderTextColor={colors.textLighter}
           multiline
           maxLength={1000}
+          clearable={false}
+          containerStyle={{ marginBottom: 0, flex: 1 }}
         />
         <TouchableOpacity
           style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}

@@ -18,15 +18,15 @@ export function AnimatedPresence({
   style,
 }: AnimatedPresenceProps) {
   const opacity = useRef(new Animated.Value(0)).current;
-  const translateY = useRef(new Animated.Value(type === "slideUp" ? 20 : type === "slideDown" ? -20 : 0)).current;
-  const scale = useRef(new Animated.Value(type === "scale" ? 0.9 : 1)).current;
+  const translateY = useRef(new Animated.Value(type === "slideUp" ? 24 : type === "slideDown" ? -24 : 0)).current;
+  const scale = useRef(new Animated.Value(type === "scale" ? 0.92 : 1)).current;
 
   useEffect(() => {
     if (visible) {
       opacity.setValue(0);
-      if (type === "slideUp") translateY.setValue(20);
-      if (type === "slideDown") translateY.setValue(-20);
-      if (type === "scale") scale.setValue(0.9);
+      if (type === "slideUp") translateY.setValue(24);
+      if (type === "slideDown") translateY.setValue(-24);
+      if (type === "scale") scale.setValue(0.92);
 
       Animated.parallel([
         Animated.timing(opacity, { toValue: 1, duration: 300, useNativeDriver: true }),
@@ -34,7 +34,7 @@ export function AnimatedPresence({
           ? [Animated.timing(translateY, { toValue: 0, duration: 300, useNativeDriver: true })]
           : []),
         ...(type === "scale"
-          ? [Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 14, bounciness: 6 })]
+          ? [Animated.spring(scale, { toValue: 1, useNativeDriver: true, damping: 20, stiffness: 200 })]
           : []),
       ]).start();
     }

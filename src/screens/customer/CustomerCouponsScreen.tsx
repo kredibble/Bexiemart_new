@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, TextInput } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
 import { formatCurrency, formatDate } from '@/utils/format';
+import { Input } from '@/components/ui/Input';
 import type { Coupon } from '@/types';
 
 const SAMPLE_COUPONS: Coupon[] = [
@@ -72,10 +73,7 @@ export default function CustomerCouponsScreen() {
         <View style={{ width: 38 }} />
       </View>
 
-      <View style={styles.searchBar}>
-        <Ionicons name="search-outline" size={18} color={colors.textLight} />
-        <TextInput style={styles.searchInput} placeholder="Search coupons..." placeholderTextColor={colors.textLighter} value={search} onChangeText={setSearch} />
-      </View>
+      <Input placeholder="Search coupons..." value={search} onChangeText={setSearch} prefixIcon="search-outline" containerStyle={{ margin: 16, marginBottom: 8 }} />
 
       <View style={styles.filterRow}>
         {[{ label: 'All', value: 'all' as const }, { label: 'Active', value: 'active' as const }, { label: 'Expired', value: 'expired' as const }].map((f) => (
@@ -109,8 +107,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: colors.white, borderBottomWidth: 1, borderBottomColor: colors.borderLight },
   backBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { ...typePresets.h2, fontFamily: 'Rubik_700Bold', color: colors.text },
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, margin: 16, marginBottom: 8, paddingHorizontal: 14, backgroundColor: colors.white, borderRadius: radii.lg, height: 44, ...shadows.sm },
-  searchInput: { flex: 1, ...typePresets.body, color: colors.text, padding: 0 },
+
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 12 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: radii.full, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },

@@ -19,6 +19,14 @@ import OrderDetailsScreen from '@/screens/vendor/OrderDetailsScreen';
 import AddEditProductScreen from '@/screens/vendor/AddEditProductScreen';
 import NotificationsScreen from '@/screens/shared/NotificationsScreen';
 import CouponsScreen from '@/screens/vendor/CouponsScreen';
+import VendorWalletHomeScreen from '@/screens/vendor/wallet/VendorWalletHomeScreen';
+import VendorPayoutScreen from '@/screens/vendor/wallet/VendorPayoutScreen';
+import VendorPayoutMethodScreen from '@/screens/vendor/wallet/VendorPayoutMethodScreen';
+import VendorEarningsHistoryScreen from '@/screens/vendor/wallet/VendorEarningsHistoryScreen';
+import AccountSetupScreen from '@/screens/shared/wallet/AccountSetupScreen';
+import PinSetupScreen from '@/screens/shared/wallet/PinSetupScreen';
+import TransactionDetailScreen from '@/screens/shared/wallet/TransactionDetailScreen';
+import type { WalletTransaction } from '@/api/wallet';
 
 export type VendorTabsParamList = {
   Dashboard: undefined;
@@ -34,6 +42,13 @@ export type VendorStackParamList = {
   AddEditProduct: { mode: 'add' } | { mode: 'edit'; product: any };
   Notifications: undefined;
   Coupons: undefined;
+  VendorWalletHome: undefined;
+  VendorPayout: undefined;
+  VendorPayoutMethod: undefined;
+  VendorEarningsHistory: undefined;
+  AccountSetup: undefined;
+  PinSetup: { mode?: 'setup' | 'change' | 'verify' } | undefined;
+  TransactionDetail: { transaction: WalletTransaction };
 };
 
 const Tab = createBottomTabNavigator<VendorTabsParamList>();
@@ -86,6 +101,13 @@ export default function VendorTabs() {
       <Stack.Screen name="AddEditProduct" component={AddEditProductScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Coupons" component={CouponsScreen} />
+      <Stack.Screen name="VendorWalletHome" component={VendorWalletHomeScreen} />
+      <Stack.Screen name="VendorPayout" component={VendorPayoutScreen} />
+      <Stack.Screen name="VendorPayoutMethod" component={VendorPayoutMethodScreen} />
+      <Stack.Screen name="VendorEarningsHistory" component={VendorEarningsHistoryScreen} />
+      <Stack.Screen name="AccountSetup" component={AccountSetupScreen} />
+      <Stack.Screen name="PinSetup" component={PinSetupScreen} />
+      <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
     </Stack.Navigator>
   );
 }

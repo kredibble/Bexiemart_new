@@ -5,49 +5,40 @@
 @import "nativewind/theme";
 
 @theme {
-    /* ================================================================
-       COLORS — BexieMart Palette (Flutter AppConstants)
-       ================================================================ */
-    --color-background:       #FFFFFF;
-    --color-foreground:       #202020;
+    --color-background:       #FAFAFA;
+    --color-foreground:       #0F172A;
     --color-card:             #FFFFFF;
-    --color-card-foreground:  #202020;
-    --color-muted:            #F5F5F5;
-    --color-muted-foreground: #5F6C7B;
+    --color-card-foreground:  #0F172A;
+    --color-muted:            #F1F5F9;
+    --color-muted-foreground: #475569;
     --color-primary:          #7C3AED;
     --color-primary-foreground: #FFFFFF;
     --color-secondary:        #A78BFA;
     --color-accent:           #22C55E;
-    --color-border:           #E4E7EC;
+    --color-border:           #E2E8F0;
     --color-input:            #FFFFFF;
     --color-ring:             #7C3AED;
-    --color-success:          #08A81D;
+    --color-success:          #10B981;
     --color-warning:          #F59E0B;
-    --color-destructive:      #B3261E;
+    --color-destructive:      #EF4444;
     --color-destructive-foreground: #FFFFFF;
-    --color-faded-blue:       #E5EBFC;
-    --color-faded-red:        #FFEBEB;
-    --color-greyed:           #DBD8D8;
+    --color-faded-blue:       #EEF2FF;
+    --color-faded-red:        #FEF2F2;
+    --color-greyed:           #E2E8F0;
 
-    /* order status */
     --color-status-pending:    #F59E0B;
     --color-status-confirmed:  #7C3AED;
-    --color-status-processing: #FF9800;
-    --color-status-shipped:    #9C27B0;
-    --color-status-delivered:  #08A81D;
-    --color-status-cancelled:  #B3261E;
+    --color-status-processing: #F97316;
+    --color-status-shipped:    #8B5CF6;
+    --color-status-delivered:  #10B981;
+    --color-status-cancelled:  #EF4444;
 
-    /* tab bar */
     --color-tab-active:        #7C3AED;
-    --color-tab-inactive:      #686262;
+    --color-tab-inactive:      #94A3B8;
 
-    /* skeleton */
-    --color-skeleton:          #E0E0E0;
-    --color-skeleton-shine:    #F5F5F5;
+    --color-skeleton:          #E2E8F0;
+    --color-skeleton-shine:    #F1F5F9;
 
-    /* ================================================================
-       SPACING — 4pt grid (matches Flutter spacing scale)
-       ================================================================ */
     --spacing-0:  0px;
     --spacing-1:  4px;
     --spacing-2:  8px;
@@ -68,9 +59,6 @@
     --spacing-24: 96px;
     --spacing-30: 120px;
 
-    /* ================================================================
-       TYPOGRAPHY — Rubik (headings) + Nunito Sans (body)
-       ================================================================ */
     --font-heading:            'Rubik';
     --font-heading-light:      'Rubik-Light';
     --font-heading-regular:    'Rubik-Regular';
@@ -78,7 +66,6 @@
     --font-heading-semibold:   'Rubik-SemiBold';
     --font-heading-bold:       'Rubik-Bold';
     --font-heading-extrabold:  'Rubik-ExtraBold';
-
     --font-body:               'Nunito Sans';
     --font-body-light:         'Nunito Sans-Light';
     --font-body-regular:       'Nunito Sans-Regular';
@@ -87,1308 +74,1004 @@
     --font-body-bold:          'Nunito Sans-Bold';
 }
 
-/* =========================================================================
-   @layer base
-   ========================================================================= */
-
 @layer base {
     body {
         @apply bg-background font-body-regular text-base text-foreground;
     }
 }
 
-/* =========================================================================
-   @layer components
-   ========================================================================= */
-
 @layer components {
     /* ── Tab Bar ──────────────────────────────────────────── */
-
     .tabs-icon {
         @apply size-6 items-center justify-center;
     }
-
     .tabs-active {
         @apply text-tab-active;
     }
-
     .tabs-inactive {
         @apply text-tab-inactive;
     }
-
     .tabs-label {
         @apply text-[11px] font-body-medium;
     }
 
     /* ── Launch Screen ────────────────────────────────────── */
-
     .launch-screen {
         @apply flex-1 bg-background;
     }
-
     .launch-body {
         @apply flex-1 items-center justify-center;
     }
-
     .launch-logo {
         @apply size-24 rounded-full;
     }
-
     .launch-title {
         @apply text-center font-heading-medium text-[52px] tracking-tight text-foreground;
+        letter-spacing: -1.5px;
     }
-
     .launch-tagline {
-        @apply mt-3 max-w-[249px] text-center font-body-light text-[19px] text-foreground;
+        @apply mt-3 max-w-[280px] text-center font-body-light text-[19px] leading-7 text-foreground/70;
     }
-
     .launch-footer {
         @apply items-center gap-3 pb-16;
     }
-
     .launch-btn {
-        @apply h-[54px] w-[330px] items-center justify-center rounded-3xl bg-primary;
+        @apply h-[56px] w-[330px] items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20;
     }
-
     .launch-btn-text {
         @apply font-body-medium text-base text-primary-foreground;
     }
-
     .launch-link-row {
         @apply flex-row items-center justify-center;
     }
-
     .launch-link-text {
-        @apply font-body-light text-base text-foreground;
+        @apply font-body-light text-base text-foreground/70;
     }
 
     /* ── Auth Screens ─────────────────────────────────────── */
-
     .auth-safe-area {
         @apply flex-1 bg-background;
     }
-
     .auth-screen {
         @apply flex-1 bg-background;
     }
-
     .auth-scroll {
         @apply flex-1;
     }
-
     .auth-content {
-        @apply grow px-4 pb-10 pt-8;
+        @apply grow px-6 pb-10 pt-6;
     }
-
     .auth-header {
         @apply flex-row items-center gap-2;
     }
-
     .auth-back {
         @apply flex-row items-center gap-1;
     }
-
     .auth-back-text {
         @apply font-body-medium text-xl text-foreground;
     }
-
+    .auth-back-btn {
+        @apply size-11 items-center justify-center rounded-full active:bg-muted;
+    }
     .auth-title {
-        @apply font-heading-bold text-2xl text-foreground;
+        @apply font-heading-bold text-[30px] tracking-tight text-foreground;
     }
-
     .auth-subtitle {
-        @apply mt-3 font-body-light text-[19px] text-foreground;
+        @apply mt-2 font-body-light text-[17px] leading-6 text-foreground/70;
     }
-
     .auth-form {
-        @apply gap-3;
+        @apply gap-4;
     }
-
     .auth-field {
         @apply gap-2;
     }
-
     .auth-label {
         @apply font-body-semibold text-sm text-muted-foreground;
     }
-
     .auth-input {
-        @apply rounded-lg border border-border bg-input px-4 py-4 font-body-medium text-base text-foreground;
+        @apply rounded-xl border border-border bg-input px-4 py-[14px] font-body-medium text-base text-foreground;
     }
-
     .auth-input-error {
         @apply border-destructive;
     }
-
     .auth-error {
         @apply font-body-medium text-xs text-destructive;
     }
-
     .auth-helper {
         @apply font-body-medium text-sm text-muted-foreground;
     }
-
     .auth-button {
-        @apply mt-1 h-[50px] w-[300px] items-center justify-center rounded-3xl bg-primary;
+        @apply mt-2 h-[52px] w-full items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20 active:opacity-90;
     }
-
     .auth-button-disabled {
-        @apply bg-primary/50;
+        @apply bg-primary/50 shadow-none;
     }
-
     .auth-button-text {
         @apply font-body-bold text-base text-primary-foreground;
     }
-
     .auth-forgot {
         @apply items-end;
     }
-
     .auth-forgot-text {
-        @apply font-body-medium text-sm text-primary;
+        @apply font-body-medium text-sm text-primary active:text-primary/80;
     }
-
     .auth-link-row {
-        @apply mt-5 flex-row items-center justify-center gap-1;
+        @apply mt-6 flex-row items-center justify-center gap-1;
     }
-
     .auth-link-copy {
-        @apply font-body-medium text-sm text-foreground;
+        @apply font-body-medium text-sm text-foreground/60;
     }
-
     .auth-link {
         @apply font-body-bold text-sm text-primary;
     }
-
     .auth-divider-row {
-        @apply my-4 flex-row items-center gap-3;
+        @apply my-5 flex-row items-center gap-3;
     }
-
     .auth-divider-line {
         @apply h-px flex-1 bg-border;
     }
-
     .auth-divider-text {
-        @apply font-body-semibold text-[11px] uppercase tracking-widest text-muted-foreground;
+        @apply font-body-semibold text-[11px] uppercase tracking-[1.5px] text-muted-foreground/60;
     }
 
     /* pin code input */
     .auth-pin-row {
         @apply flex-row justify-center gap-3;
     }
-
     .auth-pin-cell {
-        @apply size-14 items-center justify-center rounded-xl border border-border bg-input;
+        @apply size-[54px] items-center justify-center rounded-2xl border-2 border-border bg-input;
     }
-
     .auth-pin-cell-active {
-        @apply border-primary;
+        @apply border-primary shadow-md shadow-primary/20;
     }
-
     .auth-pin-cell-text {
-        @apply font-heading-bold text-2xl text-foreground;
+        @apply font-heading-bold text-[22px] text-foreground;
     }
-
     .auth-resend {
         @apply mt-4 items-center;
     }
-
     .auth-resend-text {
         @apply font-body-medium text-sm text-muted-foreground;
     }
-
     .auth-resend-link {
         @apply font-body-bold text-sm text-primary;
     }
 
     /* ── Customer AppBar ──────────────────────────────────── */
-
     .customer-appbar {
-        @apply flex-row items-center justify-between bg-background px-4;
-        height: 56px;
+        @apply flex-row items-center justify-between bg-background/90 px-5;
+        height: 60px;
+        backdrop-filter: blur(12px);
     }
-
     .customer-appbar-title {
-        @apply font-heading-bold text-2xl text-foreground;
+        @apply font-heading-bold text-[26px] tracking-tight text-foreground;
     }
-
     .customer-appbar-actions {
-        @apply flex-row items-center gap-4;
+        @apply flex-row items-center gap-3;
     }
-
     .customer-appbar-icon {
-        @apply size-11 items-center justify-center;
+        @apply size-11 items-center justify-center rounded-full active:bg-muted;
     }
 
     /* ── Home Screen ──────────────────────────────────────── */
-
     .home-screen {
         @apply flex-1 bg-background;
     }
-
     .home-scroll {
         @apply flex-1;
     }
-
     .home-header {
-        @apply mb-2.5 flex-row items-center justify-between;
+        @apply mb-3 flex-row items-center justify-between;
     }
-
     .home-search-wrap {
-        @apply px-7;
+        @apply px-5;
     }
-
     .home-search {
-        @apply flex-row items-center rounded-full bg-greyed/40 px-4;
-        height: 50px;
+        @apply flex-row items-center rounded-2xl bg-muted/60 px-4;
+        height: 52px;
     }
-
     .home-search-input {
-        @apply ml-3 flex-1 font-body-regular text-lg text-foreground;
+        @apply ml-3 flex-1 font-body-regular text-base text-foreground;
     }
-
     .home-section {
         @apply mt-8;
     }
-
     .home-section-header {
-        @apply flex-row items-center justify-between px-4;
+        @apply flex-row items-center justify-between px-5;
     }
-
     .home-section-title {
-        @apply font-heading-bold text-[25px] text-foreground;
+        @apply font-heading-bold text-[22px] tracking-tight text-foreground;
     }
-
     .home-section-link {
         @apply font-heading-semibold text-sm text-primary;
     }
-
     .home-section-action {
-        @apply rounded-full border border-border px-4 py-1;
+        @apply rounded-full border border-border px-4 py-1.5 active:bg-muted;
     }
-
     .home-section-action-text {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .home-categories-scroll {
-        @apply mt-3 pl-4;
+        @apply mt-3 pl-5;
         height: 360px;
     }
-
     .home-products-scroll {
-        @apply mt-3 pl-4;
-        height: 100px;
+        @apply mt-3 pl-5;
+        height: 110px;
     }
-
     .home-empty-state {
         @apply py-4 text-sm font-body-medium text-muted-foreground;
     }
 
     /* ── Category Card ────────────────────────────────────── */
-
     .category-card {
-        @apply mr-3 w-[180px] rounded-xl bg-card p-3;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        @apply mr-3 w-[180px] rounded-2xl bg-card p-3 shadow-sm;
     }
-
     .category-card-thumbs {
         @apply flex-1 flex-row flex-wrap;
     }
-
     .category-card-thumb {
-        @apply m-0.5 rounded-md bg-skeleton;
+        @apply m-0.5 rounded-lg bg-skeleton;
         width: calc(50% - 4px);
         height: calc(50% - 4px);
     }
-
     .category-card-footer {
         @apply mt-2 flex-row items-center justify-between;
     }
-
     .category-card-name {
         @apply flex-1 font-heading-semibold text-sm text-foreground;
     }
-
     .category-card-badge {
-        @apply rounded-xl bg-black/10 px-2 py-0.5;
+        @apply rounded-full bg-foreground/10 px-2.5 py-0.5;
     }
-
     .category-card-badge-text {
         @apply font-body-medium text-xs text-foreground;
     }
 
     /* ── Product Card ─────────────────────────────────────── */
-
     .product-card {
-        @apply overflow-hidden rounded-xl bg-card;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        @apply overflow-hidden rounded-2xl bg-card shadow-sm;
     }
-
     .product-card-image {
         @apply bg-muted;
         aspect-ratio: 1;
     }
-
     .product-card-body {
-        @apply gap-1 p-2;
+        @apply gap-1.5 p-3;
     }
-
     .product-card-name {
-        @apply font-body-medium text-sm text-foreground;
+        @apply font-body-medium text-sm leading-tight text-foreground;
     }
-
     .product-card-price {
-        @apply font-body-bold text-base text-primary;
+        @apply font-heading-semibold text-base text-primary;
     }
-
     .product-card-rating {
         @apply flex-row items-center gap-1;
     }
-
     .product-card-rating-text {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .product-card-badge {
-        @apply absolute left-2 top-2 rounded-md bg-destructive px-2 py-0.5;
+        @apply absolute left-2 top-2 rounded-lg bg-destructive px-2 py-0.5;
     }
-
     .product-card-badge-text {
         @apply font-body-bold text-xs text-white;
     }
-
     .product-card-fav {
-        @apply absolute right-2 top-2 size-8 items-center justify-center rounded-full bg-white/90;
+        @apply absolute right-2 top-2 size-8 items-center justify-center rounded-full bg-white/90 shadow-sm;
     }
 
-    /* compact variant */
     .product-card-compact {
-        @apply mr-3 w-[100px] overflow-hidden rounded-xl bg-card;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        @apply mr-3 w-[100px] overflow-hidden rounded-2xl bg-card shadow-sm;
     }
-
     .product-card-compact-image {
         @apply bg-muted;
         width: 100px;
         height: 100px;
     }
-
     .product-card-compact-body {
         @apply gap-0.5 p-2;
     }
 
     /* ── Shop ─────────────────────────────────────────────── */
-
     .shop-screen {
         @apply flex-1 bg-background;
     }
-
     .shop-filters {
-        @apply flex-row gap-2 px-4 py-3;
+        @apply flex-row gap-2 px-5 py-3;
     }
-
     .shop-chip {
-        @apply rounded-full bg-greyed/50 px-4 py-2;
+        @apply rounded-full bg-muted/60 px-5 py-2.5 active:bg-muted;
     }
-
     .shop-chip-active {
-        @apply bg-primary;
+        @apply bg-primary shadow-sm shadow-primary/20;
     }
-
     .shop-chip-text {
-        @apply font-body-medium text-sm text-foreground;
+        @apply font-body-medium text-sm text-foreground/70;
     }
-
     .shop-chip-text-active {
         @apply text-primary-foreground;
     }
-
     .shop-grid {
         @apply flex-row flex-wrap px-2;
     }
-
     .shop-grid-item {
         @apply p-2;
         width: 50%;
     }
 
     /* ── Product Details ──────────────────────────────────── */
-
     .product-detail-screen {
         @apply flex-1 bg-background;
     }
-
     .product-detail-scroll {
         @apply flex-1;
     }
-
     .product-detail-gallery {
         @apply bg-muted;
         width: 100%;
-        height: 320px;
+        height: 360px;
     }
-
     .product-detail-body {
-        @apply gap-5 p-4;
+        @apply gap-6 p-5;
     }
-
     .product-detail-name {
-        @apply font-heading-bold text-[22px] text-foreground;
+        @apply font-heading-bold text-[24px] tracking-tight text-foreground;
     }
-
     .product-detail-price-row {
         @apply flex-row items-center gap-3;
     }
-
     .product-detail-price {
-        @apply font-body-bold text-lg text-primary;
+        @apply font-heading-semibold text-xl text-primary;
     }
-
     .product-detail-price-original {
         @apply font-body-regular text-sm text-muted-foreground;
         text-decoration-line: line-through;
     }
-
     .product-detail-badge {
-        @apply rounded-md bg-destructive px-2 py-0.5;
+        @apply rounded-lg bg-destructive px-2.5 py-0.5;
     }
-
     .product-detail-badge-text {
         @apply font-body-bold text-xs text-white;
     }
-
     .product-detail-stock-in {
         @apply font-body-medium text-sm text-success;
     }
-
     .product-detail-stock-out {
         @apply font-body-medium text-sm text-destructive;
     }
-
     .product-detail-desc {
-        @apply font-body-regular text-sm text-muted-foreground;
+        @apply font-body-regular text-sm leading-relaxed text-muted-foreground;
         line-height: 1.6;
     }
-
     .product-detail-section {
-        @apply gap-3;
+        @apply gap-4;
     }
-
     .product-detail-section-heading {
         @apply font-heading-bold text-lg text-foreground;
     }
-
     .product-detail-seller {
         @apply flex-row items-center gap-3;
     }
-
     .product-detail-seller-avatar {
-        @apply size-10 rounded-full bg-muted;
+        @apply size-11 rounded-full bg-muted;
     }
-
     .product-detail-seller-name {
         @apply font-body-medium text-base text-foreground;
     }
-
     .product-detail-review {
         @apply gap-1;
     }
-
     .product-detail-review-header {
         @apply flex-row items-center gap-2;
     }
-
     .product-detail-review-name {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .product-detail-review-text {
         @apply font-body-regular text-sm text-muted-foreground;
     }
-
     .product-detail-delivery {
-        @apply flex-row items-center justify-between rounded-xl border border-border p-3;
+        @apply flex-row items-center justify-between rounded-2xl border border-border p-4;
     }
-
     .product-detail-bottom {
-        @apply flex-row items-center gap-3 border-t border-border bg-card px-4 py-3;
+        @apply flex-row items-center gap-3 border-t border-border bg-card/90 px-5 py-4;
+        backdrop-filter: blur(12px);
     }
-
     .product-detail-qty-row {
-        @apply flex-row items-center rounded-lg border border-border;
+        @apply flex-row items-center rounded-xl border border-border;
     }
-
     .product-detail-qty-btn {
-        @apply size-10 items-center justify-center;
+        @apply size-11 items-center justify-center active:bg-muted;
     }
-
     .product-detail-qty-text {
         @apply font-body-semibold text-lg text-foreground;
     }
-
     .product-detail-qty-value {
         @apply w-8 text-center font-body-semibold text-base text-foreground;
     }
-
     .product-detail-cart-btn {
-        @apply flex-1 flex-row items-center justify-center gap-2 rounded-3xl bg-primary;
-        height: 50px;
+        @apply flex-1 flex-row items-center justify-center gap-2 rounded-2xl bg-primary shadow-md shadow-primary/20 active:opacity-90;
+        height: 52px;
     }
-
     .product-detail-cart-btn-text {
         @apply font-body-bold text-base text-primary-foreground;
     }
-
     .product-detail-fav-btn {
-        @apply size-12 items-center justify-center rounded-3xl border border-border;
+        @apply size-[52px] items-center justify-center rounded-2xl border border-border active:bg-muted;
     }
 
     /* ── Cart ─────────────────────────────────────────────── */
-
     .cart-screen {
         @apply flex-1 bg-background;
     }
-
     .cart-header {
-        @apply px-4 py-4;
+        @apply px-5 py-4;
     }
-
     .cart-header-title {
-        @apply font-heading-bold text-2xl text-foreground;
+        @apply font-heading-bold text-[26px] tracking-tight text-foreground;
     }
-
     .cart-list {
         @apply flex-1;
     }
-
     .cart-item {
-        @apply flex-row gap-3 px-4 py-3;
+        @apply flex-row gap-4 px-5 py-4;
     }
-
     .cart-item-image {
-        @apply rounded-lg bg-muted;
-        width: 80px;
-        height: 80px;
+        @apply rounded-xl bg-muted;
+        width: 84px;
+        height: 84px;
     }
-
     .cart-item-info {
         @apply flex-1 gap-1;
     }
-
     .cart-item-name {
         @apply font-body-medium text-sm text-foreground;
     }
-
     .cart-item-price {
-        @apply font-body-bold text-base text-primary;
+        @apply font-heading-semibold text-base text-primary;
     }
-
     .cart-item-controls {
         @apply flex-row items-center gap-3;
     }
-
     .cart-item-qty {
-        @apply flex-row items-center rounded-lg border border-border;
+        @apply flex-row items-center rounded-xl border border-border;
     }
-
     .cart-item-qty-btn {
-        @apply size-8 items-center justify-center;
+        @apply size-9 items-center justify-center active:bg-muted;
     }
-
     .cart-item-qty-text {
         @apply font-body-semibold text-base text-foreground;
     }
-
     .cart-item-qty-value {
-        @apply w-6 text-center font-body-semibold text-sm text-foreground;
+        @apply w-7 text-center font-body-semibold text-sm text-foreground;
     }
-
     .cart-item-remove {
-        @apply size-10 items-center justify-center;
+        @apply size-10 items-center justify-center rounded-full active:bg-muted;
     }
-
     .cart-coupon-row {
-        @apply flex-row items-center gap-2 px-4 py-2;
+        @apply flex-row items-center gap-2 px-5 py-2;
     }
-
     .cart-coupon-input {
-        @apply flex-1 rounded-lg border border-border bg-input px-3 font-body-medium text-sm text-foreground;
-        height: 44px;
+        @apply flex-1 rounded-xl border border-border bg-input px-3 font-body-medium text-sm text-foreground;
+        height: 46px;
     }
-
     .cart-coupon-btn {
-        @apply items-center justify-center rounded-lg bg-primary px-4;
-        height: 44px;
+        @apply items-center justify-center rounded-xl bg-primary px-5;
+        height: 46px;
     }
-
     .cart-coupon-btn-text {
         @apply font-body-semibold text-sm text-primary-foreground;
     }
-
     .cart-coupon-applied {
-        @apply flex-row items-center justify-between rounded-lg bg-faded-blue px-3 py-2;
+        @apply flex-row items-center justify-between rounded-xl bg-faded-blue px-4 py-3;
     }
-
     .cart-coupon-code {
         @apply font-body-semibold text-sm text-primary;
     }
-
     .cart-coupon-discount {
         @apply font-body-bold text-sm text-success;
     }
-
     .cart-coupon-remove {
         @apply font-body-medium text-xs text-destructive;
     }
-
     .cart-summary {
-        @apply gap-3 border-t border-border bg-card px-4 py-4;
+        @apply gap-3 border-t border-border bg-card px-5 py-5;
     }
-
     .cart-summary-row {
         @apply flex-row items-center justify-between;
     }
-
     .cart-summary-label {
         @apply font-body-regular text-sm text-muted-foreground;
     }
-
     .cart-summary-value {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .cart-summary-total-label {
         @apply font-heading-bold text-lg text-foreground;
     }
-
     .cart-summary-total-value {
         @apply font-heading-bold text-lg text-foreground;
     }
-
     .cart-checkout-btn {
-        @apply mx-4 mb-4 items-center justify-center rounded-3xl bg-primary;
-        height: 50px;
+        @apply mx-5 mb-5 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20 active:opacity-90;
+        height: 54px;
     }
-
     .cart-checkout-btn-text {
         @apply font-body-bold text-base text-primary-foreground;
     }
 
     /* ── Checkout ─────────────────────────────────────────── */
-
     .checkout-screen {
         @apply flex-1 bg-background;
     }
-
     .checkout-scroll {
         @apply flex-1;
     }
-
     .checkout-section {
-        @apply gap-3 px-4 py-4;
+        @apply gap-4 px-5 py-5;
     }
-
     .checkout-section-heading {
         @apply font-heading-bold text-lg text-foreground;
     }
-
     .checkout-item {
         @apply flex-row items-center gap-3;
     }
-
     .checkout-item-image {
-        @apply rounded-md bg-muted;
-        width: 48px;
-        height: 48px;
+        @apply rounded-xl bg-muted;
+        width: 52px;
+        height: 52px;
     }
-
     .checkout-item-info {
         @apply flex-1;
     }
-
     .checkout-item-name {
         @apply font-body-medium text-sm text-foreground;
     }
-
     .checkout-item-meta {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .checkout-item-price {
         @apply font-body-bold text-sm text-foreground;
     }
-
     .checkout-footer {
-        @apply gap-3 border-t border-border bg-card px-4 py-4;
+        @apply gap-3 border-t border-border bg-card/90 px-5 py-5;
+        backdrop-filter: blur(12px);
     }
-
     .checkout-total-row {
         @apply flex-row items-center justify-between;
     }
-
     .checkout-total-label {
         @apply font-heading-bold text-base text-foreground;
     }
-
     .checkout-total-value {
         @apply font-heading-bold text-xl text-foreground;
     }
-
     .checkout-btn {
-        @apply items-center justify-center rounded-3xl bg-primary;
-        height: 50px;
+        @apply items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20;
+        height: 54px;
     }
-
     .checkout-btn-text {
         @apply font-body-bold text-base text-primary-foreground;
     }
-
-    /* delivery / payment option */
     .checkout-option {
-        @apply flex-row items-center justify-between rounded-xl border border-border p-3;
+        @apply flex-row items-center justify-between rounded-2xl border border-border p-4;
     }
-
     .checkout-option-active {
-        @apply border-primary bg-faded-blue;
+        @apply border-primary bg-primary/5;
     }
-
     .checkout-option-icon {
-        @apply size-8 items-center justify-center rounded-full bg-muted;
+        @apply size-9 items-center justify-center rounded-full bg-muted;
     }
-
     .checkout-option-label {
         @apply font-body-semibold text-sm text-foreground;
     }
 
     /* ── Payment ──────────────────────────────────────────── */
-
     .payment-screen {
         @apply flex-1 bg-background;
     }
-
     .payment-webview {
         @apply flex-1;
     }
-
     .payment-loading {
         @apply absolute inset-0 items-center justify-center bg-white;
     }
-
     .payment-processing {
         @apply flex-1 items-center justify-center gap-6 bg-background;
     }
-
     .payment-processing-text {
         @apply font-body-medium text-base text-muted-foreground;
     }
-
     .payment-result {
         @apply flex-1 items-center justify-center gap-4 bg-background px-8;
     }
-
     .payment-result-icon {
         @apply size-20 items-center justify-center rounded-full;
     }
-
     .payment-result-icon-success {
         @apply bg-success/10;
     }
-
     .payment-result-icon-failure {
         @apply bg-destructive/10;
     }
-
     .payment-result-title {
         @apply font-heading-bold text-2xl text-foreground;
     }
-
     .payment-result-detail {
         @apply font-body-regular text-sm text-muted-foreground;
     }
-
     .payment-result-card {
-        @apply mt-4 w-full gap-2 rounded-xl bg-muted p-4;
+        @apply mt-4 w-full gap-2 rounded-2xl bg-muted p-5;
     }
 
     /* ── Favorites ────────────────────────────────────────── */
-
     .favorites-screen {
         @apply flex-1 bg-background;
     }
-
     .favorites-header {
-        @apply px-4 py-4;
+        @apply px-5 py-4;
     }
-
     .favorites-header-title {
-        @apply font-heading-bold text-2xl text-foreground;
+        @apply font-heading-bold text-[26px] tracking-tight text-foreground;
     }
-
     .favorites-grid {
         @apply flex-row flex-wrap px-2;
     }
-
     .favorites-grid-item {
         @apply p-2;
         width: 50%;
     }
 
     /* ── All Products ─────────────────────────────────────── */
-
     .all-products-screen {
         @apply flex-1 bg-background;
     }
-
     .all-products-header {
-        @apply flex-row items-center gap-3 px-4 py-4;
+        @apply flex-row items-center gap-3 px-5 py-4;
     }
-
     .all-products-title {
-        @apply font-heading-bold text-[22px] text-foreground;
+        @apply font-heading-bold text-[22px] tracking-tight text-foreground;
     }
 
     /* ── Vendor Dashboard ─────────────────────────────────── */
-
     .vendor-screen {
         @apply flex-1 bg-muted;
     }
-
     .vendor-scroll {
         @apply flex-1;
     }
-
     .vendor-stats {
-        @apply flex-row flex-wrap gap-3 px-4 pt-4;
+        @apply flex-row flex-wrap gap-3 px-5 pt-5;
     }
-
     .vendor-stat {
-        @apply flex-1 gap-2 rounded-xl bg-card p-4;
+        @apply flex-1 gap-2 rounded-2xl bg-card p-4 shadow-sm;
         min-width: calc(50% - 6px);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
-
     .vendor-stat-icon {
         @apply size-10 items-center justify-center rounded-full;
     }
-
     .vendor-stat-label {
         @apply font-body-regular text-sm text-muted-foreground;
     }
-
     .vendor-stat-value {
         @apply font-heading-bold text-xl text-foreground;
     }
-
     .vendor-section {
-        @apply mt-6 px-4;
+        @apply mt-6 px-5;
     }
-
     .vendor-section-header {
         @apply flex-row items-center justify-between;
     }
-
     .vendor-section-title {
-        @apply font-heading-bold text-xl text-foreground;
+        @apply font-heading-bold text-lg text-foreground;
     }
-
     .vendor-section-link {
         @apply font-heading-semibold text-sm text-primary;
     }
-
-    /* recent order row */
     .vendor-order-row {
-        @apply flex-row items-center gap-3 rounded-xl bg-card p-3 mt-3;
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        @apply flex-row items-center gap-3 rounded-2xl bg-card p-4 mt-3 shadow-sm;
     }
-
     .vendor-order-info {
         @apply flex-1 gap-1;
     }
-
     .vendor-order-id {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .vendor-order-date {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .vendor-order-total {
         @apply font-body-bold text-sm text-foreground;
     }
 
     /* ── Vendor Product List ──────────────────────────────── */
-
     .vendor-product-row {
-        @apply flex-row items-center gap-3 bg-card px-4 py-3;
+        @apply flex-row items-center gap-3 bg-card px-5 py-4;
         border-bottom-width: 1px;
         border-bottom-color: var(--color-border);
     }
-
     .vendor-product-image {
-        @apply rounded-lg bg-muted;
-        width: 60px;
-        height: 60px;
+        @apply rounded-xl bg-muted;
+        width: 64px;
+        height: 64px;
     }
-
     .vendor-product-info {
         @apply flex-1 gap-1;
     }
-
     .vendor-product-name {
         @apply font-body-medium text-sm text-foreground;
     }
-
     .vendor-product-price {
-        @apply font-body-bold text-base text-primary;
+        @apply font-heading-semibold text-base text-primary;
     }
-
     .vendor-product-meta {
         @apply flex-row items-center gap-2;
     }
-
     .vendor-product-stock-in {
         @apply font-body-regular text-xs text-success;
     }
-
     .vendor-product-stock-out {
         @apply font-body-regular text-xs text-destructive;
     }
 
     /* FAB */
     .vendor-fab {
-        @apply absolute bottom-6 right-6 size-14 items-center justify-center rounded-full bg-primary;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        @apply absolute bottom-6 right-6 size-14 items-center justify-center rounded-full bg-primary shadow-xl shadow-primary/30 active:opacity-90;
     }
-
     .vendor-fab-icon {
         @apply text-2xl text-primary-foreground;
     }
 
     /* ── Add / Edit Product ───────────────────────────────── */
-
     .product-form-screen {
         @apply flex-1 bg-background;
     }
-
     .product-form-scroll {
         @apply flex-1;
     }
-
     .product-form-section {
-        @apply gap-3 px-4 py-4;
+        @apply gap-4 px-5 py-5;
     }
-
     .product-form-heading {
         @apply font-heading-bold text-base text-foreground;
     }
-
     .product-form-images {
         @apply flex-row flex-wrap gap-3;
     }
-
     .product-form-image {
-        @apply rounded-lg bg-muted;
+        @apply rounded-xl bg-muted;
         width: calc(33.33% - 8px);
         aspect-ratio: 1;
     }
-
     .product-form-image-remove {
-        @apply absolute right-1 top-1 size-5 items-center justify-center rounded-full bg-black/50;
+        @apply absolute right-1.5 top-1.5 size-6 items-center justify-center rounded-full bg-black/50;
     }
-
     .product-form-add-image {
-        @apply items-center justify-center rounded-lg border border-dashed border-border;
+        @apply items-center justify-center rounded-xl border-2 border-dashed border-border;
         width: calc(33.33% - 8px);
         aspect-ratio: 1;
     }
-
     .product-form-add-icon {
         @apply text-2xl text-muted-foreground;
     }
-
     .product-form-delivery {
-        @apply flex-row items-center rounded-lg border border-border p-3;
+        @apply flex-row items-center rounded-xl border border-border p-4;
     }
-
     .product-form-delivery-info {
         @apply flex-1;
     }
-
     .product-form-submit {
-        @apply mx-4 mb-4 items-center justify-center rounded-3xl bg-primary;
-        height: 50px;
+        @apply mx-5 mb-5 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20;
+        height: 54px;
     }
-
     .product-form-submit-text {
         @apply font-body-bold text-base text-primary-foreground;
     }
 
     /* ── Vendor Orders ────────────────────────────────────── */
-
     .vendor-orders-screen {
         @apply flex-1 bg-muted;
     }
-
     .vendor-order-filters {
         @apply flex-row bg-card px-2 py-2;
         border-bottom-width: 1px;
         border-bottom-color: var(--color-border);
     }
-
     .vendor-order-filter {
-        @apply flex-1 items-center py-2;
+        @apply flex-1 items-center py-2.5;
     }
-
     .vendor-order-filter-active {
         @apply border-b-2 border-primary;
     }
-
     .vendor-order-filter-text {
         @apply font-body-medium text-sm text-muted-foreground;
     }
-
     .vendor-order-filter-text-active {
         @apply font-body-semibold text-primary;
     }
-
     .vendor-order-item {
-        @apply gap-2 bg-card px-4 py-3;
+        @apply gap-2 bg-card px-5 py-4;
         border-bottom-width: 1px;
         border-bottom-color: var(--color-border);
     }
-
     .vendor-order-item-header {
         @apply flex-row items-center justify-between;
     }
-
     .vendor-order-item-id {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .vendor-order-item-count {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .vendor-order-item-footer {
         @apply flex-row items-center justify-between;
     }
 
     /* ── Order Details ─────────────────────────────────────── */
-
     .order-detail-screen {
         @apply flex-1 bg-background;
     }
-
     .order-detail-scroll {
         @apply flex-1;
     }
-
     .order-detail-header {
-        @apply gap-2 px-4 py-4;
+        @apply gap-2 px-5 py-5;
     }
-
     .order-detail-id {
         @apply font-heading-semibold text-lg text-foreground;
     }
-
     .order-detail-date {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .order-detail-item {
-        @apply flex-row gap-3 px-4 py-3;
+        @apply flex-row gap-3 px-5 py-3;
     }
-
     .order-detail-item-image {
-        @apply rounded-md bg-muted;
+        @apply rounded-xl bg-muted;
         width: 60px;
         height: 60px;
     }
-
     .order-detail-item-info {
         @apply flex-1 gap-1;
     }
-
     .order-detail-item-name {
         @apply font-body-medium text-sm text-foreground;
     }
-
     .order-detail-item-meta {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .order-detail-item-price {
         @apply font-body-bold text-sm text-foreground;
     }
-
     .order-detail-customer {
-        @apply gap-1 px-4 py-3;
+        @apply gap-1 px-5 py-3;
     }
-
     .order-detail-label {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .order-detail-value {
         @apply font-body-medium text-sm text-foreground;
     }
 
     /* ── Vendor Earnings ──────────────────────────────────── */
-
     .vendor-earnings-screen {
         @apply flex-1 bg-muted;
     }
-
     .vendor-earnings-cards {
-        @apply flex-row flex-wrap gap-3 px-4 pt-4;
+        @apply flex-row flex-wrap gap-3 px-5 pt-5;
     }
-
     .vendor-earnings-card {
-        @apply flex-1 gap-2 rounded-xl bg-card p-4;
+        @apply flex-1 gap-2 rounded-2xl bg-card p-4 shadow-sm;
         min-width: calc(50% - 6px);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     }
-
     .vendor-earnings-label {
         @apply font-body-regular text-sm text-muted-foreground;
     }
-
     .vendor-earnings-value {
         @apply font-heading-bold text-xl;
     }
-
     .vendor-earnings-value-green {
         @apply text-success;
     }
-
     .vendor-earnings-value-orange {
         @apply text-status-processing;
     }
-
     .vendor-earnings-value-blue {
         @apply text-primary;
     }
-
     .vendor-txn {
-        @apply flex-row items-center justify-between bg-card px-4 py-3;
+        @apply flex-row items-center justify-between bg-card px-5 py-4;
         border-bottom-width: 1px;
         border-bottom-color: var(--color-border);
     }
-
     .vendor-txn-info {
         @apply flex-1 gap-1;
     }
-
     .vendor-txn-desc {
         @apply font-body-medium text-sm text-foreground;
     }
-
     .vendor-txn-date {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .vendor-txn-amount {
         @apply font-body-bold text-sm;
     }
-
     .vendor-txn-credit {
         @apply text-success;
     }
-
     .vendor-txn-debit {
         @apply text-destructive;
     }
-
     .vendor-withdraw-btn {
-        @apply mx-4 my-4 items-center justify-center rounded-3xl bg-primary;
-        height: 50px;
+        @apply mx-5 my-5 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/20;
+        height: 54px;
     }
-
     .vendor-withdraw-btn-text {
         @apply font-body-bold text-base text-primary-foreground;
     }
 
     /* ── Settings ─────────────────────────────────────────── */
-
     .settings-screen {
         @apply flex-1 bg-muted;
     }
-
     .settings-section {
-        @apply mt-4 rounded-xl bg-card p-4;
+        @apply mt-4 rounded-2xl bg-card p-5 shadow-sm;
     }
-
     .settings-heading {
         @apply font-heading-bold text-base text-foreground;
     }
-
     .settings-field {
         @apply gap-2;
     }
-
     .settings-label {
         @apply font-body-medium text-sm text-muted-foreground;
     }
-
     .settings-avatar {
         @apply self-center rounded-full bg-muted;
-        width: 80px;
-        height: 80px;
+        width: 88px;
+        height: 88px;
     }
-
     .settings-logout {
-        @apply mx-4 my-8 items-center justify-center rounded-3xl bg-destructive;
-        height: 50px;
+        @apply mx-5 my-8 items-center justify-center rounded-2xl bg-destructive shadow-lg shadow-destructive/20;
+        height: 54px;
     }
-
     .settings-logout-text {
         @apply font-body-bold text-base text-destructive-foreground;
     }
 
     /* ── Notifications ────────────────────────────────────── */
-
     .notifications-screen {
         @apply flex-1 bg-background;
     }
-
     .notif-item {
-        @apply gap-1 px-4 py-3;
+        @apply gap-1 px-5 py-4;
         border-bottom-width: 1px;
         border-bottom-color: var(--color-border);
     }
-
     .notif-item-unread {
-        @apply bg-faded-blue/50;
+        @apply bg-faded-blue/30;
     }
-
     .notif-title {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .notif-title-read {
         @apply font-body-regular;
     }
-
     .notif-message {
         @apply font-body-regular text-xs text-muted-foreground;
     }
-
     .notif-time {
         @apply font-body-regular text-[11px] text-muted-foreground;
     }
 
     /* ── Status Badges ────────────────────────────────────── */
-
     .status-badge {
-        @apply items-center self-start rounded-full px-2.5 py-0.5;
+        @apply items-center self-start rounded-full px-3 py-1;
     }
-
     .status-badge-text {
         @apply font-body-semibold text-xs text-white;
     }
-
     .status-pending    { @apply bg-status-pending; }
     .status-confirmed  { @apply bg-status-confirmed; }
     .status-processing { @apply bg-status-processing; }
@@ -1397,137 +1080,106 @@
     .status-cancelled  { @apply bg-status-cancelled; }
 
     /* ── Modal / Bottom Sheet ─────────────────────────────── */
-
     .modal-overlay {
         @apply flex-1 bg-black/50;
     }
-
     .modal-sheet {
         @apply mt-auto max-h-[85%] rounded-t-3xl bg-background;
     }
-
     .modal-header {
         @apply flex-row items-center justify-between border-b border-border px-5 py-4;
     }
-
     .modal-title {
         @apply font-heading-bold text-xl text-foreground;
     }
-
     .modal-close {
-        @apply size-8 items-center justify-center rounded-full bg-muted;
+        @apply size-8 items-center justify-center rounded-full bg-muted active:bg-border;
     }
-
     .modal-body {
         @apply gap-5 p-5;
     }
 
     /* ── Dialog (Alert) ───────────────────────────────────── */
-
     .dialog-overlay {
         @apply flex-1 items-center justify-center bg-black/50 px-8;
     }
-
     .dialog-box {
-        @apply w-full gap-5 rounded-3xl bg-background p-6;
+        @apply w-full gap-5 rounded-3xl bg-background p-6 shadow-2xl;
     }
-
     .dialog-title {
         @apply text-center font-heading-bold text-xl text-foreground;
     }
-
     .dialog-message {
         @apply text-center font-body-regular text-sm text-muted-foreground;
     }
-
     .dialog-actions {
         @apply flex-row gap-3;
     }
-
     .dialog-btn-cancel {
-        @apply flex-1 items-center justify-center rounded-3xl border border-border py-3;
+        @apply flex-1 items-center justify-center rounded-2xl border border-border py-3.5 active:bg-muted;
     }
-
     .dialog-btn-cancel-text {
         @apply font-body-semibold text-sm text-foreground;
     }
-
     .dialog-btn-confirm {
-        @apply flex-1 items-center justify-center rounded-3xl bg-destructive py-3;
+        @apply flex-1 items-center justify-center rounded-2xl bg-destructive py-3.5 shadow-md shadow-destructive/20;
     }
-
     .dialog-btn-confirm-text {
         @apply font-body-bold text-sm text-destructive-foreground;
     }
 
     /* ── Picker / Selector ────────────────────────────────── */
-
     .picker-row {
         @apply flex-row gap-3;
     }
-
     .picker-option {
-        @apply flex-1 items-center rounded-2xl border border-border bg-background py-3;
+        @apply flex-1 items-center rounded-2xl border border-border bg-background py-3.5 active:bg-muted;
     }
-
     .picker-option-active {
-        @apply border-primary bg-faded-blue;
+        @apply border-primary bg-primary/5;
     }
-
     .picker-option-text {
         @apply font-body-semibold text-sm text-muted-foreground;
     }
-
     .picker-option-text-active {
         @apply text-primary;
     }
 
-    /* ── Category Chips (horizontal scroll) ───────────────── */
-
+    /* ── Category Chips ───────────────────────────────────── */
     .chip-scroll {
         @apply flex-row flex-wrap gap-2;
     }
-
     .chip {
-        @apply rounded-full border border-border bg-background px-4 py-2;
+        @apply rounded-full border border-border bg-background px-5 py-2.5 active:bg-muted;
     }
-
     .chip-active {
-        @apply border-primary bg-faded-blue;
+        @apply border-primary bg-primary/5;
     }
-
     .chip-text {
         @apply font-body-semibold text-sm text-muted-foreground;
     }
-
     .chip-text-active {
         @apply text-primary;
     }
 
     /* ── Empty State ──────────────────────────────────────── */
-
     .empty-state {
         @apply flex-1 items-center justify-center gap-4 py-12;
     }
-
     .empty-state-image {
         @apply size-48;
     }
-
     .empty-state-title {
         @apply font-heading-bold text-lg text-foreground;
     }
-
     .empty-state-subtitle {
-        @apply font-body-regular text-sm text-muted-foreground;
+        @apply font-body-regular text-sm leading-5 text-muted-foreground;
     }
 
     /* ── Skeleton ─────────────────────────────────────────── */
-
     .skeleton {
-        @apply rounded-md bg-skeleton;
+        @apply rounded-lg bg-skeleton;
     }
-
     .skeleton-shimmer {
         background: linear-gradient(
             90deg,
@@ -1539,119 +1191,95 @@
     }
 
     /* ── Search Dropdown ──────────────────────────────────── */
-
     .search-dropdown {
-        @apply absolute left-0 right-0 top-full bg-card;
+        @apply absolute left-0 right-0 top-full bg-card rounded-2xl shadow-xl;
         max-height: 300px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.10);
     }
-
     .search-result {
         @apply flex-row items-center gap-3 px-4 py-3;
         border-bottom-width: 1px;
         border-bottom-color: var(--color-border);
     }
-
     .search-result-image {
-        @apply rounded-md bg-muted;
+        @apply rounded-lg bg-muted;
         width: 44px;
         height: 44px;
     }
-
     .search-result-info {
         @apply flex-1;
     }
-
     .search-result-name {
         @apply font-body-medium text-sm text-foreground;
     }
-
     .search-result-price {
-        @apply font-body-bold text-sm text-primary;
+        @apply font-heading-semibold text-sm text-primary;
     }
-
     .search-empty {
         @apply items-center py-8;
     }
-
     .search-empty-text {
         @apply font-body-regular text-sm text-muted-foreground;
     }
 
     /* ── Carousel ─────────────────────────────────────────── */
-
     .carousel {
         @apply rounded-3xl bg-card;
         width: 100%;
         height: 200px;
     }
-
     .carousel-dots {
         @apply flex-row justify-center py-2;
     }
-
     .carousel-dot {
         @apply mx-0.5 rounded-full;
         height: 10px;
     }
-
     .carousel-dot-active {
         @apply bg-primary;
         width: 40px;
     }
-
     .carousel-dot-inactive {
         @apply bg-greyed;
         width: 10px;
     }
 
     /* ── Badge (icon count) ───────────────────────────────── */
-
     .icon-badge {
         @apply absolute -right-2 -top-1 items-center justify-center rounded-full bg-destructive;
         min-width: 20px;
         height: 20px;
         padding-horizontal: 4px;
     }
-
     .icon-badge-text {
         @apply font-body-bold text-[10px] text-white;
     }
 
     /* ── Safe Area ────────────────────────────────────────── */
-
     .safe-top {
         padding-top: env(safe-area-inset-top);
     }
-
     .safe-bottom {
         padding-bottom: env(safe-area-inset-bottom);
     }
 
     /* ── Withdrawal Sheet ─────────────────────────────────── */
-
     .withdraw-overlay {
         @apply flex-1 bg-black/50;
     }
-
     .withdraw-sheet {
         @apply mt-auto gap-5 rounded-t-3xl bg-background p-5;
     }
-
     .withdraw-title {
         @apply font-heading-bold text-xl text-foreground;
     }
-
     .withdraw-balance {
         @apply font-body-regular text-sm text-muted-foreground;
     }
-
     .withdraw-balance-amount {
         @apply font-body-bold text-lg text-foreground;
     }
 
     /* ── Utility ──────────────────────────────────────────── */
-
     .sr-only {
         position: absolute;
         width: 1px;
@@ -1662,5 +1290,59 @@
         clip: rect(0, 0, 0, 0);
         white-space: nowrap;
         border-width: 0;
+    }
+
+    /* ── Premium Glassmorphism ────────────────────────────── */
+    .glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .glass-dark {
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* ── Animated Entry ───────────────────────────────────── */
+    .fade-in {
+        animation: fadeIn 0.3s ease-out;
+    }
+    .slide-up {
+        animation: slideUp 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Shimmer Loading ──────────────────────────────────── */
+    .shimmer {
+        background: linear-gradient(
+            90deg,
+            var(--color-skeleton) 25%,
+            var(--color-skeleton-shine) 50%,
+            var(--color-skeleton) 75%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ── Gradient Text ────────────────────────────────────── */
+    .gradient-text {
+        background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 }

@@ -36,7 +36,7 @@ export function Chip({
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
-      toValue: 0.94,
+      toValue: 0.95,
       useNativeDriver: true,
       speed: 20,
       bounciness: 4,
@@ -55,7 +55,11 @@ export function Chip({
   return (
     <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
       <Pressable
-        style={[styles.chip, isActive && styles.chipActive]}
+        style={({ pressed }) => [
+          styles.chip,
+          isActive && styles.chipActive,
+          pressed && !isActive && { backgroundColor: colors.surfaceDark },
+        ]}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         onPress={onPress}
@@ -82,9 +86,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: radii.full,
     backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: 'transparent',
-    ...shadows.sm,
+    borderWidth: 1.5,
+    borderColor: colors.border,
   },
   chipActive: {
     backgroundColor: colors.primary,
@@ -93,7 +96,7 @@ const styles = StyleSheet.create({
     shadowColor: colors.primary,
   },
   chipText: {
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: 'NunitoSans_600SemiBold',
     fontSize: 14,
     color: colors.textSecondary,
   },

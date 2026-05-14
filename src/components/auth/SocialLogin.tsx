@@ -1,15 +1,8 @@
-/**
- * SocialLogin — Google & Apple social auth buttons with role-aware flow.
- *
- * Three usage modes:
- * - "login": Existing user signs in → auto-route to their dashboard
- * - "register": New user signs up → attaches pre-selected role to account
- * - "both": Shows all options (used on unified screens)
- */
 import React, { useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { GoogleIcon, AppleIcon } from './SocialIcons';
-import { colors } from '@/theme/colors';
+import { colors, radii, shadows } from '@/theme/colors';
+import { fonts } from '@/theme/typography';
 
 export type SocialMode = 'login' | 'register' | 'both';
 
@@ -38,20 +31,11 @@ export function SocialLogin({ mode, onGooglePress, onApplePress, loading }: Soci
             <View style={styles.line} />
           </View>
           <View style={styles.buttonsRow}>
-            <SocialButton
-              provider="google"
-              onPress={onGooglePress}
-              disabled={loading}
-            />
-            <SocialButton
-              provider="apple"
-              onPress={onApplePress}
-              disabled={loading}
-            />
+            <SocialButton provider="google" onPress={onGooglePress} disabled={loading} />
+            <SocialButton provider="apple" onPress={onApplePress} disabled={loading} />
           </View>
         </>
       )}
-
       {mode === 'both' && (
         <>
           <View style={styles.dividerRow}>
@@ -60,16 +44,8 @@ export function SocialLogin({ mode, onGooglePress, onApplePress, loading }: Soci
             <View style={styles.line} />
           </View>
           <View style={styles.buttonsRow}>
-            <SocialButton
-              provider="google"
-              onPress={onGooglePress}
-              disabled={loading}
-            />
-            <SocialButton
-              provider="apple"
-              onPress={onApplePress}
-              disabled={loading}
-            />
+            <SocialButton provider="google" onPress={onGooglePress} disabled={loading} />
+            <SocialButton provider="apple" onPress={onApplePress} disabled={loading} />
           </View>
         </>
       )}
@@ -110,7 +86,7 @@ function SocialButton({ provider, onPress, disabled }: SocialButtonProps) {
         style={({ pressed }) => [
           styles.socialButton,
           disabled && styles.socialButtonDisabled,
-          pressed && { opacity: 0.7 }
+          pressed && { opacity: 0.7 },
         ]}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -147,7 +123,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border,
   },
   dividerText: {
-    fontFamily: 'NunitoSans_400Regular',
+    fontFamily: fonts.body,
     fontSize: 13,
     color: colors.textLight,
   },
@@ -161,18 +137,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
-    height: 50,
-    borderRadius: 9999,
-    borderWidth: 1,
+    height: 52,
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
     borderColor: colors.border,
     backgroundColor: colors.white,
     paddingHorizontal: 20,
+    ...shadows.sm,
   },
   socialButtonDisabled: {
     opacity: 0.5,
   },
   socialLabel: {
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
     fontSize: 16,
     color: colors.text,
     letterSpacing: 0.2,

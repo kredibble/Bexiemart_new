@@ -1,14 +1,8 @@
-/**
- * OrderStatusBadge — Color-coded status badge for vendor orders.
- *
- * Displays the current order status with appropriate colors.
- * Statuses: pending, confirmed, processing, shipped, delivered, cancelled
- */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import type { OrderStatus } from '@/types';
 import { colors, radii } from '@/theme/colors';
-import { typePresets } from '@/theme/typography';
+import { fonts } from '@/theme/typography';
 
 interface OrderStatusBadgeProps {
   status: OrderStatus;
@@ -36,12 +30,13 @@ export function OrderStatusBadge({ status }: OrderStatusBadgeProps) {
 const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: radii.full,
     alignSelf: 'flex-start',
   },
   text: {
-    ...typePresets.labelSm,
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
+    fontSize: 11,
+    letterSpacing: 0.3,
   },
 });

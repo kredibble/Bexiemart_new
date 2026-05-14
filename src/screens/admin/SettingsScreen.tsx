@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +19,7 @@ interface SettingRow {
 export default function AdminSettingsScreen() {
   const insets = useSafeAreaInsets();
   const { user, signOut } = useAuthStore();
+  const confirm = useConfirm();
 
   const settingsSections: { title: string; items: SettingRow[] }[] = [
     {
@@ -41,11 +43,9 @@ export default function AdminSettingsScreen() {
       items: [
         {
           icon: 'log-out-outline', label: 'Sign Out', description: 'Log out of admin panel',
-          onPress: () => {
-            Alert.alert('Sign Out', 'Are you sure?', [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Sign Out', style: 'destructive', onPress: () => signOut() },
-            ]);
+          onPress: async () => {
+            const ok = await confirm({ title: 'Sign Out', message: 'Are you sure?', destructive: true, confirmLabel: 'Sign Out' });
+            if (ok) signOut();
           },
           destructive: true,
         },

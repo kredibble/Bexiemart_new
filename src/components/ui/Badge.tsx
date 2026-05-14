@@ -1,22 +1,11 @@
-/**
- * Badge — Count indicator for cart, notifications, etc.
- *
- * Renders a small red circle with white count text.
- * Positioned absolute top-right of parent. Hidden when count <= 0.
- * Supports counts up to 99 (displays "99+" beyond that).
- */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from '@/theme/colors';
 
 interface BadgeProps {
-  /** Number to display inside the badge */
   count: number;
-  /** Badge background color (default: error red) */
   color?: string;
-  /** Text color inside badge */
   textColor?: string;
-  /** Size preset: 'sm' for tab bar icons, 'md' for standalone */
   size?: 'sm' | 'md';
 }
 
@@ -30,7 +19,7 @@ export function Badge({
 
   const displayText = count > 99 ? '99+' : String(count);
   const isWide = displayText.length > 1;
-  const dimensions = size === 'sm' ? 18 : 22;
+  const dimensions = size === 'sm' ? 20 : 24;
   const fontSize = size === 'sm' ? 10 : 12;
 
   return (
@@ -47,12 +36,7 @@ export function Badge({
       ]}
       accessibilityLabel={`${count} items`}
     >
-      <Text
-        style={[
-          styles.text,
-          { color: textColor, fontSize },
-        ]}
-      >
+      <Text style={[styles.text, { color: textColor, fontSize }]}>
         {displayText}
       </Text>
     </View>
@@ -62,8 +46,8 @@ export function Badge({
 const styles = StyleSheet.create({
   badge: {
     position: 'absolute',
-    top: -6,
-    right: -8,
+    top: -5,
+    right: -6,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
@@ -73,6 +57,6 @@ const styles = StyleSheet.create({
   text: {
     fontFamily: 'NunitoSans_700Bold',
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 15,
   },
 });

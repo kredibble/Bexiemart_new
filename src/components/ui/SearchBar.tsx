@@ -1,9 +1,3 @@
-/**
- * SearchBar — Reusable search input with debounced text handling.
- *
- * Features: prefix search icon, clear button on input, cancel animation,
- * debounced onChange for API calls, and focus/blur styling.
- */
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   View,
@@ -17,21 +11,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, radii } from '@/theme/colors';
 
 interface SearchBarProps {
-  /** Placeholder text */
   placeholder?: string;
-  /** Controlled value */
   value?: string;
-  /** Fires on every keystroke (instant, for local filtering) */
   onChangeText?: (text: string) => void;
-  /** Fires after debounce delay (for API search) */
   onDebouncedChange?: (text: string) => void;
-  /** Fires when the search is submitted via keyboard */
   onSubmit?: (text: string) => void;
-  /** Debounce delay in ms (default: 400) */
   debounceMs?: number;
-  /** Auto-focus on mount */
   autoFocus?: boolean;
-  /** Show cancel button when focused */
   showCancel?: boolean;
 }
 
@@ -50,7 +36,6 @@ export function SearchBar({
   const inputRef = useRef<TextInput>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Sync with controlled value
   useEffect(() => {
     if (controlledValue !== undefined) {
       setLocalValue(controlledValue);
@@ -61,8 +46,6 @@ export function SearchBar({
     (text: string) => {
       setLocalValue(text);
       onChangeText?.(text);
-
-      // Debounced callback
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
       debounceTimer.current = setTimeout(() => {
         onDebouncedChange?.(text);
@@ -89,7 +72,6 @@ export function SearchBar({
     onSubmit?.(localValue);
   }, [onSubmit, localValue]);
 
-  // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -98,15 +80,10 @@ export function SearchBar({
 
   return (
     <View style={styles.wrapper}>
-      <View
-        style={[
-          styles.container,
-          isFocused && styles.containerFocused,
-        ]}
-      >
+      <View style={[styles.container, isFocused && styles.containerFocused]}>
         <Ionicons
           name="search"
-          size={18}
+          size={20}
           color={isFocused ? colors.primary : colors.textLight}
           style={styles.searchIcon}
         />
@@ -134,11 +111,10 @@ export function SearchBar({
             accessibilityRole="button"
             accessibilityLabel="Clear search"
           >
-            <Ionicons name="close-circle" size={18} color={colors.textLight} />
+            <Ionicons name="close-circle" size={20} color={colors.textLight} />
           </TouchableOpacity>
         )}
       </View>
-
       {showCancel && isFocused && (
         <TouchableOpacity
           onPress={handleCancel}
@@ -163,12 +139,12 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceDark,
+    backgroundColor: colors.surface,
     borderRadius: radii.xl,
     borderWidth: 1.5,
-    borderColor: 'transparent',
-    height: 46,
-    paddingHorizontal: 14,
+    borderColor: colors.border,
+    height: 50,
+    paddingHorizontal: 16,
   },
   containerFocused: {
     backgroundColor: colors.white,
@@ -177,20 +153,20 @@ const styles = StyleSheet.create({
       ios: {
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.12,
-        shadowRadius: 6,
+        shadowOpacity: 0.15,
+        shadowRadius: 8,
       },
-      android: { elevation: 2 },
-      web: { boxShadow: '0px 0px 6px rgba(0, 76, 255, 0.12)' },
+      android: { elevation: 3 },
+      web: { boxShadow: '0px 0px 8px rgba(124, 58, 237, 0.15)' },
     }),
   },
   searchIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   input: {
     flex: 1,
     fontFamily: 'NunitoSans_400Regular',
-    fontSize: 15,
+    fontSize: 16,
     color: colors.text,
     padding: 0,
   },

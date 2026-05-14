@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, Modal, TextInput, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Modal, ScrollView } from 'react-native';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
+import { FormInput } from '@/components/ui/FormInput';
 
 interface Address {
   id: string;
@@ -38,6 +41,7 @@ export default function AddressManagementScreen() {
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const confirm = useConfirm();
 
   const openCreate = () => {
     setEditing(null);
@@ -54,7 +58,7 @@ export default function AddressManagementScreen() {
   };
 
   const handleSave = () => {
-    if (!label.trim() || !addressLine1.trim()) return Alert.alert('Error', 'Label and address are required');
+    if (!label.trim() || !addressLine1.trim()) return ToastEmitter.error('Label and address are required');
     if (editing) {
       setAddresses((prev) => prev.map((a) => a.id === editing.id ? { ...a, label, recipientName, phone, addressLine1, addressLine2, city, state } : a));
     } else {
@@ -67,11 +71,9 @@ export default function AddressManagementScreen() {
     setAddresses((prev) => prev.map((a) => ({ ...a, isDefault: a.id === id })));
   };
 
-  const handleDelete = (id: string) => {
-    Alert.alert('Delete Address', 'Are you sure?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => setAddresses((prev) => prev.filter((a) => a.id !== id)) },
-    ]);
+  const handleDelete = async (id: string) => {
+    const ok = await confirm({ title: 'Delete Address', message: 'Are you sure?', destructive: true, confirmLabel: 'Delete' });
+    if (ok) setAddresses((prev) => prev.filter((a) => a.id !== id));
   };
 
   const renderAddress = ({ item }: { item: Address }) => (
@@ -135,26 +137,19 @@ export default function AddressManagementScreen() {
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               <Text style={styles.modalTitle}>{editing ? 'Edit Address' : 'New Address'}</Text>
 
-              <Text style={styles.inputLabel}>Label</Text>
-              <TextInput style={styles.input} placeholder="e.g. Home, Hostel" placeholderTextColor={colors.textLighter} value={label} onChangeText={setLabel} />
+              <FormInput label="Label" placeholder="e.g. Home, Hostel" value={label} onChangeText={setLabel} containerStyle={styles.input} />
 
-              <Text style={styles.inputLabel}>Recipient Name</Text>
-              <TextInput style={styles.input} placeholder="Full name" placeholderTextColor={colors.textLighter} value={recipientName} onChangeText={setRecipientName} />
+              <FormInput label="Recipient Name" placeholder="Full name" value={recipientName} onChangeText={setRecipientName} containerStyle={styles.input} />
 
-              <Text style={styles.inputLabel}>Phone</Text>
-              <TextInput style={styles.input} placeholder="024 XXX XXXX" placeholderTextColor={colors.textLighter} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+              <FormInput label="Phone" placeholder="024 XXX XXXX" value={phone} onChangeText={setPhone} keyboardType="phone-pad" containerStyle={styles.input} />
 
-              <Text style={styles.inputLabel}>Address Line 1</Text>
-              <TextInput style={styles.input} placeholder="Street, building, room" placeholderTextColor={colors.textLighter} value={addressLine1} onChangeText={setAddressLine1} />
+              <FormInput label="Address Line 1" placeholder="Street, building, room" value={addressLine1} onChangeText={setAddressLine1} containerStyle={styles.input} />
 
-              <Text style={styles.inputLabel}>Address Line 2 (optional)</Text>
-              <TextInput style={styles.input} placeholder="Landmark, details" placeholderTextColor={colors.textLighter} value={addressLine2} onChangeText={setAddressLine2} />
+              <FormInput label="Address Line 2 (optional)" placeholder="Landmark, details" value={addressLine2} onChangeText={setAddressLine2} containerStyle={styles.input} />
 
-              <Text style={styles.inputLabel}>City</Text>
-              <TextInput style={styles.input} placeholder="City" placeholderTextColor={colors.textLighter} value={city} onChangeText={setCity} />
+              <FormInput label="City" placeholder="City" value={city} onChangeText={setCity} containerStyle={styles.input} />
 
-              <Text style={styles.inputLabel}>State/Region</Text>
-              <TextInput style={styles.input} placeholder="State/Region" placeholderTextColor={colors.textLighter} value={state} onChangeText={setState} />
+              <FormInput label="State/Region" placeholder="State/Region" value={state} onChangeText={setState} containerStyle={styles.input} />
 
               <View style={styles.modalActions}>
                 <TouchableOpacity style={styles.modalCancel} onPress={() => setModalVisible(false)}>
@@ -197,7 +192,6 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
   modalContent: { backgroundColor: colors.white, borderTopLeftRadius: radii['2xl'], borderTopRightRadius: radii['2xl'], padding: 24, maxHeight: '85%' },
   modalTitle: { ...typePresets.h4, color: colors.text, textAlign: 'center', marginBottom: 16 },
-  inputLabel: { ...typePresets.label, color: colors.textSecondary, marginBottom: 6, marginTop: 12 },
   input: { ...typePresets.body, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 12, color: colors.text, backgroundColor: colors.white },
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 24, marginBottom: 16 },
   modalCancel: { flex: 1, alignItems: 'center', paddingVertical: 14, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border },

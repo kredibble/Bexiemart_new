@@ -1,25 +1,15 @@
-/**
- * CartItem — Product display in the cart with quantity controls.
- *
- * Features:
- *  - Product image, name, price
- *  - Quantity +/- buttons (min 1, max stock)
- *  - Stock warning when ≤5 left
- *  - Remove button
- */
 import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
-  Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import type { CartItem as CartItemType } from '@/types';
 import { colors, shadows, radii } from '@/theme/colors';
-import { typePresets } from '@/theme/typography';
+import { fonts } from '@/theme/typography';
 
 interface CartItemProps {
   item: CartItemType;
@@ -38,7 +28,7 @@ export function CartItem({
 }: CartItemProps) {
   const primaryImage =
     item.product?.images?.find((img) => img.isPrimary)?.url ??
-    item.product?.images?.[0]?.url;
+    item.product?.images?.[0]?.url ?? '';
 
   const stock = item.product?.stock ?? 0;
   const lowStock = stock > 0 && stock <= 5;
@@ -53,7 +43,6 @@ export function CartItem({
         transition={200}
         placeholder={colors.borderLight}
       />
-
       <View style={styles.info}>
         <Text style={styles.name} numberOfLines={2}>
           {item.product?.name ?? 'Product'}
@@ -61,8 +50,6 @@ export function CartItem({
         <Text style={styles.price}>
           GH₵ {item.unitPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </Text>
-
-        {/* Quantity controls */}
         <View style={styles.quantityRow}>
           <TouchableOpacity
             style={[styles.qtyButton, item.quantity <= 1 && styles.qtyButtonDisabled]}
@@ -78,9 +65,7 @@ export function CartItem({
               color={item.quantity <= 1 ? colors.textLight : colors.primary}
             />
           </TouchableOpacity>
-
           <Text style={styles.quantity}>{item.quantity}</Text>
-
           <TouchableOpacity
             style={[styles.qtyButton, item.quantity >= stock && styles.qtyButtonDisabled]}
             onPress={onIncrement}
@@ -96,8 +81,6 @@ export function CartItem({
             />
           </TouchableOpacity>
         </View>
-
-        {/* Stock warning */}
         {lowStock && (
           <Text style={styles.lowStock}>Only {stock} left</Text>
         )}
@@ -105,8 +88,6 @@ export function CartItem({
           <Text style={styles.outOfStock}>Out of stock</Text>
         )}
       </View>
-
-      {/* Remove button */}
       <TouchableOpacity
         style={styles.removeButton}
         onPress={onRemove}
@@ -126,14 +107,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: colors.white,
     borderRadius: radii.xl,
-    padding: 12,
+    padding: 14,
     marginBottom: 12,
-    gap: 12,
+    gap: 14,
     ...shadows.sm,
   },
   image: {
-    width: 80,
-    height: 80,
+    width: 84,
+    height: 84,
     borderRadius: radii.lg,
     backgroundColor: colors.borderLight,
   },
@@ -143,30 +124,30 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   name: {
-    ...typePresets.body,
-    fontFamily: 'NunitoSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
+    fontSize: 14,
     color: colors.text,
     lineHeight: 20,
   },
   price: {
-    ...typePresets.priceSm,
-    fontFamily: 'Rubik_700Bold',
-    color: colors.text,
+    fontFamily: fonts.headingSemi,
+    fontSize: 15,
+    color: colors.primary,
   },
   quantityRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 10,
     marginTop: 4,
   },
   qtyButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.primary,
   },
   qtyButtonDisabled: {
@@ -174,19 +155,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   quantity: {
-    ...typePresets.body,
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
+    fontSize: 15,
     color: colors.text,
     minWidth: 24,
     textAlign: 'center',
   },
   lowStock: {
-    ...typePresets.bodySm,
+    fontFamily: fonts.body,
+    fontSize: 12,
     color: colors.warning,
     marginTop: 2,
   },
   outOfStock: {
-    ...typePresets.bodySm,
+    fontFamily: fonts.body,
+    fontSize: 12,
     color: colors.error,
     marginTop: 2,
   },

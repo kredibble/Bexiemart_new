@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Modal } from 'react-native';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { Input } from '@/components/ui/Input';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -40,10 +42,10 @@ export default function AdminUsersScreen() {
     if (!selectedUser) return;
     updateRole.mutate({ id: selectedUser.id, role: newRole }, {
       onSuccess: () => {
-        Alert.alert('Updated', `User role changed to ${newRole}`);
+        ToastEmitter.success(`User role changed to ${newRole}`);
         setSelectedUser(null);
       },
-      onError: () => Alert.alert('Error', 'Failed to update role'),
+      onError: () => ToastEmitter.error('Failed to update role'),
     });
   };
 
@@ -76,16 +78,13 @@ export default function AdminUsersScreen() {
         <Text style={styles.headerTitle}>Users ({userList.length})</Text>
       </View>
 
-      <View style={styles.searchBar}>
-        <Ionicons name="search-outline" size={18} color={colors.textLight} />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search users..."
-          placeholderTextColor={colors.textLighter}
-          value={search}
-          onChangeText={setSearch}
-        />
-      </View>
+      <Input
+        placeholder="Search users..."
+        value={search}
+        onChangeText={setSearch}
+        prefixIcon="search-outline"
+        containerStyle={{ marginBottom: 0 }}
+      />
 
       <View style={styles.filterRow}>
         {[{ label: 'All', value: null }, { label: 'Admin', value: 'admin' }, { label: 'Vendor', value: 'vendor' }, { label: 'Customer', value: 'customer' }].map((f) => (
@@ -159,12 +158,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: colors.borderLight,
   },
   headerTitle: { ...typePresets.h4, color: colors.text },
-  searchBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    margin: 16, marginBottom: 8, paddingHorizontal: 14,
-    backgroundColor: colors.white, borderRadius: radii.lg, height: 44, ...shadows.sm,
-  },
-  searchInput: { flex: 1, ...typePresets.body, color: colors.text, padding: 0 },
+
   filterRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, marginBottom: 12 },
   filterChip: { paddingHorizontal: 14, paddingVertical: 6, borderRadius: radii.full, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
   filterChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },

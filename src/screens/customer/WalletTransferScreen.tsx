@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, TextInput, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import { ToastEmitter } from '@/utils/toastEmitter';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { FormInput } from '@/components/ui/FormInput';
+import { Input } from '@/components/ui/Input';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
 import { formatCurrency } from '@/utils/format';
@@ -19,16 +22,15 @@ export default function WalletTransferScreen() {
   const balance = 250.00;
 
   const handleNext = () => {
-    if (!recipientEmail.trim()) return Alert.alert('Error', 'Enter recipient email');
-    if (!amount || parseFloat(amount) <= 0) return Alert.alert('Error', 'Enter a valid amount');
-    if (parseFloat(amount) > balance) return Alert.alert('Error', 'Insufficient balance');
+    if (!recipientEmail.trim()) return ToastEmitter.error('Enter recipient email');
+    if (!amount || parseFloat(amount) <= 0) return ToastEmitter.error('Enter a valid amount');
+    if (parseFloat(amount) > balance) return ToastEmitter.error('Insufficient balance');
     setStep('confirm');
   };
 
   const handleConfirm = () => {
-    Alert.alert('Transfer Initiated', `GH₵${parseFloat(amount).toFixed(2)} sent to ${recipientEmail}`, [
-      { text: 'OK', onPress: () => navigation.goBack() },
-    ]);
+    ToastEmitter.success(`GH₵${parseFloat(amount).toFixed(2)} sent to ${recipientEmail}`);
+    navigation.goBack();
   };
 
   if (step === 'confirm') {
@@ -89,14 +91,11 @@ export default function WalletTransferScreen() {
           <Text style={styles.balanceValue}>{formatCurrency(balance)}</Text>
         </View>
 
-        <Text style={styles.inputLabel}>Recipient Email</Text>
-        <TextInput style={styles.input} placeholder="user@example.com" placeholderTextColor={colors.textLighter} value={recipientEmail} onChangeText={setRecipientEmail} keyboardType="email-address" autoCapitalize="none" />
+        <FormInput label="Recipient Email" placeholder="user@example.com" value={recipientEmail} onChangeText={setRecipientEmail} keyboardType="email-address" autoCapitalize="none" />
 
-        <Text style={styles.inputLabel}>Amount (GH₵)</Text>
-        <TextInput style={styles.input} placeholder="0.00" placeholderTextColor={colors.textLighter} value={amount} onChangeText={setAmount} keyboardType="decimal-pad" />
+        <Input label="Amount (GH₵)" placeholder="0.00" value={amount} onChangeText={setAmount} keyboardType="decimal-pad" prefixIcon="cash-outline" />
 
-        <Text style={styles.inputLabel}>Note (optional)</Text>
-        <TextInput style={[styles.input, styles.textArea]} placeholder="What's this for?" placeholderTextColor={colors.textLighter} value={note} onChangeText={setNote} multiline numberOfLines={3} />
+        <FormInput label="Note (optional)" placeholder="What's this for?" value={note} onChangeText={setNote} multiline numberOfLines={3} />
 
         <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
           <Text style={styles.nextBtnText}>Continue</Text>
@@ -115,9 +114,6 @@ const styles = StyleSheet.create({
   balanceCard: { backgroundColor: colors.primary, borderRadius: radii.xl, padding: 24, alignItems: 'center', gap: 8, marginBottom: 16, ...shadows.lg },
   balanceLabel: { ...typePresets.body, color: colors.primarySoft },
   balanceValue: { ...typePresets.h1, fontFamily: 'Rubik_700Bold', color: colors.white },
-  inputLabel: { ...typePresets.label, color: colors.textSecondary, marginBottom: 4, marginTop: 12 },
-  input: { ...typePresets.body, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 12, color: colors.text, backgroundColor: colors.white },
-  textArea: { minHeight: 80, textAlignVertical: 'top' },
   nextBtn: { backgroundColor: colors.primary, borderRadius: radii.lg, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   nextBtnText: { ...typePresets.body, fontFamily: 'NunitoSans_700Bold', color: colors.white },
   confirmCard: { backgroundColor: colors.white, borderRadius: radii.xl, padding: 24, alignItems: 'center', gap: 8, ...shadows.md },

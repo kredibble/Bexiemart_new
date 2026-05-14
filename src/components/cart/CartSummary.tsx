@@ -1,21 +1,15 @@
-/**
- * CartSummary — Price breakdown with optional coupon input.
- *
- * Displays subtotal, delivery fee, discount, and total.
- * Includes a coupon code field for applying discounts.
- */
 import React, { useState } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Input } from '@/components/ui/Input';
 import { colors, shadows, radii } from '@/theme/colors';
-import { typePresets } from '@/theme/typography';
+import { fonts } from '@/theme/typography';
 
 interface CartSummaryProps {
   subtotal: number;
@@ -51,14 +45,11 @@ export function CartSummary({
   return (
     <View style={styles.card}>
       <Text style={styles.title}>Order Summary</Text>
-
       <SummaryRow label="Subtotal" value={subtotal} />
       <SummaryRow label="Delivery" value={deliveryFee} />
-
       {discount > 0 && (
         <SummaryRow label="Discount" value={-discount} isDiscount />
       )}
-
       {couponCode && (
         <View style={styles.couponRow}>
           <View style={styles.couponBadge}>
@@ -77,18 +68,15 @@ export function CartSummary({
           )}
         </View>
       )}
-
-      {/* Coupon input */}
       {onApplyCoupon && !couponCode && (
         <View style={styles.couponInputRow}>
-          <TextInput
-            style={styles.couponInput}
+          <Input
             placeholder="Coupon code"
-            placeholderTextColor={colors.textLight}
             value={inputCode}
             onChangeText={setInputCode}
             autoCapitalize="none"
             autoCorrect={false}
+            containerStyle={{ marginBottom: 0, flex: 1 }}
           />
           <TouchableOpacity
             style={[
@@ -106,18 +94,14 @@ export function CartSummary({
           </TouchableOpacity>
         </View>
       )}
-
       {couponError && (
         <Text style={styles.couponError}>{couponError}</Text>
       )}
-
       <View style={styles.divider} />
       <SummaryRow label="Total" value={total} isBold />
     </View>
   );
 }
-
-/* ── SummaryRow ─────────────────────────────────────────────────────────── */
 
 function SummaryRow({
   label,
@@ -148,8 +132,6 @@ function SummaryRow({
   );
 }
 
-/* ── Styles ─────────────────────────────────────────────────────────────── */
-
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
@@ -159,14 +141,15 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   title: {
-    ...typePresets.h5,
-    fontFamily: 'Rubik_700Bold',
+    fontFamily: fonts.headingSemi,
+    fontSize: 17,
     color: colors.text,
-    marginBottom: 12,
+    marginBottom: 16,
+    letterSpacing: -0.2,
   },
   divider: {
     height: 1,
-    backgroundColor: colors.borderLight,
+    backgroundColor: colors.border,
     marginVertical: 12,
   },
   couponRow: {
@@ -175,7 +158,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: colors.successSoft,
     borderRadius: radii.sm,
-    padding: 8,
+    padding: 10,
     marginTop: 8,
   },
   couponBadge: {
@@ -184,13 +167,13 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   couponText: {
-    ...typePresets.caption,
-    fontFamily: 'NunitoSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
+    fontSize: 12,
     color: colors.success,
   },
   couponRemove: {
-    ...typePresets.caption,
-    fontFamily: 'NunitoSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
+    fontSize: 12,
     color: colors.error,
   },
   couponInputRow: {
@@ -198,35 +181,26 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 12,
   },
-  couponInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    ...typePresets.body,
-    color: colors.text,
-  },
   couponApplyBtn: {
     backgroundColor: colors.primary,
     borderRadius: radii.md,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
     justifyContent: 'center',
-    minWidth: 72,
+    minWidth: 76,
     alignItems: 'center',
   },
   couponApplyBtnDisabled: {
     opacity: 0.5,
   },
   couponApplyText: {
-    ...typePresets.body,
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
+    fontSize: 14,
     color: colors.white,
   },
   couponError: {
-    ...typePresets.caption,
+    fontFamily: fonts.body,
+    fontSize: 12,
     color: colors.error,
     marginTop: 6,
   },
@@ -240,17 +214,18 @@ const summaryStyles = StyleSheet.create({
     marginBottom: 8,
   },
   label: {
-    ...typePresets.body,
+    fontFamily: fonts.body,
+    fontSize: 14,
     color: colors.textSecondary,
   },
   value: {
-    ...typePresets.body,
-    fontFamily: 'NunitoSans_500Medium',
+    fontFamily: fonts.bodyMedium,
+    fontSize: 14,
     color: colors.text,
   },
   bold: {
-    ...typePresets.h5,
-    fontFamily: 'Rubik_700Bold',
+    fontFamily: fonts.headingSemi,
+    fontSize: 17,
     color: colors.text,
   },
   discount: {

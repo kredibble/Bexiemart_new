@@ -1,5 +1,5 @@
 import React from "react";
-import { type TextInputProps } from "react-native";
+import { type StyleProp, type TextInputProps, type ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Input } from "./Input";
 
@@ -16,6 +16,7 @@ interface FormInputProps {
   keyboardType?: TextInputProps["keyboardType"];
   autoCapitalize?: TextInputProps["autoCapitalize"];
   autoCorrect?: boolean;
+  containerStyle?: StyleProp<ViewStyle>;
   prefixIcon?: React.ComponentProps<typeof Ionicons>["name"];
   suffixIcon?: React.ComponentProps<typeof Ionicons>["name"];
   onSuffixPress?: () => void;
@@ -41,6 +42,7 @@ export function FormInput(props: FormInputProps) {
       keyboardType={props.keyboardType}
       autoCapitalize={props.autoCapitalize}
       autoCorrect={props.autoCorrect}
+      containerStyle={props.containerStyle}
       prefixIcon={props.prefixIcon}
       suffixIcon={props.suffixIcon}
       onSuffixPress={props.onSuffixPress}

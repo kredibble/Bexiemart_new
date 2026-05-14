@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Alert, Modal, TextInput, ScrollView } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Modal, ScrollView, Platform } from 'react-native';
+import { Input } from '@/components/ui/Input';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import { useVendorCoupons, useCreateVendorCoupon, useUpdateVendorCoupon, useDeleteVendorCoupon } from '@/hooks/useVendorCoupons';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
@@ -25,12 +29,18 @@ export default function CouponsScreen() {
   const [expiresInDays, setExpiresInDays] = useState('30');
 
   const onRefresh = React.useCallback(async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
     setRefreshing(true);
     await refetch();
     setRefreshing(false);
   }, [refetch]);
 
   const openCreate = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    }
     setEditing(null);
     setCode('');
     setDiscountPercent('');
@@ -41,6 +51,9 @@ export default function CouponsScreen() {
   };
 
   const openEdit = (coupon: Coupon) => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
     setEditing(coupon);
     setCode(coupon.code);
     setDiscountPercent(String(coupon.discountPercent));
@@ -51,12 +64,15 @@ export default function CouponsScreen() {
   };
 
   const handleSave = () => {
-    if (!code.trim()) return Alert.alert('Error', 'Coupon code is required');
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    }
+    if (!code.trim()) return ToastEmitter.warning('Coupon code is required');
     const percent = parseFloat(discountPercent);
-    if (isNaN(percent) || percent <= 0 || percent > 100) return Alert.alert('Error', 'Discount must be between 1 and 100');
+    if (isNaN(percent) || percent <= 0 || percent > 100) return ToastEmitter.warning('Discount must be between 1 and 100');
 
     const days = parseInt(expiresInDays, 10);
-    if (!editing && (isNaN(days) || days < 1)) return Alert.alert('Error', 'Expiry days must be at least 1');
+    if (!editing && (isNaN(days) || days < 1)) return ToastEmitter.warning('Expiry days must be at least 1');
     const expiryDate = editing ? new Date() : new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
     const payload = {
@@ -70,25 +86,31 @@ export default function CouponsScreen() {
     if (editing) {
       updateCoupon.mutate({ id: editing.id, data: payload }, {
         onSuccess: () => { setModalVisible(false); },
-        onError: () => Alert.alert('Error', 'Failed to update coupon'),
+        onError: () => ToastEmitter.error('Failed to update coupon'),
       });
     } else {
       createCoupon.mutate(payload, {
         onSuccess: () => { setModalVisible(false); },
-        onError: () => Alert.alert('Error', 'Failed to create coupon'),
+        onError: () => ToastEmitter.error('Failed to create coupon'),
       });
     }
   };
 
   const handleToggle = (coupon: Coupon) => {
+    if (Platform.OS !== 'web') {
+      Haptics.selectionAsync().catch(() => {});
+    }
     updateCoupon.mutate({ id: coupon.id, data: { isActive: !coupon.isActive } });
   };
 
-  const handleDelete = (coupon: Coupon) => {
-    Alert.alert('Delete Coupon', `Delete "${coupon.code}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteCoupon.mutate(coupon.id) },
-    ]);
+  const confirm = useConfirm();
+
+  const handleDelete = async (coupon: Coupon) => {
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    }
+    const ok = await confirm({ title: 'Delete Coupon', message: `Delete "${coupon.code}"?`, destructive: true, confirmLabel: 'Delete' });
+    if (ok) { deleteCoupon.mutate(coupon.id); }
   };
 
   const renderCoupon = ({ item }: { item: Coupon }) => {
@@ -167,19 +189,19 @@ export default function CouponsScreen() {
               <Text style={styles.modalTitle}>{editing ? 'Edit Coupon' : 'New Coupon'}</Text>
 
               <Text style={styles.inputLabel}>Coupon Code</Text>
-              <TextInput style={styles.input} placeholder="e.g. SAVE20" placeholderTextColor={colors.textLighter} value={code} onChangeText={(t) => setCode(t.toUpperCase())} autoCapitalize="characters" />
+              <Input containerStyle={{ marginBottom: 0 }} placeholder="e.g. SAVE20" placeholderTextColor={colors.textLighter} value={code} onChangeText={(t) => setCode(t.toUpperCase())} autoCapitalize="characters" />
 
               <Text style={styles.inputLabel}>Discount (%)</Text>
-              <TextInput style={styles.input} placeholder="20" placeholderTextColor={colors.textLighter} value={discountPercent} onChangeText={setDiscountPercent} keyboardType="numeric" />
+              <Input containerStyle={{ marginBottom: 0 }} placeholder="20" placeholderTextColor={colors.textLighter} value={discountPercent} onChangeText={setDiscountPercent} keyboardType="numeric" />
 
               <Text style={styles.inputLabel}>Min Order Amount (GH₵)</Text>
-              <TextInput style={styles.input} placeholder="0" placeholderTextColor={colors.textLighter} value={minOrderAmount} onChangeText={setMinOrderAmount} keyboardType="numeric" />
+              <Input containerStyle={{ marginBottom: 0 }} placeholder="0" placeholderTextColor={colors.textLighter} value={minOrderAmount} onChangeText={setMinOrderAmount} keyboardType="numeric" />
 
               <Text style={styles.inputLabel}>Max Uses</Text>
-              <TextInput style={styles.input} placeholder="100" placeholderTextColor={colors.textLighter} value={maxUses} onChangeText={setMaxUses} keyboardType="numeric" />
+              <Input containerStyle={{ marginBottom: 0 }} placeholder="100" placeholderTextColor={colors.textLighter} value={maxUses} onChangeText={setMaxUses} keyboardType="numeric" />
 
               <Text style={styles.inputLabel}>Expires In (Days)</Text>
-              <TextInput style={styles.input} placeholder="30" placeholderTextColor={colors.textLighter} value={expiresInDays} onChangeText={setExpiresInDays} keyboardType="numeric" />
+              <Input containerStyle={{ marginBottom: 0 }} placeholder="30" placeholderTextColor={colors.textLighter} value={expiresInDays} onChangeText={setExpiresInDays} keyboardType="numeric" />
               {editing && <Text style={styles.hintText}>Leave blank to keep current expiry</Text>}
 
               <View style={styles.modalActions}>
@@ -199,7 +221,7 @@ export default function CouponsScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.surface },
+  screen: { flex: 1, backgroundColor: '#FAFAFC' }, // Sleek off-white bg
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 20, paddingVertical: 16, backgroundColor: colors.white,
@@ -211,7 +233,17 @@ const styles = StyleSheet.create({
   listContent: { paddingHorizontal: 16, gap: 8, paddingTop: 12 },
   couponRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    backgroundColor: colors.white, borderRadius: radii.lg, padding: 14, ...shadows.sm,
+    backgroundColor: colors.white, borderRadius: radii.lg, padding: 14,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+      },
+      android: { elevation: 2 },
+      web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' },
+    }),
   },
   couponExpired: { opacity: 0.6 },
   couponLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
@@ -232,7 +264,6 @@ const styles = StyleSheet.create({
   modalContent: { backgroundColor: colors.white, borderTopLeftRadius: radii['2xl'], borderTopRightRadius: radii['2xl'], padding: 24, maxHeight: '85%' },
   modalTitle: { ...typePresets.h4, color: colors.text, marginBottom: 20, textAlign: 'center' },
   inputLabel: { ...typePresets.label, color: colors.textSecondary, marginBottom: 6, marginTop: 12 },
-  input: { ...typePresets.body, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 12, color: colors.text, backgroundColor: colors.white },
   hintText: { ...typePresets.caption, color: colors.textLight, marginTop: 4 },
   dateButton: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 12 },
   dateText: { ...typePresets.body, color: colors.text },

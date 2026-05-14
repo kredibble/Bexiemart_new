@@ -7,12 +7,12 @@ import {
   View,
   Text,
   TouchableOpacity,
-  TextInput,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
   StyleSheet,
 } from 'react-native';
+import type { TextInput } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
@@ -27,6 +27,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useVerifyOtp, useResendOtp } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import type { AuthStackParamList } from '@/navigation/AuthNavigator';
 
 type NavigationProp = NativeStackNavigationProp<AuthStackParamList, 'PasswordVerify'>;
@@ -39,7 +40,7 @@ export default function PasswordVerifyScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RoutePropType>();
   const insets = useSafeAreaInsets();
-  const { email } = route.params;
+  const { email } = route.params ?? { email: '' };
 
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
@@ -241,13 +242,10 @@ function OTPBox({ index, value, isFilled, isComplete, inputRef, onChange, onKeyP
 
   return (
     <Animated.View style={rStyle}>
-      <TextInput
+      <Input
         ref={inputRef}
-        style={[
-          styles.otpBox,
-          isFilled && styles.otpBoxFilled,
-          isComplete && styles.otpBoxComplete,
-        ]}
+        containerStyle={{ width: 48 }}
+        style={{ textAlign: 'center', fontFamily: 'Rubik_700Bold', fontSize: 24, color: '#111322' }}
         maxLength={1}
         keyboardType="number-pad"
         value={value}
@@ -318,19 +316,7 @@ const styles = StyleSheet.create({
   otpRow: {
     flexDirection: 'row', gap: 10, justifyContent: 'center',
   },
-  otpBox: {
-    width: 48, height: 60,
-    borderWidth: 2, borderColor: '#E4E7EC',
-    borderRadius: 14, textAlign: 'center',
-    fontFamily: 'Rubik_700Bold', fontSize: 24,
-    color: '#111322', backgroundColor: '#FFFFFF',
-  },
-  otpBoxFilled: {
-    borderColor: '#7C3AED', backgroundColor: '#F3E8FF',
-  },
-  otpBoxComplete: {
-    borderColor: '#7C3AED', backgroundColor: '#F3E8FF',
-  },
+
   errorBanner: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#FEE2E2', borderRadius: 12,

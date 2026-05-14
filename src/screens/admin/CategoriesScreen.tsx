@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Alert, TextInput, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, RefreshControl, Modal } from 'react-native';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
+import { Input } from '@/components/ui/Input';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +21,7 @@ export default function AdminCategoriesScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [editing, setEditing] = useState<{ id: string; name: string } | null>(null);
   const [categoryName, setCategoryName] = useState('');
+  const confirm = useConfirm();
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
@@ -39,25 +43,23 @@ export default function AdminCategoriesScreen() {
 
   const handleSave = () => {
     const name = categoryName.trim();
-    if (!name) return Alert.alert('Error', 'Category name is required');
+    if (!name) return ToastEmitter.error('Category name is required');
     if (editing) {
       updateCategory.mutate({ id: editing.id, data: { name } }, {
         onSuccess: () => { setModalVisible(false); setCategoryName(''); },
-        onError: () => Alert.alert('Error', 'Failed to update category'),
+        onError: () => ToastEmitter.error('Failed to update category'),
       });
     } else {
       createCategory.mutate({ name }, {
         onSuccess: () => { setModalVisible(false); setCategoryName(''); },
-        onError: () => Alert.alert('Error', 'Failed to create category'),
+        onError: () => ToastEmitter.error('Failed to create category'),
       });
     }
   };
 
-  const handleDelete = (id: string, name: string) => {
-    Alert.alert('Delete Category', `Delete "${name}"? This cannot be undone.`, [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteCategory.mutate(id) },
-    ]);
+  const handleDelete = async (id: string, name: string) => {
+    const ok = await confirm({ title: 'Delete Category', message: `Delete "${name}"? This cannot be undone.`, destructive: true, confirmLabel: 'Delete' });
+    if (ok) deleteCategory.mutate(id);
   };
 
   const categoryList: AdminCategory[] = Array.isArray(categories) ? categories : [];
@@ -120,13 +122,12 @@ export default function AdminCategoriesScreen() {
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setModalVisible(false)}>
           <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
             <Text style={styles.modalTitle}>{editing ? 'Edit Category' : 'New Category'}</Text>
-            <TextInput
-              style={styles.modalInput}
+            <Input
               placeholder="Category name"
-              placeholderTextColor={colors.textLighter}
               value={categoryName}
               onChangeText={setCategoryName}
               autoFocus
+              containerStyle={{ marginBottom: 0 }}
             />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancel} onPress={() => setModalVisible(false)}>
@@ -171,7 +172,6 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'center', alignItems: 'center', padding: 32 },
   modalContent: { backgroundColor: colors.white, borderRadius: radii.xl, padding: 24, width: '100%', maxWidth: 340, gap: 16 },
   modalTitle: { ...typePresets.h4, color: colors.text, textAlign: 'center' },
-  modalInput: { ...typePresets.body, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 12, color: colors.text },
   modalActions: { flexDirection: 'row', gap: 12 },
   modalCancel: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border },
   modalCancelText: { ...typePresets.body, fontFamily: 'NunitoSans_600SemiBold', color: colors.textSecondary },

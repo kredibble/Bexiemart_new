@@ -8,18 +8,19 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInDown, ZoomIn } from 'react-native-reanimated';
+import Animated, { FadeIn, FadeInDown, ZoomIn, StretchInY, BounceIn } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 
 import { Button } from '@/components/ui/Button';
-import { colors, shadows, radii } from '@/theme/colors';
+import { colors, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
 import { HomeStackParamList } from '@/navigation/CustomerTabs';
 import { useCartStore } from '@/stores/cartStore';
@@ -27,20 +28,26 @@ import { useCartStore } from '@/stores/cartStore';
 type NavProp = NativeStackNavigationProp<HomeStackParamList>;
 type RouteType = RouteProp<HomeStackParamList, 'PaymentSuccess'>;
 
+const { width } = Dimensions.get('window');
+
 export default function PaymentSuccessScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteType>();
-  const { orderId, amount, reference } = route.params;
+  const { orderId, amount, reference } = route.params ?? {};
 
   // Clear cart after successful payment
   const clearCart = useCartStore((state) => state.clearCart);
+  
   React.useEffect(() => {
     clearCart();
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    }
   }, []);
 
   const handleViewOrder = () => {
-    navigation.navigate('HomeMain');
+    navigation.navigate('HomeMain'); // TODO: navigate to actual order details when ready
   };
 
   const handleContinueShopping = () => {
@@ -48,59 +55,68 @@ export default function PaymentSuccessScreen() {
   };
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
+    <View style={[styles.screen, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
       <StatusBar style="dark" />
 
-      <Animated.View entering={ZoomIn.duration(500)} style={styles.content}>
-        {/* Success icon */}
-        <View style={styles.iconCircle}>
-          <Animated.View entering={FadeIn.delay(300)}>
-            <Ionicons name="checkmark-circle" size={72} color={colors.success} />
-          </Animated.View>
+      <View style={styles.content}>
+        {/* Animated Checkmark Graphic */}
+        <Animated.View entering={ZoomIn.duration(600).springify().damping(12)} style={styles.iconContainer}>
+          <View style={styles.iconCircleOuter}>
+            <View style={styles.iconCircleInner}>
+              <Animated.View entering={BounceIn.delay(300).duration(600)}>
+                <Ionicons name="checkmark" size={64} color={colors.white} />
+              </Animated.View>
+            </View>
+          </View>
+        </Animated.View>
+
+        {/* Text Content */}
+        <View style={styles.textContainer}>
+          <Animated.Text entering={FadeInDown.delay(400).springify()} style={styles.title}>
+            Payment Successful!
+          </Animated.Text>
+          <Animated.Text entering={FadeInDown.delay(500).springify()} style={styles.subtitle}>
+            Your order is confirmed and is now being processed.
+          </Animated.Text>
         </View>
 
-        {/* Title */}
-        <Animated.Text
-          entering={FadeIn.delay(400)}
-          style={styles.title}
-        >
-          Payment Successful!
-        </Animated.Text>
-        <Animated.Text
-          entering={FadeIn.delay(500)}
-          style={styles.subtitle}
-        >
-          Your order has been confirmed
-        </Animated.Text>
-
-        {/* Order details card */}
-        <Animated.View
-          entering={FadeInDown.delay(400).springify()}
-          style={styles.detailsCard}
-        >
-          <DetailRow icon="receipt-outline" label="Order ID" value={orderId.slice(0, 12)} />
-          <DetailRow icon="cash-outline" label="Amount Paid" value={`GH₵ ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} />
-          <DetailRow icon="pricetag-outline" label="Reference" value={reference} />
+        {/* Receipt Card */}
+        <Animated.View entering={StretchInY.delay(600).springify()} style={styles.receiptCard}>
+          {/* Decorative Top Edge */}
+          <View style={styles.receiptTopDecoration} />
+          
+          <View style={styles.receiptContent}>
+            <DetailRow icon="receipt-outline" label="Order ID" value={orderId?.slice(0, 12).toUpperCase() || 'N/A'} />
+            <View style={styles.divider} />
+            <DetailRow icon="pricetag-outline" label="Reference" value={reference || 'N/A'} />
+            <View style={styles.dividerDashed} />
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Paid</Text>
+              <Text style={styles.totalValue}>
+                GH₵ {amount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+              </Text>
+            </View>
+          </View>
         </Animated.View>
+      </View>
 
-        {/* Action buttons */}
-        <Animated.View entering={FadeIn.delay(700)} style={styles.actions}>
-          <Button
-            title="View Order"
-            onPress={handleViewOrder}
-            fullWidth
-            size="lg"
-          />
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={handleContinueShopping}
-            activeOpacity={0.7}
-            accessibilityLabel="Continue shopping"
-            accessibilityRole="button"
-          >
-            <Text style={styles.secondaryButtonText}>Continue Shopping</Text>
-          </TouchableOpacity>
-        </Animated.View>
+      {/* Fixed Bottom Actions */}
+      <Animated.View entering={FadeInDown.delay(800).springify()} style={styles.actions}>
+        <Button
+          title="View Order Details"
+          onPress={handleViewOrder}
+          fullWidth
+          size="lg"
+          variant="premium"
+        />
+        <Button
+          title="Continue Shopping"
+          onPress={handleContinueShopping}
+          fullWidth
+          size="lg"
+          variant="ghost"
+          style={styles.secondaryBtn}
+        />
       </Animated.View>
     </View>
   );
@@ -119,8 +135,10 @@ function DetailRow({
 }) {
   return (
     <View style={detailStyles.row}>
-      <Ionicons name={icon} size={18} color={colors.textSecondary} />
-      <Text style={detailStyles.label}>{label}</Text>
+      <View style={detailStyles.labelContainer}>
+        <Ionicons name={icon} size={20} color={colors.textSecondary} />
+        <Text style={detailStyles.label}>{label}</Text>
+      </View>
       <Text style={detailStyles.value} numberOfLines={1}>
         {value}
       </Text>
@@ -132,21 +150,24 @@ const detailStyles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   label: {
-    ...typePresets.bodySm,
+    ...typePresets.body,
     color: colors.textSecondary,
-    minWidth: 80,
+    fontFamily: 'NunitoSans_600SemiBold',
   },
   value: {
     ...typePresets.body,
-    fontFamily: 'NunitoSans_600SemiBold',
+    fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
-    flex: 1,
+    maxWidth: width * 0.4,
   },
 });
 
@@ -155,7 +176,7 @@ const detailStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.white,
+    backgroundColor: '#FAFAFC', // slightly off-white for contrast against card
   },
   content: {
     flex: 1,
@@ -163,52 +184,117 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconCircle: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.successSoft,
+  iconContainer: {
+    marginBottom: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 24,
+  },
+  iconCircleOuter: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)', // Success soft
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconCircleInner: {
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    backgroundColor: colors.success,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.success,
+        shadowOffset: { width: 0, height: 12 },
+        shadowOpacity: 0.4,
+        shadowRadius: 16,
+      },
+      android: { elevation: 12 },
+      web: { boxShadow: `0 12px 32px rgba(16, 185, 129, 0.4)` },
+    }),
+  },
+  textContainer: {
+    alignItems: 'center',
+    marginBottom: 40,
+    paddingHorizontal: 16,
   },
   title: {
     ...typePresets.h1,
     fontFamily: 'Rubik_700Bold',
     color: colors.text,
     textAlign: 'center',
-    marginBottom: 6,
+    marginBottom: 12,
+    letterSpacing: -0.5,
   },
   subtitle: {
     ...typePresets.bodyLg,
     color: colors.textSecondary,
     textAlign: 'center',
-    marginBottom: 32,
+    lineHeight: 24,
   },
-  detailsCard: {
+  receiptCard: {
     width: '100%',
-    backgroundColor: colors.surface,
-    borderRadius: radii.xl,
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    marginBottom: 32,
+    backgroundColor: colors.white,
+    borderRadius: radii['2xl'],
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.06,
+        shadowRadius: 24,
+      },
+      android: { elevation: 4 },
+      web: { boxShadow: '0 8px 24px rgba(0,0,0,0.06)' },
+    }),
+  },
+  receiptTopDecoration: {
+    height: 8,
+    backgroundColor: colors.primary,
+    borderTopLeftRadius: radii['2xl'],
+    borderTopRightRadius: radii['2xl'],
+  },
+  receiptContent: {
+    padding: 24,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+    marginVertical: 4,
+  },
+  dividerDashed: {
+    height: 1,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    borderStyle: 'dashed',
+    marginVertical: 16,
+  },
+  totalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  totalLabel: {
+    ...typePresets.bodyLg,
+    fontFamily: 'NunitoSans_600SemiBold',
+    color: colors.textSecondary,
+  },
+  totalValue: {
+    ...typePresets.h2,
+    fontFamily: 'Rubik_700Bold',
+    color: colors.primary,
   },
   actions: {
     width: '100%',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 24,
     gap: 12,
+    backgroundColor: '#FAFAFC',
   },
-  secondaryButton: {
-    width: '100%',
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  secondaryButtonText: {
-    ...typePresets.body,
-    fontFamily: 'NunitoSans_700Bold',
-    color: colors.primary,
+  secondaryBtn: {
+    marginTop: 4,
   },
 });

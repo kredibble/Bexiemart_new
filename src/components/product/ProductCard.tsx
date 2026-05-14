@@ -1,10 +1,3 @@
-/**
- * ProductCard — The primary product display component.
- *
- * Used across HomeScreen, ShopScreen, AllProductsScreen, FavoritesScreen.
- * Designed for a 2-column grid layout. Shows product image, name, price,
- * rating, and a wishlist toggle heart.
- */
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
@@ -16,17 +9,15 @@ import {
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, shadows, radii } from '@/theme/colors';
+import { fonts } from '@/theme/typography';
 import { formatCurrency } from '@/utils/format';
 import type { Product } from '@/types';
 
 interface ProductCardProps {
   product: Product;
   onPress: (product: Product) => void;
-  /** Whether the product is in the user's wishlist */
   isFavorite?: boolean;
-  /** Toggle wishlist handler */
   onToggleFavorite?: (productId: string) => void;
-  /** Card width — controlled by parent grid layout */
   width?: number | string;
 }
 
@@ -49,7 +40,7 @@ export function ProductCard({
   }, [product.id, onToggleFavorite]);
 
   const primaryImage = product.images?.find((img) => img.isPrimary)?.url
-    ?? product.images?.[0]?.url;
+    ?? product.images?.[0]?.url ?? '';
 
   const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
   const discountPercent = hasDiscount
@@ -63,31 +54,26 @@ export function ProductCard({
 
   return (
     <TouchableOpacity
-      style={[styles.container, width ? { width: width as number } : styles.flexContainer]}
+      style={[styles.container, width ? { width: width as number } : { flex: 1 }]}
       onPress={() => onPress(product)}
-      activeOpacity={0.8}
+      activeOpacity={0.85}
       accessibilityRole="button"
       accessibilityLabel={`${product.name}, ${formattedPrice}`}
       accessibilityHint="Opens product details"
     >
-      {/* Image container */}
       <View style={styles.imageWrapper}>
         <Image
           source={{ uri: primaryImage }}
           style={styles.image}
           contentFit="cover"
-          transition={200}
+          transition={300}
           placeholder={{ thumbhash: 'rEgGFwB3d3d3d4iIeJh3d4hwiA' }}
         />
-
-        {/* Discount badge */}
         {hasDiscount && (
           <View style={styles.discountBadge}>
             <Text style={styles.discountText}>-{discountPercent}%</Text>
           </View>
         )}
-
-        {/* Favorite heart */}
         {onToggleFavorite && (
           <TouchableOpacity
             style={styles.heartButton}
@@ -103,22 +89,16 @@ export function ProductCard({
             />
           </TouchableOpacity>
         )}
-
-        {/* Out of stock overlay */}
         {product.stock <= 0 && (
           <View style={styles.outOfStockOverlay}>
             <Text style={styles.outOfStockText}>Out of Stock</Text>
           </View>
         )}
       </View>
-
-      {/* Content */}
       <View style={styles.content}>
         <Text style={styles.name} numberOfLines={2}>
           {product.name}
         </Text>
-
-        {/* Rating row */}
         {product.rating > 0 && (
           <View style={styles.ratingRow}>
             <Ionicons name="star" size={12} color={colors.warning} />
@@ -126,8 +106,6 @@ export function ProductCard({
             <Text style={styles.reviewCount}>({product.reviewCount})</Text>
           </View>
         )}
-
-        {/* Price row */}
         <View style={styles.priceRow}>
           <Text style={styles.price}>{formattedPrice}</Text>
           {formattedOriginalPrice && (
@@ -144,10 +122,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: radii.xl,
     overflow: 'hidden',
-    ...shadows.md,
-  },
-  flexContainer: {
-    flex: 1,
+    ...shadows.sm,
   },
   imageWrapper: {
     aspectRatio: 1,
@@ -160,37 +135,37 @@ const styles = StyleSheet.create({
   },
   discountBadge: {
     position: 'absolute',
-    top: 8,
-    left: 8,
+    top: 10,
+    left: 10,
     backgroundColor: colors.error,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: radii.md,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: radii.sm,
   },
   discountText: {
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
     fontSize: 11,
     color: colors.white,
   },
   heartButton: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    top: 10,
+    right: 10,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: 'rgba(255,255,255,0.92)',
     alignItems: 'center',
     justifyContent: 'center',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
       },
       android: { elevation: 2 },
-      web: { boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1)' },
+      web: { boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.1)' },
     }),
   },
   outOfStockOverlay: {
@@ -200,18 +175,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   outOfStockText: {
-    fontFamily: 'NunitoSans_700Bold',
+    fontFamily: fonts.bodyBold,
     fontSize: 13,
     color: colors.error,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   content: {
-    padding: 10,
+    padding: 12,
     gap: 4,
   },
   name: {
-    fontFamily: 'NunitoSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
     fontSize: 13,
     color: colors.text,
     lineHeight: 18,
@@ -222,12 +197,12 @@ const styles = StyleSheet.create({
     gap: 3,
   },
   ratingText: {
-    fontFamily: 'NunitoSans_600SemiBold',
+    fontFamily: fonts.bodySemi,
     fontSize: 12,
     color: colors.text,
   },
   reviewCount: {
-    fontFamily: 'NunitoSans_400Regular',
+    fontFamily: fonts.body,
     fontSize: 11,
     color: colors.textLight,
   },
@@ -238,12 +213,12 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   price: {
-    fontFamily: 'Rubik_700Bold',
+    fontFamily: fonts.headingSemi,
     fontSize: 15,
-    color: colors.text,
+    color: colors.primary,
   },
   originalPrice: {
-    fontFamily: 'NunitoSans_400Regular',
+    fontFamily: fonts.body,
     fontSize: 12,
     color: colors.textLight,
     textDecorationLine: 'line-through',

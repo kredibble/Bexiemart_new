@@ -88,6 +88,7 @@ export interface Product {
   isFeatured: boolean;
   tags?: string[];
   deliveryOptions?: { type: string; fee: number; duration: number; unit: string }[];
+  variations?: { type: string; name: string; value?: string }[];
   createdAt: string;
   updatedAt: string;
   imageUrl?: string;
@@ -268,6 +269,26 @@ export interface EarningsTransaction {
   createdAt: string;
 }
 
+export interface PayoutMethod {
+  id: string;
+  type: 'bank' | 'momo';
+  provider?: 'mtn' | 'airteltigo' | 'telecel' | 'ghanapay';
+  accountName: string;
+  accountNumber: string;
+  bankName?: string;
+  phoneNumber?: string;
+  isDefault: boolean;
+}
+
+export interface WithdrawRequest {
+  id: string;
+  amount: number;
+  methodId: string;
+  status: 'pending' | 'approved' | 'completed' | 'failed';
+  createdAt: string;
+  processedAt?: string;
+}
+
 // Alias for API consistency
 export type EarningsData = VendorEarnings;
 
@@ -343,12 +364,14 @@ export interface OrderTracking {
 // ── Vendor Dashboard Analytics ─────────────────────────────────────────
 
 export interface DashboardAnalytics {
-  totalOrders: number;
+  totalProducts: number;
+  ordersThisMonth: number;
   pendingOrders: number;
+  deliveredOrders: number;
+  canceledOrders: number;
+  revenue30Days: number;
   recentOrdersCount: number;
   recentOrders: { id: string; orderNumber: string; total: number; status: OrderStatus; createdAt: string }[];
-  revenue30Days: number;
   dailyRevenue: { date: string; revenue: number }[];
   topProducts: { name: string; quantity: number; revenue: number }[];
-  totalProducts: number;
 }

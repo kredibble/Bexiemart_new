@@ -35,7 +35,7 @@ export default function NewPasswordScreen() {
   const route = useRoute<RoutePropType>();
   const insets = useSafeAreaInsets();
 
-  const { email, token } = route.params;
+  const { email, token } = route.params ?? { email: '', token: '' };
 
   const { mutate: resetPassword, isPending, error } = useResetPassword();
 

@@ -1,16 +1,20 @@
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Text, View } from "react-native";
 import type { Product } from "@/types";
 import { formatCurrency } from "@/utils/format";
 import { colors } from "@/theme/colors";
+import { fonts } from "@/theme/typography";
+import { ProductCard } from "./ProductCard";
 
 type ProductGridProps = {
   products: Product[];
   onPress?: (product: Product) => void;
+  onToggleFavorite?: (productId: string) => void;
 };
 
 export default function ProductGrid({
   products,
   onPress,
+  onToggleFavorite,
 }: ProductGridProps) {
   if (!products.length) {
     return (
@@ -19,18 +23,19 @@ export default function ProductGrid({
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          padding: 24,
+          padding: 32,
         }}
       >
         <Text
           style={{
-            fontFamily: "NunitoSans_400Regular",
+            fontFamily: fonts.body,
             fontSize: 15,
             color: colors.textSecondary,
             textAlign: "center",
+            lineHeight: 22,
           }}
         >
-          No products yet. This grid is wired up and ready for real data.
+          No products yet. Start adding products to see them here.
         </Text>
       </View>
     );
@@ -44,38 +49,11 @@ export default function ProductGrid({
       columnWrapperStyle={{ gap: 12 }}
       contentContainerStyle={{ padding: 16, gap: 12 }}
       renderItem={({ item }) => (
-        <TouchableOpacity
+        <ProductCard
+          product={item}
           onPress={() => onPress?.(item)}
-          style={{
-            flex: 1,
-            minHeight: 140,
-            borderRadius: 16,
-            padding: 16,
-            backgroundColor: colors.white,
-            borderWidth: 1,
-            borderColor: colors.border,
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: "NunitoSans_700Bold",
-              fontSize: 16,
-              color: colors.text,
-              marginBottom: 6,
-            }}
-          >
-            {item.name}
-          </Text>
-          <Text
-            style={{
-              fontFamily: "NunitoSans_400Regular",
-              fontSize: 14,
-              color: colors.textSecondary,
-            }}
-          >
-            {formatCurrency(item.price)}
-          </Text>
-        </TouchableOpacity>
+          onToggleFavorite={onToggleFavorite}
+        />
       )}
     />
   );

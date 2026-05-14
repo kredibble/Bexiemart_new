@@ -1,12 +1,3 @@
-/**
- * OrderDetailsScreen — Vendor view of a single order with status update.
- *
- * Features:
- *  - Order info (number, date, total, customer)
- *  - Order items list with thumbnails
- *  - Status timeline
- *  - Update order status button
- */
 import React, { useState } from 'react';
 import {
   View,
@@ -15,19 +6,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
+  Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import * as Haptics from 'expo-haptics';
 
 import { useOrderDetail, useUpdateOrderStatus } from '@/hooks/useVendor';
 import { OrderStatusBadge } from '@/components/vendor/OrderStatusBadge';
 import { colors, shadows, radii } from '@/theme/colors';
-import { typePresets } from '@/theme/typography';
+import { typePresets, fonts } from '@/theme/typography';
 import { formatCurrency, formatDate } from '@/utils/format';
 import { Button } from '@/components/ui/Button';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import type { OrderStatus } from '@/types';
@@ -48,60 +42,77 @@ export default function OrderDetailsScreen() {
 
   const { data: order, isLoading } = useOrderDetail(orderId);
   const updateStatusMutation = useUpdateOrderStatus();
+  const confirm = useConfirm();
 
   const currentIdx = STATUS_FLOW.indexOf(order?.status ?? 'pending');
   const nextStatus = currentIdx < STATUS_FLOW.length - 1 ? STATUS_FLOW[currentIdx + 1] : null;
   const isDelivered = order?.status === 'delivered';
   const isCancelled = order?.status === 'cancelled';
 
-  const handleAdvanceStatus = () => {
+  const handleAdvanceStatus = async () => {
     if (!nextStatus) return;
-    Alert.alert(
-      'Update Status',
-      `Mark order as "${nextStatus}"?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () =>
-            updateStatusMutation.mutate(
-              { orderId, status: nextStatus },
-              {
-                onSuccess: () => Alert.alert('Success', 'Order status updated'),
-                onError: () => Alert.alert('Error', 'Failed to update status'),
-              }
-            ),
-        },
-      ]
+    if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    const ok = await confirm({ title: 'Update Status', message: `Mark order as "${nextStatus}"?`, confirmLabel: 'Update' });
+    if (!ok) return;
+    updateStatusMutation.mutate(
+      { orderId, status: nextStatus },
+      {
+        onSuccess: () => ToastEmitter.success('Order status updated'),
+        onError: () => ToastEmitter.error('Failed to update status'),
+      }
     );
   };
 
-  const handleCancel = () => {
-    Alert.alert(
-      'Cancel Order',
-      'Are you sure you want to cancel this order?',
-      [
-        { text: 'No', style: 'cancel' },
-        {
-          text: 'Yes, Cancel',
-          style: 'destructive',
-          onPress: () =>
-            updateStatusMutation.mutate(
-              { orderId, status: 'cancelled' },
-              {
-                onSuccess: () => Alert.alert('Cancelled', 'Order has been cancelled'),
-                onError: () => Alert.alert('Error', 'Failed to cancel order'),
-              }
-            ),
-        },
-      ]
+  const handleCancel = async () => {
+    if (Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    const ok = await confirm({ title: 'Cancel Order', message: 'Are you sure you want to cancel this order?', destructive: true, confirmLabel: 'Yes, Cancel' });
+    if (!ok) return;
+    updateStatusMutation.mutate(
+      { orderId, status: 'cancelled' },
+      {
+        onSuccess: () => ToastEmitter.success('Order has been cancelled'),
+        onError: () => ToastEmitter.error('Failed to cancel order'),
+      }
     );
   };
 
   if (isLoading) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top }, styles.center]}>
-        <LoadingSpinner />
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <StatusBar style="dark" />
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => (navigation as any).goBack()}>
+            <Ionicons name="chevron-back" size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Order Details</Text>
+          <View style={{ width: 32 }} />
+        </View>
+        <View style={styles.skeletonContainer}>
+          <View style={styles.skeletonCard}>
+            <View style={[styles.skeletonBlock, { width: '60%', height: 20, marginBottom: 8 }]} />
+            <View style={[styles.skeletonBlock, { width: '40%', height: 14, marginBottom: 12 }]} />
+            <View style={[styles.skeletonBlock, { width: '30%', height: 28 }]} />
+          </View>
+          <View style={styles.skeletonCard}>
+            <View style={[styles.skeletonBlock, { width: '40%', height: 16, marginBottom: 12 }]} />
+            <View style={[styles.skeletonBlock, { width: '80%', height: 14, marginBottom: 6 }]} />
+            <View style={[styles.skeletonBlock, { width: '60%', height: 14, marginBottom: 6 }]} />
+            <View style={[styles.skeletonBlock, { width: '70%', height: 14 }]} />
+          </View>
+          <View style={styles.skeletonCard}>
+            <View style={[styles.skeletonBlock, { width: '30%', height: 16, marginBottom: 12 }]} />
+            {[1, 2, 3].map((i) => (
+              <View key={i} style={{ flexDirection: 'row', gap: 12, marginBottom: 12 }}>
+                <View style={[styles.skeletonBlock, { width: 48, height: 48, borderRadius: radii.md }]} />
+                <View style={{ flex: 1, gap: 4 }}>
+                  <View style={[styles.skeletonBlock, { width: '70%', height: 14 }]} />
+                  <View style={[styles.skeletonBlock, { width: '30%', height: 12 }]} />
+                </View>
+                <View style={[styles.skeletonBlock, { width: 60, height: 16 }]} />
+              </View>
+            ))}
+          </View>
+        </View>
       </View>
     );
   }
@@ -109,6 +120,7 @@ export default function OrderDetailsScreen() {
   if (!order) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }, styles.center]}>
+        <StatusBar style="dark" />
         <EmptyState
           icon="alert-circle-outline"
           iconColor={colors.error}
@@ -120,6 +132,9 @@ export default function OrderDetailsScreen() {
     );
   }
 
+  const subtotal = order.items?.reduce((sum, item) => sum + item.totalPrice, 0) ?? 0;
+  const deliveryFee = order.deliveryFee ?? 0;
+
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
@@ -128,12 +143,15 @@ export default function OrderDetailsScreen() {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
-          onPress={() => (navigation as any).goBack()}
+          onPress={() => {
+            if (Platform.OS !== 'web') Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            (navigation as any).goBack();
+          }}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.text} />
+          <Ionicons name="arrow-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Order Details</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 38 }} />
       </View>
 
       <ScrollView
@@ -149,32 +167,54 @@ export default function OrderDetailsScreen() {
             <OrderStatusBadge status={order.status} />
           </View>
           <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
-          <Text style={styles.orderTotal}>{formatCurrency(order.total)}</Text>
+          <View style={styles.divider} />
+          <View style={styles.orderTotalRow}>
+            <Text style={styles.orderTotalLabel}>Total Amount</Text>
+            <Text style={styles.orderTotal}>{formatCurrency(order.total)}</Text>
+          </View>
+        </View>
+
+        {/* Price Breakdown */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Payment Summary</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.priceLabel}>Subtotal</Text>
+            <Text style={styles.priceValue}>{formatCurrency(subtotal)}</Text>
+          </View>
+          <View style={styles.priceRow}>
+            <Text style={styles.priceLabel}>Delivery Fee</Text>
+            <Text style={styles.priceValue}>{deliveryFee > 0 ? formatCurrency(deliveryFee) : 'Free'}</Text>
+          </View>
+          <View style={styles.divider} />
+          <View style={styles.priceRow}>
+            <Text style={[styles.priceLabel, { fontFamily: fonts.bodyBold }]}>Total</Text>
+            <Text style={[styles.priceValue, { fontFamily: 'Rubik_700Bold', color: colors.text }]}>
+              {formatCurrency(order.total)}
+            </Text>
+          </View>
         </View>
 
         {/* Customer Info */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Customer</Text>
-          <View style={styles.customerRow}>
-            <Ionicons name="person-outline" size={20} color={colors.textSecondary} />
-            <Text style={styles.customerName}>{order.customer?.name ?? 'N/A'}</Text>
+          <View style={styles.customerCard}>
+            <View style={styles.customerAvatar}>
+              <Ionicons name="person" size={22} color={colors.primary} />
+            </View>
+            <View style={styles.customerDetails}>
+              <Text style={styles.customerName}>{order.customer?.name ?? 'N/A'}</Text>
+              {order.customer?.email && (
+                <Text style={styles.customerMeta}>{order.customer.email}</Text>
+              )}
+              {order.customer?.phone && (
+                <Text style={styles.customerMeta}>{order.customer.phone}</Text>
+              )}
+            </View>
           </View>
-          {order.customer?.phone && (
-            <View style={styles.customerRow}>
-              <Ionicons name="call-outline" size={20} color={colors.textSecondary} />
-              <Text style={styles.customerDetail}>{order.customer.phone}</Text>
-            </View>
-          )}
-          {order.customer?.email && (
-            <View style={styles.customerRow}>
-              <Ionicons name="mail-outline" size={20} color={colors.textSecondary} />
-              <Text style={styles.customerDetail}>{order.customer.email}</Text>
-            </View>
-          )}
           {(order.deliveryAddress || order.shippingAddress) && (
             <View style={styles.addressBlock}>
-              <Ionicons name="location-outline" size={20} color={colors.textSecondary} />
-              <Text style={styles.customerDetail}>
+              <Ionicons name="location-outline" size={18} color={colors.accent} />
+              <Text style={styles.addressText}>
                 {order.deliveryAddress ?? `${order.shippingAddress.addressLine1}, ${order.shippingAddress.city}`}
               </Text>
             </View>
@@ -183,7 +223,7 @@ export default function OrderDetailsScreen() {
 
         {/* Order Items */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Items</Text>
+          <Text style={styles.cardTitle}>Items ({order.items?.length ?? 0})</Text>
           {order.items?.map((item, i) => (
             <View key={i} style={styles.itemRow}>
               <View style={styles.itemImage}>
@@ -197,7 +237,7 @@ export default function OrderDetailsScreen() {
                 <Text style={styles.itemName} numberOfLines={2}>
                   {item.product.name}
                 </Text>
-                <Text style={styles.itemQty}>Qty: {item.quantity}</Text>
+                <Text style={styles.itemQty}>Qty: {item.quantity} × {formatCurrency(item.unitPrice)}</Text>
               </View>
               <Text style={styles.itemPrice}>
                 {formatCurrency(item.totalPrice)}
@@ -209,40 +249,52 @@ export default function OrderDetailsScreen() {
         {/* Status Timeline */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Status Timeline</Text>
-          {STATUS_FLOW.map((status, i) => {
-            const completed = !isCancelled && i <= currentIdx;
-            const active = status === order?.status;
-            return (
-              <View key={status} style={styles.timelineRow}>
-                <View style={styles.timelineDotWrapper}>
-                  <View
-                    style={[
-                      styles.timelineDot,
-                      completed && styles.timelineDotActive,
-                      active && styles.timelineDotCurrent,
-                    ]}
-                  />
-                  {i < STATUS_FLOW.length - 1 && (
-                    <View
-                      style={[
-                        styles.timelineLine,
-                        completed && styles.timelineLineActive,
-                      ]}
-                    />
-                  )}
+          <View style={styles.timeline}>
+            {isCancelled ? (
+              <View style={styles.timelineCancelled}>
+                <View style={[styles.timelineIcon, { backgroundColor: colors.errorSoft }]}>
+                  <Ionicons name="close" size={18} color={colors.error} />
                 </View>
-                <Text
-                  style={[
-                    styles.timelineLabel,
-                    completed && styles.timelineLabelActive,
-                    active && styles.timelineLabelCurrent,
-                  ]}
-                >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
-                </Text>
+                <View>
+                  <Text style={[styles.timelineLabel, { fontFamily: fonts.bodyBold, color: colors.error }]}>
+                    Cancelled
+                  </Text>
+                  <Text style={styles.timelineDate}>This order was cancelled</Text>
+                </View>
               </View>
-            );
-          })}
+            ) : (
+              STATUS_FLOW.map((status, i) => {
+                const completed = i <= currentIdx;
+                const active = status === order?.status;
+                return (
+                  <View key={status} style={styles.timelineRow}>
+                    <View style={styles.timelineDotWrapper}>
+                      {completed ? (
+                        <View style={[styles.timelineDot, styles.timelineDotCompleted]}>
+                          <Ionicons name="checkmark" size={12} color={colors.white} />
+                        </View>
+                      ) : (
+                        <View style={[styles.timelineDot, active ? styles.timelineDotCurrent : styles.timelineDotInactive]} />
+                      )}
+                      {i < STATUS_FLOW.length - 1 && (
+                        <View style={[styles.timelineLine, completed && styles.timelineLineActive]} />
+                      )}
+                    </View>
+                    <Text
+                      style={[
+                        styles.timelineLabel,
+                        completed && styles.timelineLabelDone,
+                        active && styles.timelineLabelCurrent,
+                      ]}
+                    >
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                      {completed && !active && ' ✓'}
+                    </Text>
+                  </View>
+                );
+              })
+            )}
+          </View>
         </View>
 
         {/* Actions */}
@@ -280,6 +332,17 @@ export default function OrderDetailsScreen() {
 
 /* ── Styles ────────────────────────────────────────────────────────────── */
 
+const softShadow = Platform.select({
+  ios: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+  },
+  android: { elevation: 4 },
+  web: { boxShadow: '0 4px 16px rgba(0,0,0,0.04)' },
+});
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
@@ -294,40 +357,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: colors.white,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
   backButton: {
-    width: 32,
-    height: 32,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
-    ...typePresets.h3,
+    ...typePresets.h2,
     fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
   scrollContent: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 16,
-    gap: 16,
+    gap: 12,
   },
   card: {
     backgroundColor: colors.white,
     borderRadius: radii.xl,
     padding: 16,
     gap: 12,
-    ...shadows.sm,
+    ...softShadow,
   },
   cardTitle: {
     ...typePresets.h4,
     fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
+
+  // ── Order Summary ─────────────────────────────────────────────────────
   orderHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -342,44 +409,98 @@ const styles = StyleSheet.create({
     ...typePresets.bodySm,
     color: colors.textSecondary,
   },
+  divider: {
+    height: 1,
+    backgroundColor: colors.borderLight,
+  },
+  orderTotalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  orderTotalLabel: {
+    ...typePresets.bodySm,
+    color: colors.textSecondary,
+  },
   orderTotal: {
-    ...typePresets.price,
+    ...typePresets.h2,
     fontFamily: 'Rubik_700Bold',
     color: colors.primary,
   },
-  customerRow: {
+
+  // ── Price Breakdown ───────────────────────────────────────────────────
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    justifyContent: 'space-between',
+  },
+  priceLabel: {
+    ...typePresets.body,
+    color: colors.textSecondary,
+  },
+  priceValue: {
+    ...typePresets.body,
+    fontFamily: 'NunitoSans_700Bold',
+    color: colors.text,
+  },
+
+  // ── Customer ──────────────────────────────────────────────────────────
+  customerCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+  },
+  customerAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.primarySoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  customerDetails: {
+    flex: 1,
+    gap: 2,
   },
   customerName: {
     ...typePresets.body,
     fontFamily: 'NunitoSans_700Bold',
     color: colors.text,
   },
-  customerDetail: {
-    ...typePresets.body,
+  customerMeta: {
+    ...typePresets.caption,
     color: colors.textSecondary,
   },
   addressBlock: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.accentSoft,
     borderRadius: radii.lg,
     padding: 12,
   },
+  addressText: {
+    ...typePresets.bodySm,
+    color: colors.accentDark,
+    flex: 1,
+    lineHeight: 20,
+  },
+
+  // ── Items ─────────────────────────────────────────────────────────────
   itemRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
   itemImage: {
-    width: 48,
-    height: 48,
+    width: 52,
+    height: 52,
     borderRadius: radii.md,
     backgroundColor: colors.surface,
     alignItems: 'center',
@@ -393,6 +514,7 @@ const styles = StyleSheet.create({
   },
   itemInfo: {
     flex: 1,
+    gap: 2,
   },
   itemName: {
     ...typePresets.bodySm,
@@ -404,61 +526,112 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   itemPrice: {
-    ...typePresets.priceSm,
+    ...typePresets.bodySm,
     fontFamily: 'Rubik_700Bold',
     color: colors.text,
   },
-  timelineRow: {
+
+  // ── Timeline ──────────────────────────────────────────────────────────
+  timeline: {
+    gap: 0,
+  },
+  timelineCancelled: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    paddingVertical: 8,
+  },
+  timelineIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timelineRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    paddingVertical: 4,
   },
   timelineDotWrapper: {
     alignItems: 'center',
-    width: 24,
+    width: 28,
+    paddingTop: 4,
   },
   timelineDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  timelineDotCompleted: {
+    backgroundColor: colors.success,
+  },
+  timelineDotCurrent: {
+    backgroundColor: colors.primary,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+  },
+  timelineDotInactive: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     borderWidth: 2,
     borderColor: colors.border,
     backgroundColor: colors.white,
   },
-  timelineDotActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary,
-  },
-  timelineDotCurrent: {
-    borderWidth: 3,
-    borderColor: colors.primary,
-    backgroundColor: colors.primarySoft,
-  },
   timelineLine: {
     width: 2,
     height: 28,
-    backgroundColor: colors.border,
+    backgroundColor: colors.borderLight,
   },
   timelineLineActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.success,
   },
   timelineLabel: {
-    ...typePresets.bodySm,
+    ...typePresets.body,
     color: colors.textSecondary,
+    paddingTop: 4,
     flex: 1,
   },
-  timelineLabelActive: {
-    color: colors.text,
-    fontFamily: 'NunitoSans_700Bold',
+  timelineLabelDone: {
+    color: colors.successDark,
+    fontFamily: 'NunitoSans_600SemiBold',
   },
   timelineLabelCurrent: {
     color: colors.primary,
     fontFamily: 'NunitoSans_700Bold',
   },
-  actionsRow: {
-    gap: 12,
-    marginTop: 8,
-    marginBottom: 16,
+  timelineDate: {
+    ...typePresets.caption,
+    color: colors.textLight,
+    marginTop: 2,
   },
 
+  // ── Actions ───────────────────────────────────────────────────────────
+  actionsRow: {
+    gap: 12,
+    marginTop: 4,
+  },
+
+  // ── Skeleton ──────────────────────────────────────────────────────────
+  skeletonContainer: {
+    padding: 16,
+    gap: 12,
+  },
+  skeletonCard: {
+    backgroundColor: colors.white,
+    borderRadius: radii.xl,
+    padding: 16,
+    gap: 4,
+    ...softShadow,
+  },
+  skeletonBlock: {
+    backgroundColor: colors.borderLight,
+    borderRadius: 6,
+    opacity: 0.6,
+  },
 });

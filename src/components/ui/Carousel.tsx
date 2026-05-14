@@ -1,10 +1,3 @@
-/**
- * Carousel — Auto-scrolling image carousel with dot indicators.
- *
- * Used in: HomeScreen (promo banners), ProductDetailsScreen (image gallery).
- * Features: horizontal paging, auto-scroll interval, dot pagination,
- * expo-image for optimized loading, and swipe gesture support.
- */
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import {
   View,
@@ -16,7 +9,7 @@ import {
   type ListRenderItem,
 } from 'react-native';
 import { Image } from 'expo-image';
-import { colors } from '@/theme/colors';
+import { colors, radii } from '@/theme/colors';
 
 export interface CarouselItem {
   id: string;
@@ -26,15 +19,10 @@ export interface CarouselItem {
 
 interface CarouselProps {
   items: CarouselItem[];
-  /** Enable auto-scrolling (default: true) */
   autoPlay?: boolean;
-  /** Auto-scroll interval in milliseconds (default: 5000) */
   interval?: number;
-  /** Image height (default: 180) */
   height?: number;
-  /** Horizontal margin for the carousel container */
   containerPadding?: number;
-  /** Border radius for images */
   borderRadius?: number;
 }
 
@@ -42,9 +30,9 @@ export function Carousel({
   items,
   autoPlay = true,
   interval = 5000,
-  height = 180,
+  height = 200,
   containerPadding = 0,
-  borderRadius = 16,
+  borderRadius = radii.xl,
 }: CarouselProps) {
   const flatListRef = useRef<FlatList>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -53,7 +41,6 @@ export function Carousel({
 
   const itemWidth = SCREEN_WIDTH - containerPadding * 2;
 
-  // Track viewable item changes for dot indicator
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken[] }) => {
       if (viewableItems.length > 0 && viewableItems[0].index !== null) {
@@ -67,27 +54,20 @@ export function Carousel({
     viewAreaCoveragePercentThreshold: 50,
   }).current;
 
-  // Auto-scroll logic
   useEffect(() => {
     if (!autoPlay || items.length <= 1) return;
-
     autoPlayRef.current = setInterval(() => {
       setActiveIndex((prevIndex) => {
         const nextIndex = (prevIndex + 1) % items.length;
-        flatListRef.current?.scrollToIndex({
-          index: nextIndex,
-          animated: true,
-        });
+        flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
         return nextIndex;
       });
     }, interval);
-
     return () => {
       if (autoPlayRef.current) clearInterval(autoPlayRef.current);
     };
   }, [autoPlay, interval, items.length]);
 
-  // Pause auto-scroll on user interaction
   const handleScrollBeginDrag = useCallback(() => {
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
   }, []);
@@ -117,7 +97,6 @@ export function Carousel({
           style={[styles.image, { height, borderRadius }]}
           contentFit="cover"
           transition={300}
-          placeholder={{ thumbhash: 'rEgGFwB3d3d3d4iIeJh3d4hwiA' }}
         />
       </TouchableOpacity>
     ),
@@ -147,8 +126,6 @@ export function Carousel({
           index,
         })}
       />
-
-      {/* Dot indicators */}
       {items.length > 1 && (
         <View style={styles.dotsContainer}>
           {items.map((_, index) => (
@@ -179,18 +156,16 @@ const styles = StyleSheet.create({
     marginTop: 12,
   },
   dot: {
-    borderRadius: 4,
+    borderRadius: 3,
   },
   dotActive: {
-    width: 20,
+    width: 22,
     height: 6,
     backgroundColor: colors.primary,
-    borderRadius: 3,
   },
   dotInactive: {
     width: 6,
     height: 6,
     backgroundColor: colors.border,
-    borderRadius: 3,
   },
 });

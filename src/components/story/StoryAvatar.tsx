@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { colors } from '@/theme/colors';
+import { colors, radii } from '@/theme/colors';
+import { fonts } from '@/theme/typography';
 import type { StoryGroup } from '@/types';
 
 interface StoryAvatarProps {
@@ -30,15 +31,15 @@ export default function StoryAvatar({ group, onPress }: StoryAvatarProps) {
 const styles = StyleSheet.create({
   container: { alignItems: 'center', gap: 4, width: 68 },
   ring: {
-    width: 60, height: 60, borderRadius: 30,
+    width: 62, height: 62, borderRadius: 31,
     backgroundColor: colors.borderLight, padding: 3,
   },
   unviewedRing: { backgroundColor: colors.primary },
   avatarBg: {
-    flex: 1, borderRadius: 27, backgroundColor: colors.primarySoft,
+    flex: 1, borderRadius: 28, backgroundColor: colors.primarySoft,
     alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
   },
   avatarImage: { width: '100%', height: '100%' },
-  avatarText: { fontFamily: 'Rubik_700Bold', fontSize: 20, color: colors.primary },
-  name: { fontFamily: 'NunitoSans_500Medium', fontSize: 11, color: colors.textSecondary, width: 68, textAlign: 'center' },
+  avatarText: { fontFamily: fonts.heading, fontSize: 20, color: colors.primary },
+  name: { fontFamily: fonts.bodyMedium, fontSize: 11, color: colors.textSecondary, width: 68, textAlign: 'center' },
 });

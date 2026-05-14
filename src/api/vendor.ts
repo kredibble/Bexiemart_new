@@ -15,6 +15,7 @@ export interface CreateProductDto {
   discountType?: 'percentage' | 'fixed';
   images: string[];
   deliveryOptions: { type: string; fee: number; duration: number; unit: string }[];
+  variations?: { type: string; name: string; value?: string }[];
 }
 
 export interface UpdateProductDto extends Partial<CreateProductDto> {}

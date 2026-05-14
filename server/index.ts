@@ -269,12 +269,28 @@ router.get('/api/vendor/dashboard/analytics', eventHandler(async (event) => {
     ORDER BY date ASC
   `;
 
+  const [deliveredOrders, canceledOrders, ordersThisMonth, totalProducts] = await Promise.all([
+    prisma.order.count({
+      where: { status: 'delivered', items: { some: { product: { vendorId: vendor.id } } } },
+    }),
+    prisma.order.count({
+      where: { status: 'cancelled', items: { some: { product: { vendorId: vendor.id } } } },
+    }),
+    prisma.order.count({
+      where: { createdAt: { gte: thirtyDaysAgo }, items: { some: { product: { vendorId: vendor.id } } } },
+    }),
+    prisma.product.count({ where: { vendorId: vendor.id, isDeleted: false } }),
+  ]);
+
   return success({
-    totalOrders,
+    totalProducts,
+    ordersThisMonth,
     pendingOrders,
+    deliveredOrders,
+    canceledOrders,
+    revenue30Days: revenueData._sum.total ?? 0,
     recentOrdersCount: recentOrders.length,
     recentOrders,
-    revenue30Days: revenueData._sum.total ?? 0,
     dailyRevenue: (dailyRevenue as any[]).map((r: any) => ({
       date: typeof r.date === 'object' ? r.date.toISOString().slice(0, 10) : String(r.date),
       revenue: Number(r.revenue),
@@ -284,7 +300,6 @@ router.get('/api/vendor/dashboard/analytics', eventHandler(async (event) => {
       quantity: p._sum.quantity ?? 0,
       revenue: p._sum.total ?? 0,
     })),
-    totalProducts: await prisma.product.count({ where: { vendorId: vendor.id, isDeleted: false } }),
   });
 }));
 

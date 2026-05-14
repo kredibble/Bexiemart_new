@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, type ReactNode } from "react";
+import React, { useEffect, type ReactNode } from "react";
 import {
-  Animated,
   View,
   TouchableWithoutFeedback,
   Dimensions,
@@ -9,6 +8,16 @@ import {
   type StyleProp,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+  withTiming,
+  runOnJS,
+  interpolate,
+  Extrapolation,
+} from "react-native-reanimated";
 import { colors, radii } from "@/theme/colors";
 
 interface BottomSheetProps {
@@ -29,64 +38,91 @@ export function BottomSheet({
   style,
 }: BottomSheetProps) {
   const insets = useSafeAreaInsets();
-  const translateY = useRef(new Animated.Value(height)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const actualHeight = height + insets.bottom;
+  
+  const translateY = useSharedValue(actualHeight);
+  const backdropOpacity = useSharedValue(0);
 
   useEffect(() => {
     if (visible) {
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          useNativeDriver: true,
-          speed: 14,
-          bounciness: 6,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      translateY.value = withSpring(0, {
+        damping: 20,
+        stiffness: 200,
+        mass: 0.8,
+      });
+      backdropOpacity.value = withTiming(1, { duration: 250 });
     } else {
-      Animated.parallel([
-        Animated.timing(translateY, {
-          toValue: height,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      translateY.value = withTiming(actualHeight, { duration: 250 });
+      backdropOpacity.value = withTiming(0, { duration: 200 });
     }
-  }, [visible, translateY, backdropOpacity, height]);
+  }, [visible, actualHeight]);
 
-  if (!visible) return null;
+  const panGesture = Gesture.Pan()
+    .onChange((event) => {
+      if (event.translationY > 0) {
+        translateY.value = event.translationY;
+      } else {
+        translateY.value = event.translationY * 0.3;
+      }
+    })
+    .onEnd((event) => {
+      if (event.translationY > actualHeight * 0.3 || event.velocityY > 500) {
+        translateY.value = withTiming(actualHeight, { duration: 250 }, () => {
+          runOnJS(onClose)();
+        });
+        backdropOpacity.value = withTiming(0, { duration: 200 });
+      } else {
+        translateY.value = withSpring(0, {
+          damping: 20,
+          stiffness: 200,
+        });
+      }
+    });
+
+  const animatedSheetStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ translateY: Math.max(translateY.value, -50) }],
+    };
+  });
+
+  const animatedBackdropStyle = useAnimatedStyle(() => {
+    return {
+      opacity: backdropOpacity.value * interpolate(
+        translateY.value,
+        [0, actualHeight],
+        [1, 0],
+        Extrapolation.CLAMP
+      ),
+    };
+  });
+
+  if (!visible && translateY.value >= actualHeight) return null;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
       <TouchableWithoutFeedback onPress={onClose}>
         <Animated.View
-          style={[styles.backdrop, { opacity: backdropOpacity }]}
+          style={[styles.backdrop, animatedBackdropStyle]}
         />
       </TouchableWithoutFeedback>
-
-      <Animated.View
-        style={[
-          styles.sheet,
-          {
-            height: height + insets.bottom,
-            paddingBottom: insets.bottom,
-            transform: [{ translateY }],
-          },
-          style,
-        ]}
-      >
-        <View style={styles.handle} />
-        {children}
-      </Animated.View>
+      <GestureDetector gesture={panGesture}>
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              height: actualHeight,
+              paddingBottom: insets.bottom,
+            },
+            animatedSheetStyle,
+            style,
+          ]}
+        >
+          <View style={styles.handleContainer}>
+            <View style={styles.handle} />
+          </View>
+          {children}
+        </Animated.View>
+      </GestureDetector>
     </View>
   );
 }
@@ -94,7 +130,7 @@ export function BottomSheet({
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: colors.backdrop,
+    backgroundColor: colors.overlay,
   },
   sheet: {
     position: "absolute",
@@ -102,17 +138,24 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     backgroundColor: colors.white,
-    borderTopLeftRadius: radii['2xl'],
-    borderTopRightRadius: radii['2xl'],
+    borderTopLeftRadius: radii["3xl"],
+    borderTopRightRadius: radii["3xl"],
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 20,
+  },
+  handleContainer: {
     paddingTop: 12,
-    paddingHorizontal: 20,
+    paddingBottom: 16,
+    alignItems: "center",
+    width: "100%",
   },
   handle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
+    width: 48,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: colors.border,
-    alignSelf: "center",
-    marginBottom: 16,
   },
 });

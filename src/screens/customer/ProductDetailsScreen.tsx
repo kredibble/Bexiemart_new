@@ -8,8 +8,6 @@ import {
   Dimensions,
   Platform,
   Modal,
-  TextInput,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -20,7 +18,9 @@ import { Image } from 'expo-image';
 
 import { Carousel, type CarouselItem } from '@/components/ui/Carousel';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ToastEmitter } from '@/utils/toastEmitter';
 import { useProduct } from '@/hooks/useProducts';
 import { useWishlist, useAddToWishlist, useRemoveFromWishlist } from '@/hooks/useProducts';
 import { useAddToCart } from '@/hooks/useCart';
@@ -41,7 +41,7 @@ export default function ProductDetailsScreen() {
   const route = useRoute<RoutePropType>();
   const insets = useSafeAreaInsets();
 
-  const { productId } = route.params;
+  const { productId } = route.params ?? {};
   const { data: product, isLoading, isError, error, refetch } = useProduct(productId);
   const { mutate: addToCart, isPending: isAddingToCart } = useAddToCart();
 
@@ -87,10 +87,10 @@ export default function ProductDetailsScreen() {
           setReviewModalVisible(false);
           setReviewComment('');
           setReviewRating(5);
-          Alert.alert('Review submitted', 'Thank you for your feedback!');
+          ToastEmitter.success('Thank you for your feedback!');
         },
         onError: (err: any) => {
-          Alert.alert('Error', err?.message ?? 'Failed to submit review');
+          ToastEmitter.error(err?.message ?? 'Failed to submit review');
         },
       },
     );
@@ -407,7 +407,7 @@ export default function ProductDetailsScreen() {
 
             {/* Comment */}
             <Text style={styles.modalLabel}>Comment (optional)</Text>
-            <TextInput
+            <Input
               style={styles.reviewInput}
               value={reviewComment}
               onChangeText={setReviewComment}

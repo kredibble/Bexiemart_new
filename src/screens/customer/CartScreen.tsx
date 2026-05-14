@@ -192,7 +192,7 @@ interface CartItemRowProps {
 
 function CartItemRow({ item, onRemove }: CartItemRowProps) {
   const primaryImage = item.product?.images?.find((img) => img.isPrimary)?.url
-    ?? item.product?.images?.[0]?.url;
+    ?? item.product?.images?.[0]?.url ?? '';
 
   return (
     <View style={itemStyles.container}>

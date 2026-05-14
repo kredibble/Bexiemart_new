@@ -36,9 +36,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setUser: (user) => {
     if (user) {
-      SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)).catch(() => {});
+      SecureStore.setItemAsync(USER_KEY, JSON.stringify(user)).catch((e) => console.warn('SecureStore setUser failed', e));
     } else {
-      SecureStore.deleteItemAsync(USER_KEY).catch(() => {});
+      SecureStore.deleteItemAsync(USER_KEY).catch((e) => console.warn('SecureStore deleteUser failed', e));
     }
     set({ user, isAuthenticated: !!user });
   },
@@ -47,7 +47,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const user = get().user;
     if (!user) return;
     const updated = { ...user, role };
-    SecureStore.setItemAsync(USER_KEY, JSON.stringify(updated)).catch(() => {});
+    SecureStore.setItemAsync(USER_KEY, JSON.stringify(updated)).catch((e) => console.warn('SecureStore setRole failed', e));
     set({ user: updated });
   },
 
@@ -56,17 +56,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     try {
       await authClient.signOut();
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn('authClient.signOut failed', e);
     }
-    // Clear all Better Auth storage keys
     try {
       await Promise.all([
         SecureStore.deleteItemAsync(COOKIE_KEY),
         SecureStore.deleteItemAsync(USER_KEY),
       ]);
-    } catch {
-      // ignore
+    } catch (e) {
+      console.warn('SecureStore cleanup after signOut failed', e);
     }
     useCartStore.getState().clearCart();
     set({ user: null, isAuthenticated: false });
@@ -89,8 +88,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const user = JSON.parse(userStr) as User;
         set({ user, isAuthenticated: true });
       }
-    } catch {
-      // ignore — user will be redirected to auth
+    } catch (e) {
+      console.warn('authStore hydrate failed', e);
     } finally {
       set({ isLoading: false, isHydrated: true });
     }

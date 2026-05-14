@@ -1,19 +1,26 @@
-import React, { useRef, useCallback, type ReactNode } from "react";
+import React, { type ReactNode, useCallback } from "react";
 import {
   ActivityIndicator,
-  Animated,
   Pressable,
   Text,
-  Vibration,
+  Platform,
   type PressableProps,
   type StyleProp,
   type ViewStyle,
   type TextStyle,
 } from "react-native";
-import { colors, shadows, radii } from "@/theme/colors";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+  interpolateColor,
+} from "react-native-reanimated";
+import * as Haptics from "expo-haptics"; // Adding haptics for premium feel
+import { colors, radii } from "@/theme/colors";
 
-type ButtonVariant = "default" | "secondary" | "outline" | "ghost" | "danger";
-type ButtonSize = "default" | "sm" | "lg";
+type ButtonVariant = "default" | "secondary" | "outline" | "ghost" | "danger" | "premium";
+type ButtonSize = "sm" | "default" | "lg";
 
 export type ButtonProps = PressableProps & {
   title?: string;
@@ -23,16 +30,28 @@ export type ButtonProps = PressableProps & {
   size?: ButtonSize;
   leftIcon?: ReactNode;
   rightIcon?: ReactNode;
-  haptic?: boolean;
   textStyle?: StyleProp<TextStyle>;
 };
 
 const variantStyles: Record<ButtonVariant, ViewStyle> = {
   default: { backgroundColor: colors.primary },
   secondary: { backgroundColor: colors.surfaceDark },
-  outline: { backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border },
+  outline: { backgroundColor: colors.white, borderWidth: 1.5, borderColor: colors.border },
   ghost: { backgroundColor: "transparent" },
   danger: { backgroundColor: colors.error },
+  premium: {
+    backgroundColor: colors.primary,
+    ...Platform.select({
+      ios: {
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+      },
+      android: { elevation: 12 },
+      web: { boxShadow: `0 12px 32px ${colors.primaryLight66}` },
+    }),
+  },
 };
 
 const textColors: Record<ButtonVariant, string> = {
@@ -41,12 +60,13 @@ const textColors: Record<ButtonVariant, string> = {
   outline: colors.text,
   ghost: colors.primary,
   danger: colors.white,
+  premium: colors.white,
 };
 
 const sizeStyles: Record<ButtonSize, ViewStyle> = {
-  sm: { height: 40, paddingHorizontal: 20 },
-  default: { height: 50, paddingHorizontal: 32 },
-  lg: { height: 56, paddingHorizontal: 40 },
+  sm: { height: 40, paddingHorizontal: 20, borderRadius: radii.lg },
+  default: { height: 52, paddingHorizontal: 28, borderRadius: radii.xl },
+  lg: { height: 60, paddingHorizontal: 36, borderRadius: radii['2xl'] },
 };
 
 const sizeText: Record<ButtonSize, { fontSize: number }> = {
@@ -54,6 +74,8 @@ const sizeText: Record<ButtonSize, { fontSize: number }> = {
   default: { fontSize: 16 },
   lg: { fontSize: 18 },
 };
+
+const SPRING_CONFIG = { damping: 12, stiffness: 300, mass: 0.8 };
 
 export function Button({
   title,
@@ -65,86 +87,73 @@ export function Button({
   style,
   leftIcon,
   rightIcon,
-  haptic = true,
   textStyle,
   children,
   onPressIn,
   onPressOut,
+  onPress,
   ...props
 }: ButtonProps) {
   const isDisabled = disabled || loading;
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const opacityAnim = useRef(new Animated.Value(1)).current;
+  
+  // Reanimated Shared Values
+  const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
 
-  const handlePressIn = useCallback(
-    (e: any) => {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 0.96,
-          useNativeDriver: true,
-          speed: 20,
-          bounciness: 4,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 0.85,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      if (haptic) Vibration.vibrate(6);
-      if (onPressIn) onPressIn(e);
-    },
-    [scaleAnim, opacityAnim, haptic, onPressIn]
-  );
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value,
+    };
+  });
 
-  const handlePressOut = useCallback(
-    (e: any) => {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1,
-          useNativeDriver: true,
-          speed: 20,
-          bounciness: 4,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
-      if (onPressOut) onPressOut(e);
-    },
-    [scaleAnim, opacityAnim, onPressOut]
-  );
+  const handlePressIn = useCallback((e: any) => {
+    if (!isDisabled) {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+      }
+      scale.value = withSpring(0.95, SPRING_CONFIG);
+      opacity.value = withTiming(0.85, { duration: 100 });
+    }
+    if (onPressIn) onPressIn(e);
+  }, [isDisabled, onPressIn, scale, opacity]);
+
+  const handlePressOut = useCallback((e: any) => {
+    scale.value = withSpring(1, SPRING_CONFIG);
+    opacity.value = withTiming(1, { duration: 150 });
+    if (onPressOut) onPressOut(e);
+  }, [onPressOut, scale, opacity]);
+  
+  const handlePress = useCallback((e: any) => {
+    if (!isDisabled) {
+      if (Platform.OS !== "web") {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+      }
+      if (onPress) onPress(e);
+    }
+  }, [isDisabled, onPress]);
 
   return (
-    <Animated.View
-      style={[
-        { transform: [{ scale: scaleAnim }], opacity: opacityAnim },
-        fullWidth ? { width: "100%" } : null,
-      ]}
-    >
+    <Animated.View style={[animatedStyle, fullWidth ? { width: "100%" } : null]}>
       <Pressable
         accessibilityRole="button"
         disabled={isDisabled}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={({ pressed }) =>
-          [
-            {
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: radii.full,
-              opacity: isDisabled ? 0.5 : pressed ? 0.9 : 1,
-              flexDirection: "row",
-              gap: 8,
-              ...shadows.md,
-            },
-            sizeStyles[size],
-            variantStyles[variant],
-            style as StyleProp<ViewStyle>,
-          ] as StyleProp<ViewStyle>
-        }
+        onPress={handlePress}
+        style={[
+          {
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "row",
+            gap: 10,
+            opacity: isDisabled ? 0.6 : 1,
+            overflow: "hidden", // ensures ripples or children don't bleed
+          },
+          sizeStyles[size],
+          variantStyles[variant],
+          style as StyleProp<ViewStyle>,
+        ]}
         {...props}
       >
         {loading ? (
@@ -158,7 +167,7 @@ export function Button({
               {
                 fontFamily: "NunitoSans_700Bold",
                 color: textColors[variant],
-                letterSpacing: 0.2,
+                letterSpacing: 0.3,
               },
               sizeText[size],
               textStyle,

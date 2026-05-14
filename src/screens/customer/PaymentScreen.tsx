@@ -11,7 +11,6 @@ import {
   Text,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Platform,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
@@ -24,6 +23,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useInitializePayment } from '@/hooks/useOrders';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Button } from '@/components/ui/Button';
@@ -36,11 +37,12 @@ export default function PaymentScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteType>();
-  const { orderId, totalAmount, email } = route.params;
+  const { orderId, totalAmount, email } = route.params ?? {};
 
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const confirm = useConfirm();
 
   const { mutate: initializePayment, isPending } = useInitializePayment();
 
@@ -60,11 +62,7 @@ export default function PaymentScreen() {
         onError: () => {
           setHasError(true);
           setIsLoading(false);
-          Alert.alert(
-            'Payment Initialization Failed',
-            'Could not start payment. Please try again.',
-            [{ text: 'OK', onPress: () => navigation.goBack() }]
-          );
+          ToastEmitter.error('Could not start payment. Please try again.');
         },
       }
     );
@@ -106,19 +104,9 @@ export default function PaymentScreen() {
     [navigation, orderId, totalAmount]
   );
 
-  const handleCancel = () => {
-    Alert.alert(
-      'Cancel Payment?',
-      'Your order will remain pending. You can complete it later.',
-      [
-        { text: 'Continue Payment', style: 'cancel' },
-        {
-          text: 'Cancel',
-          style: 'destructive',
-          onPress: () => navigation.replace('PaymentFailure', { orderId }),
-        },
-      ]
-    );
+  const handleCancel = async () => {
+    const ok = await confirm({ title: 'Cancel Payment?', message: 'Your order will remain pending. You can complete it later.', destructive: true, confirmLabel: 'Cancel' });
+    if (ok) navigation.replace('PaymentFailure', { orderId });
   };
 
   if (isPending || isLoading) {
@@ -180,7 +168,7 @@ export default function PaymentScreen() {
         )}
         onError={() => {
           setHasError(true);
-          Alert.alert('Connection Error', 'Could not load payment page. Check your internet connection.');
+          ToastEmitter.error('Could not load payment page. Check your internet connection.');
         }}
         style={styles.webview}
       />

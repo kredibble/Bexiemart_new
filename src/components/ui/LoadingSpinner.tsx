@@ -42,8 +42,8 @@ export function LoadingSpinner({
         alignItems: "center",
         justifyContent: "center",
         opacity: fadeAnim,
-        gap: 12,
-        paddingVertical: fullScreen ? 0 : 32,
+        gap: 16,
+        paddingVertical: fullScreen ? 0 : 40,
       }}
       accessibilityLabel={label || "Loading"}
       accessibilityRole="progressbar"

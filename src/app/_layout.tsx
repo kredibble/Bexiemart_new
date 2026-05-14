@@ -19,6 +19,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Slot } from "expo-router";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ToastProvider } from "@/components/ui/Toast";
+import { ConfirmProvider } from "@/components/ui/ConfirmDialog";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,7 +55,9 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <SafeAreaProvider>
         <ToastProvider>
-          <Slot />
+          <ConfirmProvider>
+            <Slot />
+          </ConfirmProvider>
         </ToastProvider>
       </SafeAreaProvider>
     </QueryClientProvider>

@@ -17,7 +17,6 @@ import {
   Platform,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -35,6 +34,7 @@ import { FormInput } from '@/components/ui/FormInput';
 import { CartSummary } from '@/components/cart/CartSummary';
 import { useCartStore } from '@/stores/cartStore';
 import { useCreateOrder } from '@/hooks/useOrders';
+import { ToastEmitter } from '@/utils/toastEmitter';
 import { colors, shadows, radii } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
 import { HomeStackParamList } from '@/navigation/CustomerTabs';
@@ -101,7 +101,7 @@ export default function CheckoutScreen() {
 
   const onSubmit = (values: CheckoutFormValues) => {
     if (cartItems.length === 0) {
-      Alert.alert('Empty Cart', 'Your cart is empty. Add items before checking out.');
+      ToastEmitter.warning('Your cart is empty. Add items before checking out.');
       return;
     }
 
@@ -126,10 +126,7 @@ export default function CheckoutScreen() {
           });
         },
         onError: (err: any) => {
-          Alert.alert(
-            'Order Failed',
-            err?.message ?? 'Could not create your order. Please try again.',
-          );
+          ToastEmitter.error(err?.message ?? 'Could not create your order. Please try again.');
         },
       }
     );

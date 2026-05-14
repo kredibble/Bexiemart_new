@@ -1,14 +1,7 @@
-/**
- * OfflineBanner — Persistent banner shown when network is unavailable.
- *
- * Uses @react-native-community/netinfo to detect connectivity.
- * Appears at the top of the screen with a slide-down animation.
- */
 import React, { useEffect, useState, useRef } from 'react';
 import { Animated, Text, StyleSheet, View } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { Ionicons } from '@expo/vector-icons';
-
 import { colors } from '@/theme/colors';
 import { typePresets } from '@/theme/typography';
 
@@ -20,14 +13,12 @@ export function OfflineBanner() {
     const unsubscribe = NetInfo.addEventListener((state) => {
       const offline = !state.isConnected || !state.isInternetReachable;
       setIsOffline(!!offline);
-
       Animated.timing(slideAnim, {
         toValue: offline ? 0 : -50,
         duration: 300,
         useNativeDriver: true,
       }).start();
     });
-
     return unsubscribe;
   }, [slideAnim]);
 
@@ -43,8 +34,6 @@ export function OfflineBanner() {
   );
 }
 
-/* ── Styles ────────────────────────────────────────────────────────────── */
-
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
@@ -58,7 +47,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.text,
+    backgroundColor: colors.error,
     paddingVertical: 10,
     paddingHorizontal: 16,
   },

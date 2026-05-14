@@ -22,12 +22,12 @@ export function Skeleton({
       Animated.sequence([
         Animated.timing(opacity, {
           toValue: 0.7,
-          duration: 800,
+          duration: 1000,
           useNativeDriver: true,
         }),
         Animated.timing(opacity, {
           toValue: 0.3,
-          duration: 800,
+          duration: 1000,
           useNativeDriver: true,
         }),
       ])
@@ -39,7 +39,7 @@ export function Skeleton({
   return (
     <Animated.View
       style={[
-        { width: width as any, height, borderRadius, opacity, backgroundColor: colors.borderLight },
+        { width: width as any, height, borderRadius, opacity, backgroundColor: colors.skeleton },
         style,
       ]}
     />
@@ -59,9 +59,9 @@ export function SkeletonCard({ style }: { style?: StyleProp<ViewStyle> }) {
         style,
       ]}
     >
-      <Skeleton height={160} borderRadius={radii.md} />
-      <Skeleton width="70%" height={18} />
-      <Skeleton width="50%" height={14} />
+      <Skeleton height={180} borderRadius={radii.md} />
+      <Skeleton width="75%" height={18} />
+      <Skeleton width="55%" height={14} />
       <Skeleton width="40%" height={14} />
     </View>
   );
@@ -75,14 +75,14 @@ export function SkeletonRow({ style }: { style?: StyleProp<ViewStyle> }) {
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
-          paddingVertical: 12,
+          paddingVertical: 14,
           paddingHorizontal: 16,
         },
         style,
       ]}
     >
       <Skeleton width={48} height={48} borderRadius={radii.full} />
-      <View style={{ flex: 1, gap: 6 }}>
+      <View style={{ flex: 1, gap: 8 }}>
         <Skeleton width="60%" height={16} />
         <Skeleton width="40%" height={14} />
       </View>

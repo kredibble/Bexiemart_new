@@ -231,7 +231,8 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  items OrderItem[]
+  items   OrderItem[]
+  payment Payment?
 
   @@index([userId])
   @@index([orderNumber])
@@ -278,6 +279,7 @@ model ShippingAddress {
 model Payment {
   id      String @id @default(cuid())
   orderId String @unique
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
   userId  String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 

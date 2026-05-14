@@ -14,7 +14,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
@@ -23,6 +22,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as Haptics from 'expo-haptics';
 
 import { useUpdateShopProfile } from '@/hooks/useVendor';
 import { uploadImage } from '@/utils/cloudinary';
@@ -32,6 +32,8 @@ import { useAuthStore } from '@/stores/authStore';
 import { Button } from '@/components/ui/Button';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { ToastEmitter } from '@/utils/toastEmitter';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -44,8 +46,12 @@ export default function SettingsScreen() {
   const [contact, setContact] = useState(user?.contact ?? '');
   const [logo, setLogo] = useState<string | undefined>(user?.logo);
   const [logoUploading, setLogoUploading] = useState(false);
+  const confirm = useConfirm();
 
   const pickLogo = async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsMultipleSelection: false,
@@ -57,7 +63,7 @@ export default function SettingsScreen() {
         const uploadResult = await uploadImage(result.assets[0].uri, 'shops');
         setLogo(uploadResult.url);
       } catch {
-        Alert.alert('Upload Failed', 'Could not upload logo. Please try again.');
+        ToastEmitter.error('Upload Failed', 'Could not upload logo. Please try again.');
         setLogo(result.assets[0].uri); // Fallback to local URI
       } finally {
         setLogoUploading(false);
@@ -66,8 +72,11 @@ export default function SettingsScreen() {
   };
 
   const handleSave = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    }
     if (!shopName.trim()) {
-      Alert.alert('Validation Error', 'Shop name is required.');
+      ToastEmitter.warning('Shop name is required.');
       return;
     }
     updateProfileMutation.mutate(
@@ -80,24 +89,21 @@ export default function SettingsScreen() {
       },
       {
         onSuccess: () => {
-          Alert.alert('Success', 'Shop profile updated');
+          ToastEmitter.success('Shop profile updated');
         },
         onError: () => {
-          Alert.alert('Error', 'Failed to update profile');
+          ToastEmitter.error('Failed to update profile');
         },
       }
     );
   };
 
-  const handleSignOut = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out',
-        style: 'destructive',
-        onPress: signOut,
-      },
-    ]);
+  const handleSignOut = async () => {
+    if (Platform.OS !== 'web') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    }
+    const ok = await confirm({ title: 'Sign Out', message: 'Are you sure you want to sign out?', destructive: true, confirmLabel: 'Sign Out' });
+    if (ok) { signOut(); }
   };
 
   return (
@@ -191,7 +197,7 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: '#FAFAFC', // Sleek off-white bg
   },
   header: {
     paddingHorizontal: 20,
@@ -223,7 +229,16 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: colors.borderLight,
     overflow: 'hidden',
-    ...shadows.sm,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.05,
+        shadowRadius: 12,
+      },
+      android: { elevation: 2 },
+      web: { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' },
+    }),
   },
   logoImage: {
     width: '100%',
